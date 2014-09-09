@@ -12,3 +12,6 @@ tags
 docs
 workspace
 doci_sdp
+.gdb_history
+*.h5
+.ycm_extra_conf.pyc
