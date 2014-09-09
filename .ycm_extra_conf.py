@@ -8,7 +8,6 @@ flags = [
 '-DBASISSETDIR="/home/ward/Documents/phd/linmol/basissets"',
 '-Wall',
 '-DPQGT',
-'-Wall',
 # THIS IS IMPORTANT! Without a "-std=<something>" flag, clang won't know which
 # language to use when compiling headers. So it will guess. Badly. So C++
 # headers will be compiled as C headers. You don't want that so ALWAYS specify
@@ -94,4 +93,4 @@ def FlagsForFile( filename, **kwargs ):
   return {
     'flags': final_flags,
     'do_cache': True
-
+  }

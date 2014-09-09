@@ -10,14 +10,19 @@
 BINNAME = doci_sdp
 CPPSRC	= doci_sdp.cpp\
             Matrix.cpp\
-            SPM.cpp\
-            TPM.cpp\
-            PHM.cpp\
-            DPM.cpp\
-            PPHM.cpp\
-            SUP.cpp\
-            EIG.cpp\
-	    Lineq.cpp\
+	    Vector.cpp\
+	    BlockStructure.cpp\
+	    Container.cpp\
+	    helpers.cpp\
+	    TPM.cpp\
+#            SPM.cpp\
+#            TPM.cpp\
+#            PHM.cpp\
+#            DPM.cpp\
+#            PPHM.cpp\
+#            SUP.cpp\
+#            EIG.cpp\
+#	    Lineq.cpp\
 
 OBJ	= $(CPPSRC:.cpp=.o)
 
@@ -37,8 +42,8 @@ CXX	= clang++
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
-CFLAGS	= -I$(INCLUDE) -g -Wall -O2 -march=native -Wno-unused-variable
-LDFLAGS	= -g -Wall -O2
+CFLAGS	= -I$(INCLUDE) -std=c++11 -g -Wall -O2 -march=native -Wno-unused-variable
+LDFLAGS	= -g -Wall -O2 
 
 
 # =============================================================================
@@ -111,15 +116,15 @@ PQGT:
 # -----------------------------------------------------------------------------
 #   The default way to compile all source modules
 # -----------------------------------------------------------------------------
-%.o:	%.for makefile
+%.o:	%.for Makefile
 	@echo; echo "Compiling $(@:.o=.for) ..."
 	$(FF) -c $(FFLAGS) $(SFLAGS) $(@:.o=.for) -o $@
 
-%.o:	%.c makefile
+%.o:	%.c Makefile
 	@echo; echo "Compiling $(@:.o=.c) ..."
 	$(CC) -c $(CFLAGS) $(SFLAGS) $(@:.o=.c) -o $@
 
-%.o:	%.cpp makefile
+%.o:	%.cpp Makefile
 	@echo; echo "Compiling $(@:.o=.cpp) ..."
 	$(CXX) -c $(CFLAGS) $(SFLAGS) $(DEFS) $(@:.o=.cpp) -o $@
 
@@ -127,7 +132,7 @@ PQGT:
 # -----------------------------------------------------------------------------
 #   Link everything together
 # -----------------------------------------------------------------------------
-$(BRIGHT_ROOT)/$(BINNAME):	makefile $(OBJ) 
+$(BRIGHT_ROOT)/$(BINNAME):	Makefile $(OBJ) 
 	@echo; echo "Linker: creating $(BRIGHT_ROOT)/$(BINNAME) ..."
 	$(CXX) $(LDFLAGS) $(SFLAGS) -o $(BRIGHT_ROOT)/$(BINNAME) $(OBJ) $(LIBS)
 
