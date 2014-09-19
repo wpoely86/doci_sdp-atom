@@ -14,7 +14,12 @@ CPPSRC	= doci_sdp.cpp\
 	    BlockStructure.cpp\
 	    Container.cpp\
 	    helpers.cpp\
+	    Tools.cpp\
 	    TPM.cpp\
+	    SPM.cpp\
+	    SUP.cpp\
+	    EIG.cpp\
+	    Lineq.cpp\
 #            SPM.cpp\
 #            TPM.cpp\
 #            PHM.cpp\
@@ -22,7 +27,6 @@ CPPSRC	= doci_sdp.cpp\
 #            PPHM.cpp\
 #            SUP.cpp\
 #            EIG.cpp\
-#	    Lineq.cpp\
 
 OBJ	= $(CPPSRC:.cpp=.o)
 

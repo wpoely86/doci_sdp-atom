@@ -2,8 +2,14 @@
 #define TPM_H
 
 #include <iostream>
+#include <memory>
+#include <string>
 
 #include "Container.h"
+#include "helpers.h"
+
+class SUP;
+class Lineq;
 
 class TPM: public Container
 {
@@ -17,7 +23,7 @@ class TPM: public Container
 
       TPM(TPM &&) = default;
 
-      virtual ~TPM();
+      virtual ~TPM() = default;
 
       TPM& operator=(const TPM &) = default;
 
@@ -27,13 +33,51 @@ class TPM: public Container
 
       using Container::operator();
 
+      double operator()(int a, int b, int c, int d) const;
+
       int gN() const;
 
       int gL() const;
 
       int gn() const;
 
+      void HF_molecule(std::string filename);
+
+      void WriteToFile(std::string filename) const;
+
+      void ReadFromFile(std::string filename);
+
+      double S_2() const;
+
+      void unit();
+
+      void init(const Lineq &);
+
+      void Proj_Tr();
+
+      void collaps(const SUP &, const Lineq &);
+
+      void constr_grad(double t,const SUP &, const TPM &, const Lineq &);
+
+      void Q(const TPM &);
+
+      int solve(double t, const SUP &, TPM &, const Lineq &);
+
+      void H(double t,const TPM &, const SUP &, const Lineq &);
+
+      double line_search(double t, SUP &S, const TPM &ham);
+
+      void ReadFromFileFull(std::string filename);
+
+      void Proj_E(const Lineq &, int option=0);
+
+      std::vector<TPM> DOCI_constrains() const;
+
+      std::vector<TPM> singlet_constrains() const;
+
    private:
+
+      void constr_lists(int L);
 
       //! number of particles
       int N;
@@ -43,6 +87,12 @@ class TPM: public Container
 
       //! dimension of the full TPM
       int n;
+
+      //! table translating single particles indices to two particle indices
+      static std::unique_ptr<helpers::matrix> s2t;
+
+      //! table translating two particles indices to single particle indices
+      static std::unique_ptr<helpers::matrix> t2s;
 };
 
 #endif
