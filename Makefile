@@ -36,9 +36,9 @@ OBJ	= $(CPPSRC:.cpp=.o)
 
 BRIGHT_ROOT= .
 
-INCLUDE = ./include  -I../integrals/include -I/usr/include/libint2
+INCLUDE = ./include
 
-LIBS= -llapack -lblas -lhdf5 integrals.a -lgsl -lint2
+LIBS= -llapack -lblas -lhdf5
 
 CC	= gcc
 CXX	= clang++
