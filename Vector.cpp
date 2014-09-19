@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <algorithm>
 #include <time.h>
 #include <cmath>
 #include <cstring>
@@ -335,7 +336,7 @@ double Vector::max() const
    double max = vector[n-1];
 
    for(int i=n-2;i>=0;i--)
-      if(vector[i]<max)
+      if(vector[i]>max)
          max = vector[i];
 
    return max;
@@ -377,6 +378,14 @@ Vector &Vector::mprod(const Vector &x,const Vector &y)
       vector[i] = x[i] * y[i];
 
    return *this;
+}
+
+/**
+ * Sort the vector, small to large
+ */
+void Vector::sort()
+{
+   std::sort(vector.get(), &vector.get()[n] );
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/

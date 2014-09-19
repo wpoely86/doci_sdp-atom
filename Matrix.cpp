@@ -5,12 +5,22 @@
 #include <cstring>
 #include <algorithm>
 #include <assert.h>
+#include <hdf5.h>
 
 using std::endl;
 using std::ostream;
 
 #include "Matrix.h"
 #include "lapack.h"
+#include "Vector.h"
+
+#define HDF5_STATUS_CHECK(status) {                 \
+    if(status < 0)                                  \
+    std::cerr << __FILE__ << ":" << __LINE__ <<     \
+    ": Problem with writing to file. Status code="  \
+    << status << std::endl;                         \
+}
+
 
 /**
  * constructor 
@@ -189,6 +199,11 @@ double *Matrix::gMatrix()
    return matrix.get();
 }
 
+const double *Matrix::gMatrix() const
+{
+   return matrix.get();
+}
+
 /**
  * @return the dimension of the matrix
  */
@@ -216,20 +231,20 @@ double Matrix::trace() const
  * @param eigenvalues the pointer of doubles in which the eigenvalues will be storen, Watch out, its memory
  * has to be allocated on the dimension of the matrix before you call the function.
  */
-std::unique_ptr<double []> Matrix::diagonalize()
+Vector Matrix::diagonalize()
 {
    char jobz = 'V';
    char uplo = 'U';
 
    int lwork = 3*n - 1;
 
-   std::unique_ptr<double []> eigenvalues (new double [n]);
+   Vector eigenvalues(n);
 
    std::unique_ptr<double []> work (new double [lwork]);
 
    int info = 0;
 
-   dsyev_(&jobz,&uplo,&n,matrix.get(),&n,eigenvalues.get(),work.get(),&lwork,&info);
+   dsyev_(&jobz,&uplo,&n,matrix.get(),&n,eigenvalues.gVector(),work.get(),&lwork,&info);
 
    if(info)
       std::cerr << "dsyev failed. info = " << info << std::endl;
@@ -342,12 +357,12 @@ void Matrix::sqrt(int option)
  * Multiply this matrix with diagonal matrix
  * @param diag Diagonal matrix to multiply with this, has to be allocated on matrix dimension.
  */
-void Matrix::mdiag(std::unique_ptr<double []> &diag)
+void Matrix::mdiag(const Vector &diag)
 {
    int inc = 1;
 
    for(int i = 0;i < n;++i)
-      dscal_(&n, &diag[i], &matrix[i*n], &inc);
+      dscal_(&n, &diag.gVector()[i], &matrix[i*n], &inc);
 }
 
 /**
@@ -425,6 +440,44 @@ ostream &operator<<(ostream &output,Matrix &matrix_p)
    output.unsetf(std::ios_base::floatfield);
 
    return output;
+}
+
+void Matrix::SaveRawToFile(const std::string filename) const
+{
+    hid_t       file_id, dataset_id, dataspace_id, attribute_id;
+    herr_t      status;
+
+    file_id = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+    HDF5_STATUS_CHECK(file_id);
+
+    hsize_t dimarr = n*n;
+
+    dataspace_id = H5Screate_simple(1, &dimarr, NULL);
+
+    dataset_id = H5Dcreate(file_id, "matrix", H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+    status = H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, matrix.get() );
+    HDF5_STATUS_CHECK(status);
+
+    status = H5Sclose(dataspace_id);
+    HDF5_STATUS_CHECK(status);
+
+    dataspace_id = H5Screate(H5S_SCALAR);
+
+    attribute_id = H5Acreate (dataset_id, "n", H5T_STD_I32LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+    status = H5Awrite (attribute_id, H5T_NATIVE_INT, &n );
+    HDF5_STATUS_CHECK(status);
+    status = H5Aclose(attribute_id);
+    HDF5_STATUS_CHECK(status);
+
+    status = H5Sclose(dataspace_id);
+    HDF5_STATUS_CHECK(status);
+
+    status = H5Dclose(dataset_id);
+    HDF5_STATUS_CHECK(status);
+
+    status = H5Fclose(file_id);
+    HDF5_STATUS_CHECK(status);
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/

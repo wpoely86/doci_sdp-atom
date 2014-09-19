@@ -12,6 +12,8 @@
  * redefines much used lapack and blas routines as memberfunctions
  */
 
+class Vector;
+
 class Matrix
 {
    /**
@@ -68,11 +70,13 @@ class Matrix
       //get the pointer to the matrix
       double *gMatrix();
 
+      const double *gMatrix() const;
+
       int gn() const;
 
       double trace() const;
 
-      std::unique_ptr<double []> diagonalize();
+      Vector diagonalize();
 
       double ddot(const Matrix &) const;
 
@@ -87,11 +91,13 @@ class Matrix
       //positieve of negatieve vierkantswortel uit de matrix
       void sqrt(int option);
 
-      void mdiag(std::unique_ptr<double []> &);
+      void mdiag(const Vector &);
 
       void L_map(const Matrix &,const Matrix &);
 
       void symmetrize();
+
+      void SaveRawToFile(const std::string) const;
 
    private:
 

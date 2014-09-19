@@ -8,7 +8,6 @@
  */
 Container::Container(int n, int m)
 {
-   std::cout << "Fresh new container" << std::endl;
    matrix.reset(new BlockMatrix(n));
 
    vector.reset(new BlockVector(n));
@@ -16,21 +15,14 @@ Container::Container(int n, int m)
 
 Container::Container(const Container &orig)
 {
-   std::cout << "Copy Container" << std::endl;
    matrix.reset(new BlockMatrix(*orig.matrix));
    vector.reset(new BlockVector(*orig.vector));
 }
 
 Container::Container(Container &&orig)
 {
-   std::cout << "Moving Container" << std::endl;
    matrix = std::move(orig.matrix);
    vector = std::move(orig.vector);
-}
-
-Container::~Container()
-{
-   std::cout << "Bye Container" << std::endl;
 }
 
 /**
@@ -57,7 +49,6 @@ void Container::setVectorDim(int block,int dim,int degen)
 
 Container &Container::operator=(const Container &orig)
 {
-   std::cout << "Copy Assign Container" << std::endl;
    (*matrix) = *orig.matrix;
    (*vector) = *orig.vector;
 
@@ -66,7 +57,6 @@ Container &Container::operator=(const Container &orig)
 
 Container &Container::operator=(Container &&orig)
 {
-   std::cout << "Move Assign Container" << std::endl;
    matrix = std::move(orig.matrix);
    vector = std::move(orig.vector);
 
@@ -176,6 +166,27 @@ const Vector & Container::getVector(int i) const
    return (*vector)[i];
 }
 
+
+BlockMatrix & Container::getMatrices()
+{
+   return (*matrix);
+}
+
+const BlockMatrix & Container::getMatrices() const
+{
+   return (*matrix);
+}
+
+BlockVector & Container::getVectors()
+{
+   return (*vector);
+}
+
+const BlockVector & Container::getVectors() const
+{
+   return (*vector);
+}
+
 int Container::gnr() const
 {
    return matrix->gnr() + vector->gnr();
@@ -254,6 +265,17 @@ void Container::L_map(const Container &A,const Container &B)
 void Container::symmetrize()
 {
    matrix->symmetrize();
+}
+
+std::ostream &operator<<(std::ostream &output,const Container &container)
+{
+   output << "Matrices: " << std::endl;
+   output << *container.matrix << std::endl;
+
+   output << "Vectors: " << std::endl;
+   output << *container.vector << std::endl;
+
+   return output;
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/

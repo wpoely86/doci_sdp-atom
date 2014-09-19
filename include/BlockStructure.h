@@ -2,10 +2,8 @@
 #define BLOCKSTRUCTURE_H
 
 #include <iostream>
-#include <cstdlib>
 #include <memory>
 #include <vector>
-#include <assert.h>
 
 #include "Matrix.h"
 #include "Vector.h"
@@ -56,7 +54,7 @@ class BlockStructure
       BlockStructure(BlockStructure<BlockType> &&);
 
       //destructor
-      virtual ~BlockStructure();
+      virtual ~BlockStructure() = default;
 
       void setDim(int,int,int);
 
@@ -124,6 +122,8 @@ class BlockStructure
       BlockStructure<BlockType> &mprod(const BlockStructure<BlockType> &A, const BlockStructure<BlockType> &B);
 
       void symmetrize();
+
+      void sort();
 
    private:
 

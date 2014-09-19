@@ -1,3 +1,5 @@
+#include <assert.h>
+
 #include "Matrix.h"
 #include "Vector.h"
 #include "BlockStructure.h"
@@ -37,14 +39,6 @@ BlockStructure<BlockType>::BlockStructure(BlockStructure<BlockType> &&blockmat_c
    blocks = std::move(blockmat_copy.blocks);
 
    degen = std::move(blockmat_copy.degen);
-}
-
-/**
- * Destructor
- */
-   template<class BlockType>
-BlockStructure<BlockType>::~BlockStructure()
-{
 }
 
 /**
@@ -331,7 +325,7 @@ void BlockStructure<BlockType>::sqrt(int option)
  * @param object central BlockStructure
  */
    template<class BlockType>
-                            void BlockStructure<BlockType>::L_map(const BlockStructure<BlockType> &map,const BlockStructure<BlockType> &object)
+void BlockStructure<BlockType>::L_map(const BlockStructure<BlockType> &map,const BlockStructure<BlockType> &object)
 {
 #pragma omp parallel for
    for(int i = 0;i < blocks.size();++i)
@@ -362,6 +356,13 @@ void BlockStructure<BlockType>::symmetrize()
 #pragma omp parallel for
    for(int i = 0;i < blocks.size();++i)
       blocks[i]->symmetrize();
+}
+
+template<>
+void BlockStructure<Vector>::sort()
+{
+   for(int i = 0;i < blocks.size();++i)
+      blocks[i]->sort();
 }
 
 template class BlockStructure<Matrix>;

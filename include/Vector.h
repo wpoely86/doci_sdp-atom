@@ -105,6 +105,8 @@ class Vector
 
       Vector &mprod(const Vector &,const Vector &);
 
+      void sort();
+
    private:
 
       //!pointer of doubles, contains the numbers, the vector

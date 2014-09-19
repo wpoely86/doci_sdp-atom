@@ -34,7 +34,7 @@ class Container
       Container(Container &&);
 
       //destructor
-      virtual ~Container();
+      virtual ~Container() = default;
 
       void setMatrixDim(int,int,int);
 
@@ -77,6 +77,12 @@ class Container
 
       Vector & getVector(int);
       const Vector & getVector(int) const;
+
+      BlockMatrix & getMatrices();
+      const BlockMatrix & getMatrices() const;
+
+      BlockVector & getVectors();
+      const BlockVector & getVectors() const;
 
       int gnr() const;
 
