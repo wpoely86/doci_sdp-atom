@@ -2,7 +2,6 @@
 #include <getopt.h>
 
 #include "include.h"
-#include "integrals.h"
 
 int main(int argc, char **argv)
 {
@@ -11,13 +10,10 @@ int main(int argc, char **argv)
 
    cout.precision(10);
 
-   std::string inputfile = "start.stp";
-
    std::string integralsfile = "mo-integrals.h5";
 
    struct option long_options[] =
    {
-      {"file",  required_argument, 0, 'f'},
       {"integrals",  required_argument, 0, 'i'},
       {"help",  no_argument, 0, 'h'},
       {0, 0, 0, 0}
@@ -25,46 +21,128 @@ int main(int argc, char **argv)
 
    int i,j;
 
-   while( (j = getopt_long (argc, argv, "hf:i:", long_options, &i)) != -1)
+   while( (j = getopt_long (argc, argv, "hi:", long_options, &i)) != -1)
       switch(j)
       {
          case 'h':
          case '?':
             cout << "Usage: " << argv[0] << " [OPTIONS]\n"
                "\n"
-               "    -f, --file=input-file           Set the input file\n"
                "    -i, --integrals=integrals-file  Set the input integrals file\n"
                "    -h, --help                      Display this help\n"
                "\n";
             return 0;
-            break;
-         case 'f':
-            inputfile = optarg;
             break;
          case 'i':
             integralsfile = optarg;
             break;
       }
 
-   cout << "Reading: " << inputfile << endl;
+   cout << "Reading: " << integralsfile << endl;
 
-   integrals::init(inputfile.c_str());
-
-   //here the cartesian integrals are calculated
-   integrals::CartInt::calc_integrals();
-
-   integrals::CartInt::orthogonalize();
-
-   const int L = integrals::CI_SPM::gdim();//dim sp hilbert space
-   const int N = integrals::input::NumberOfElectrons();//nr of particles
+   const int L = Tools::getspDimension(integralsfile);//dim sp hilbert space
+   const int N = Tools::getNumberOfParticles(integralsfile);//nr of particles
+   const double nuclrep = Tools::getNuclearRepulEnergy(integralsfile);
 
    cout << "Starting with L=" << L << " N=" << N << endl;
 
+   Lineq lineq(L,N);
 
+   TPM ham(L,N);
+   ham.HF_molecule(integralsfile);
 
+   TPM rdm(L,N);
+   rdm.init(lineq);
 
+//   Matrix rdmfull(rdm.gn());
+//   rdmfull = 0;
+//
+//   for(int i=0;i<L;i++)
+//      for(int j=0;j<L;j++)
+//         rdmfull(i,j) = rdm.getMatrix(0)(i,j);
+//
+//   int tmp_dim = rdm.getVector(0).gn();
+//   for(int a=0;a<4;a++)
+//      for(int i=0;i<tmp_dim;i++)
+//         rdmfull(L+a*tmp_dim+i,L+a*tmp_dim+i) = rdm.getVector(0)[i];
+//   rdmfull.SaveRawToFile("rdm-OK-full-P.h5");
 
-   integrals::clean();
+   lineq.check(rdm);
+
+   int tot_iter = 0.0;
+
+   double t = 1.0;
+   double tolerance = 1.0e-5;
+   double target = 1e-12;
+
+   //outer iteration: scaling of the potential barrier
+   while(t > target)
+   {
+      cout << t << "\t" << rdm.getMatrices().trace() << "\t" << rdm.getVectors().trace() << "\t" << rdm.ddot(ham) + nuclrep << "\t" << rdm.S_2() << std::endl;
+
+      double convergence = 1.0;
+
+      //inner iteration: 
+      //Newton's method for finding the minimum of the current potential
+      while(convergence > tolerance)
+      {
+         tot_iter++;
+
+         SUP P(L,N);
+
+         P.fill(rdm);
+
+         P.invert();
+
+         //eerst -gradient aanmaken:
+         TPM grad(L,N);
+
+         grad.constr_grad(t,P,ham,lineq);
+
+         //dit wordt de stap:
+         TPM delta(L,N);
+
+         //los het hessiaan stelsel op:
+         cout << delta.solve(t,P,grad,lineq) << endl;
+
+         //line search
+         double a = delta.line_search(t,P,ham);
+         cout << a << endl;
+
+         //rdm += a*delta;
+         rdm.daxpy(a,delta);
+
+         convergence = a*a*delta.ddot(delta);
+      }
+
+      cout << endl;
+      t /= 2.0;
+
+      //what is the tolerance for the newton method?
+      tolerance = 1.0e-5*t;
+
+      if(tolerance < target)
+         tolerance = target;
+   } 
+
+   cout << endl;
+   cout << "Energy: " << rdm.ddot(ham) + nuclrep << endl;
+   cout << "Trace: " << rdm.trace() << endl;
+   cout << "S^2: " << rdm.S_2() << endl;
+   cout << "nuclrep: " << nuclrep << endl;
+
+   cout << endl;
+   cout << "total nr of iterations = " << tot_iter << endl;
+   lineq.check(rdm);
+
+   std::stringstream h5_name;
+
+   if(getenv("SAVE_H5_FILE"))
+      h5_name << getenv("SAVE_H5_FILE");
+   else
+      h5_name << "rdm.h5";
+
+   rdm.WriteToFile(h5_name.str().c_str());
 
    return 0;
 }
