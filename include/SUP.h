@@ -27,6 +27,16 @@ class SUP
 
       SUP& operator=(double);
 
+      SUP& operator+=(const SUP &);
+
+      SUP& operator-=(const SUP &);
+
+      SUP& operator*=(double);
+
+      SUP& operator/=(double);
+
+      void dscal(double);
+
       int gN() const;
 
       int gL() const;
@@ -52,6 +62,10 @@ class SUP
       double ddot(const SUP &) const;
 
       void daxpy(double, const SUP &);
+
+      void sep_pm(SUP &, SUP &);
+
+      void init_S(const Lineq &);
 
    private:
       //! number of particles

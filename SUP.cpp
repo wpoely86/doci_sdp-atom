@@ -32,7 +32,6 @@ SUP::SUP(SUP &&orig)
    Q = std::move(orig.Q);
 }
 
-
 SUP& SUP::operator=(const SUP &orig)
 {
    I.reset(new TPM(*orig.I));
@@ -59,6 +58,55 @@ SUP& SUP::operator=(double a)
 #endif
 
    return *this;
+}
+
+SUP& SUP::operator+=(const SUP &orig)
+{
+   (*I) += (*orig.I);
+#ifdef __Q_CON
+   (*Q) += (*orig.Q);
+#endif
+
+   return *this;
+}
+
+SUP& SUP::operator-=(const SUP &orig)
+{
+   (*I) -= (*orig.I);
+#ifdef __Q_CON
+   (*Q) -= (*orig.Q);
+#endif
+
+   return *this;
+}
+
+SUP& SUP::operator*=(double alpha)
+{
+   (*I) *= alpha;
+#ifdef __Q_CON
+   (*Q) *= alpha;
+#endif
+
+   return *this;
+}
+
+SUP& SUP::operator/=(double alpha)
+{
+   (*I) /= alpha;
+#ifdef __Q_CON
+   (*Q) /= alpha;
+#endif
+
+   return *this;
+}
+
+void SUP::dscal(double alpha)
+{
+   I->dscal(alpha);
+
+#ifdef __Q_CON
+   Q->dscal(alpha);
+#endif
 }
 
 int SUP::gN() const
@@ -175,6 +223,28 @@ void SUP::daxpy(double alpha, const SUP &y)
 #ifdef __Q_CON
    Q->daxpy(alpha, *y.Q);
 #endif
+}
+
+void SUP::sep_pm(SUP &pos, SUP &neg)
+{
+   I->sep_pm(*pos.I, *neg.I);
+   
+#ifdef __Q_CON
+   Q->sep_pm(*pos.Q, *neg.Q);
+#endif
+}
+
+/**
+ * Initialization of the SUP matrix S, is just u^0: see primal_dual.pdf for more information
+ */
+void SUP::init_S(const Lineq &lineq)
+{
+   *this = lineq.gu_0(0);
+
+   this->dscal(lineq.ge_ortho(0));
+
+   for(int i = 1;i < lineq.gnr();++i)
+      this->daxpy(lineq.ge_ortho(i),lineq.gu_0(i));
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/
