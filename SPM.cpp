@@ -14,6 +14,11 @@ SPM::SPM(int L, int N): BlockVector(1)
    setDim(0,L,2);
 }
 
+/**
+ * Construct the 1DM from the 2DM in the most 
+ * general way
+ * @param tpm the 2DM to use
+ */
 SPM::SPM(const TPM &tpm): BlockVector(1)
 {
    this->L = tpm.gL();
@@ -21,7 +26,7 @@ SPM::SPM(const TPM &tpm): BlockVector(1)
 
    setDim(0,L,2);
 
-   bar(1, tpm);
+   bar3(1.0/(N-1.0), tpm);
 }
 
 int SPM::gN() const
@@ -56,9 +61,9 @@ double SPM::GetElement(int a, int b) const
 }
 
 /**
- * contruct a SPM from a TPM
- * @param tpm the TPM to use
- * @param scal the scale factor to use
+ * contruct the 1DM from the block in the 2DM
+ * @param scal the scaling factor
+ * @param tpm the 2DM to use
  */
 void SPM::bar(double scal, const TPM &tpm)
 {
@@ -70,6 +75,11 @@ void SPM::bar(double scal, const TPM &tpm)
 //   dcopy_(&L, tpm.getMatrix(0).gMatrix(), &incx, (*this)[0].gVector(), &incy);
 }
 
+/**
+ * Construct the 1DM using the vector part of the 2DM
+ * @param scal the scaling factor
+ * @param tpm the 2DM to use
+ */
 void SPM::bar2(double scal, const TPM &tpm)
 {
    for(int i=0;i<L;i++)
@@ -78,24 +88,27 @@ void SPM::bar2(double scal, const TPM &tpm)
 
       for(int a=0;a<L;a++)
          if(a!=i)
-            (*this)(0,i) += tpm(i,a,i,a);
+            (*this)(0,i) += tpm.getDiag(i,a);
 
       (*this)(0,i) *= scal;
    }
-
-//   int incx = L+1;
-//   int incy = 1;
-//   dcopy_(&L, tpm.getMatrix(0).gMatrix(), &incx, (*this)[0].gVector(), &incy);
 }
 
+/**
+ * Calculate the 1DM in the most general way for DOCI.
+ * This must be used in the real Q image
+ * @param scal the scaling factor
+ * @param tpm the 2DM to use
+ */
 void SPM::bar3(double scal, const TPM &tpm)
 {
    for(int i=0;i<L;i++)
    {
-      (*this)(0,i) = 0;
+      (*this)(0,i) = tpm.getMatrix(0)(i,i);
 
-      for(int a=0;a<2*L;a++)
-         (*this)(0,i) += tpm(i,a,i,a);
+      for(int a=0;a<L;a++)
+         if(i!=a)
+            (*this)(0,i) += 2 * tpm.getDiag(i,a);
 
       (*this)(0,i) *= scal;
    }
