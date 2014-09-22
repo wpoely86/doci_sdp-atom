@@ -61,6 +61,8 @@ class TPM: public Container
 
       void Q(const TPM &);
 
+      void Q(double a, double b, double c, const TPM &, bool=false);
+
       int solve(double t, const SUP &, TPM &, const Lineq &);
 
       void H(double t,const TPM &, const SUP &, const Lineq &);
@@ -74,6 +76,12 @@ class TPM: public Container
       std::vector<TPM> DOCI_constrains() const;
 
       std::vector<TPM> singlet_constrains() const;
+
+      void S(const TPM &, bool=false);
+
+      int InverseS(TPM &, const Lineq &);
+
+      double getDiag(int, int) const;
 
    private:
 

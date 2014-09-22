@@ -485,7 +485,7 @@ void TPM::collaps(const SUP &S, const Lineq &lineq)
    (*this) += hulp;
 #endif
 
-//   Proj_E(lineq);
+   Proj_E(lineq);
 }
 
 /**
@@ -511,19 +511,49 @@ void TPM::constr_grad(double t,const SUP &S, const TPM &ham, const Lineq &lineq)
  */
 void TPM::Q(const TPM &tpm)
 {
-   SPM spm(L,N);
-   spm.bar(1,tpm);
-
    (*this) = tpm;
 
-   double tmp = this->getMatrix(0).trace()/(N/2.0);
+   double tmp = trace() / (N*(N-1)/2.0);
+
+   // the matrix inequality
+   for(int i=0;i<L;i++)
+      (*this)(0,i,i) += tmp - 2 * tpm(0,i,i);
+
+   SPM spm(L,N);
+   spm.bar2(1.0/(N/2.0-1.0),tpm);
+
+   // the linear inequality
+   for(int i=0;i<getVector(0).gn();i++)
+   {
+      int a = (*t2s)(L+i,0);
+      int b = (*t2s)(L+i,1);
+
+      (*this)(0,i) += tmp - spm(0,a) - spm(0,b);
+   }
+
+//   Q(1, 2.0/(N*(N-1)), 1.0/(N-1.0),tpm);
+}
+
+void TPM::Q(double alpha, double beta, double gamma, const TPM &tpm, bool inverse)
+{
+   if(inverse)
+   {
+      beta = (beta*alpha + beta*gamma*2*L - 2.0*gamma*gamma)/(alpha * (gamma*(2*L - 2.0) -  alpha) * ( alpha + beta*2*L*(2*L - 1.0) - 2.0*gamma*(2*L - 1.0) ) );
+      gamma = gamma/(alpha*(gamma*((2*L) - 2.0) - alpha));
+      alpha = 1.0/alpha;
+   }
+
+   SPM spm(L,N);
+   spm.bar3(gamma, tpm);
+
+   (*this) = tpm;
+   (*this) *= alpha;
+
+   double tmp = beta * trace();
 
    // the matrix inequality
    for(int i=0;i<L;i++)
       (*this)(0,i,i) += tmp - 2 * spm(0,i);
-
-   tmp = this->getVector(0).trace()*1.0/(N*(N/2.0-1)/4.0);
-   spm.bar2(1.0/(N/2.0-1.0),tpm);
 
    // the linear inequality
    for(int i=0;i<getVector(0).gn();i++)
@@ -739,6 +769,118 @@ std::vector<TPM> TPM::DOCI_constrains() const
    }
 
    return list;
+}
+
+/**
+ * Get an element from the diag vector part. Warning:
+ * no check on a!=b. 
+ * @param a first sp index
+ * @param b second sp index
+ * @return the element a b ; a b
+ */
+double TPM::getDiag(int a, int b) const
+{
+   int i = (*s2t)(a,b);
+   return (*this)(0,i-L);
+}
+
+/**
+ * ( Overlapmatrix of the U-basis ) - map, maps a TPM onto a different TPM, this map is actually a Q-like map
+ * for which the paramaters a,b and c are calculated in primal_dual.pdf. Since it is a Q-like map the inverse
+ * can be taken as well.
+ * @param tpm_d the input TPM
+ */
+void TPM::S(const TPM &tpm_d, bool inverse)
+{
+   double a = 1.0;
+   double b = 0.0;
+   double c = 0.0;
+   const int M = 2*L;
+
+#ifdef __Q_CON
+
+   a += 1.0;
+   b += (4.0*N*N + 2.0*N - 4.0*N*M + M*M - M)/(N*N*(N - 1.0)*(N - 1.0));
+   c += (2.0*N - M)/((N - 1.0)*(N - 1.0));
+
+#endif
+
+#ifdef __G_CON
+
+   a += 4.0;
+   c += (2.0*N - M - 2.0)/((N - 1.0)*(N - 1.0));
+
+#endif
+
+#ifdef __T1_CON
+
+   a += M - 4.0;
+   b += (M*M*M - 6.0*M*M*N -3.0*M*M + 12.0*M*N*N + 12.0*M*N + 2.0*M - 18.0*N*N - 6.0*N*N*N)/( 3.0*N*N*(N - 1.0)*(N - 1.0) );
+   c -= (M*M + 2.0*N*N - 4.0*M*N - M + 8.0*N - 4.0)/( 2.0*(N - 1.0)*(N - 1.0) );
+
+#endif
+
+#ifdef __T2_CON
+   
+   a += 5.0*M - 8.0;
+   b += 2.0/(N - 1.0);
+   c += (2.0*N*N + (M - 2.0)*(4.0*N - 3.0) - M*M)/(2.0*(N - 1.0)*(N - 1.0));
+
+#endif
+
+   this->Q(a,b,c,tpm_d,inverse);
+}
+
+/**
+ * Calculate the inverse Overlap matrix S^-1 a = b by
+ * solving S b = a with conjugate gradient.
+ * Store the result in *this.
+ * @param b the input matrix
+ * @param lineq the constrains to use
+ * @returns the number of iterations
+ */
+int TPM::InverseS(TPM &b, const Lineq &lineq)
+{
+   *this = 0;
+
+   //de r initialiseren op b
+   TPM r(b);
+
+   double rr = r.ddot(r);
+   double rr_old,ward;
+
+   //nog de Hb aanmaken ook, maar niet initialiseren:
+   TPM Hb(L,N);
+
+   int cg_iter = 0;
+
+   while(rr > 1.0e-10)
+   {
+      ++cg_iter;
+
+      Hb.S(b);
+      Hb.Proj_E(lineq);
+
+      ward = rr/b.ddot(Hb);
+
+      //delta += ward*b
+      this->daxpy(ward,b);
+
+      //r -= ward*Hb
+      r.daxpy(-ward,Hb);
+
+      //nieuwe r_norm maken
+      rr_old = rr;
+      rr = r.ddot(r);
+
+      //eerst herschalen van b
+      b.dscal(rr/rr_old);
+
+      //dan r er bijtellen
+      b += r;
+   }
+
+   return cg_iter;
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/
