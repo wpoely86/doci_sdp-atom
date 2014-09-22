@@ -7,9 +7,10 @@
 # -----------------------------------------------------------------------------
 #   Sources for all modules
 # -----------------------------------------------------------------------------
+# prefix for binaries
 BINNAME = doci_sdp
-CPPSRC	= doci_sdp.cpp\
-            Matrix.cpp\
+
+CPPSRC	=   Matrix.cpp\
 	    Vector.cpp\
 	    BlockStructure.cpp\
 	    Container.cpp\
@@ -36,18 +37,18 @@ OBJ	= $(CPPSRC:.cpp=.o)
 
 BRIGHT_ROOT= .
 
-INCLUDE = ./include
+INCLUDE = -Iinclude
 
 LIBS= -llapack -lblas -lhdf5
 
-CC	= gcc
+CC	= clang
 CXX	= clang++
 
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
-CFLAGS	= -I$(INCLUDE) -std=c++11 -g -Wall -O2 -march=native -Wno-unused-variable
-LDFLAGS	= -g -Wall -O2 
+CFLAGS	= $(INCLUDE) -std=c++11 -g -Wall -O2 -march=native -Wno-unused-variable
+LDFLAGS	= -g -Wall -O2
 
 
 # =============================================================================
@@ -136,9 +137,9 @@ PQGT:
 # -----------------------------------------------------------------------------
 #   Link everything together
 # -----------------------------------------------------------------------------
-$(BRIGHT_ROOT)/$(BINNAME):	Makefile $(OBJ) 
+$(BRIGHT_ROOT)/$(BINNAME):	Makefile $(OBJ) doci_sdp.o
 	@echo; echo "Linker: creating $(BRIGHT_ROOT)/$(BINNAME) ..."
-	$(CXX) $(LDFLAGS) $(SFLAGS) -o $(BRIGHT_ROOT)/$(BINNAME) $(OBJ) $(LIBS)
+	$(CXX) $(LDFLAGS) $(SFLAGS) -o $(BRIGHT_ROOT)/$(BINNAME) doci_sdp.o $(OBJ) $(LIBS)
 
 # -----------------------------------------------------------------------------
 #   Create everything newly from scratch
@@ -151,7 +152,7 @@ new:	clean all
 clean:
 	@echo -n '  +++ Cleaning all object files ... '
 	@echo -n $(OBJ)
-	@rm -f $(OBJ)
+	@rm -f $(OBJ) doci_bp.o doci_sdp.o
 	@echo 'Done.'
 
 # -----------------------------------------------------------------------------
@@ -159,5 +160,9 @@ clean:
 # -----------------------------------------------------------------------------
 doc:
 	@doxygen doc-config
+
+bp: $(OBJ) doci_bp.o
+	@echo 'Building boundary point method'
+	$(CXX) $(LDFLAGS) $(SFLAGS) -o $(BRIGHT_ROOT)/doci_bp doci_bp.o $(OBJ) $(LIBS)
 
 # ====================== End of file 'makefile.in' ========================== #
