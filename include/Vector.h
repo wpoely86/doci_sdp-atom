@@ -107,6 +107,8 @@ class Vector
 
       void sort();
 
+      void sep_pm(Vector &, Vector &);
+
    private:
 
       //!pointer of doubles, contains the numbers, the vector

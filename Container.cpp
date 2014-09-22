@@ -267,6 +267,12 @@ void Container::symmetrize()
    matrix->symmetrize();
 }
 
+void Container::sep_pm(Container &pos, Container &neg)
+{
+   matrix->sep_pm(*pos.matrix, *neg.matrix);
+   vector->sep_pm(*pos.vector, *neg.vector);
+}
+
 std::ostream &operator<<(std::ostream &output,const Container &container)
 {
    output << "Matrices: " << std::endl;

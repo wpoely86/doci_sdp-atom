@@ -99,6 +99,8 @@ class Matrix
 
       void SaveRawToFile(const std::string) const;
 
+      void sep_pm(Matrix &,Matrix &);
+
    private:
 
       //!pointer of doubles, contains the numbers, the matrix

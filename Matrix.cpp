@@ -30,6 +30,7 @@ Matrix::Matrix(int n){
 
    this->n = n;
 
+   // we store column major (for Fortran compatiblity)
    matrix.reset(new double[n*n]);
 }
 
@@ -478,6 +479,120 @@ void Matrix::SaveRawToFile(const std::string filename) const
 
     status = H5Fclose(file_id);
     HDF5_STATUS_CHECK(status);
+}
+
+/**
+ * Seperate matrix into two matrices, a positive and negative semidefinite part.
+ * @param p positive (plus) output part
+ * @param m negative (minus) output part
+ */
+void Matrix::sep_pm(Matrix &p,Matrix &m)
+{
+   //init:
+#ifdef __INTEL_COMPILER
+   p = 0;
+   m = *this;
+#else
+   p = *this;
+   m = 0;
+#endif
+
+   std::unique_ptr<double []> eigenvalues(new double [n]);
+
+   //diagonalize orignal matrix:
+   char jobz = 'V';
+   char uplo = 'U';
+
+   // to avoid valgrind errors
+   int info = 0;
+
+#ifdef SYEVD
+   int lwork = 2*n*n+6*n+1;
+   int liwork = 5*n+3;
+
+   std::unique_ptr<double []> work(new double [lwork]);
+   std::unique_ptr<int []> iwork(new int [liwork]);
+
+   dsyevd_(&jobz,&uplo,&n,matrix.get(),&n,eigenvalues.get(),work.get(),&lwork,iwork.get(),&liwork,&info);
+
+   if(info)
+      std::cerr << "dsyevd in sep_pm failed..." << std::endl;
+
+   delete [] iwork;
+#else
+   int lwork = 3*n - 1;
+
+   std::unique_ptr<double []> work(new double [lwork]);
+
+   dsyev_(&jobz,&uplo,&n,matrix.get(),&n,eigenvalues.get(),work.get(),&lwork,&info);
+
+   if(info)
+      std::cerr << "dsyev in sep_pm failed..." << std::endl;
+
+#endif
+
+#ifdef __INTEL_COMPILER
+   assert(0 && "Still to check");
+
+   Matrix copy(*this);
+
+   if( eigenvalues[0] >= 0 )
+   {
+      p = m;
+      m = 0;
+      return;
+   }
+
+   if( eigenvalues[n-1] < 0)
+      return;
+
+   int i = 0;
+
+   while(i < n && eigenvalues[i] < 0.0)
+      eigenvalues[i++] = 0;
+
+   int inc = 1;
+
+   for(i = 0;i < n;++i)
+      dscal_(&n,&eigenvalues[i],&matrix[i],&inc);
+
+   char transA = 'N';
+   char transB = 'T';
+
+   double alpha = 1.0;
+   double beta = 0.0;
+
+   dgemm_(&transA,&transB,&n,&n,&n,&alpha,matrix.get(),&n,copy.matrix.get(),&n,&beta,p.matrix.get(),&n);
+
+   m -= p;
+#else
+   if( eigenvalues[0] >= 0 )
+      return;
+
+   if( eigenvalues[n-1] < 0)
+   {
+      m = p;
+      p = 0;
+      return;
+   }
+
+   //fill the plus and minus matrix
+   int i = 0;
+
+   while(i < n && eigenvalues[i] < 0.0)
+   {
+      for(int j = 0;j < n;++j)
+         for(int k = j;k < n;++k)
+            m(j,k) += eigenvalues[i] * (*this)(j,i) * (*this)(k,i);
+               //* matrix[i][j] * matrix[i][k];
+
+      ++i;
+   }
+
+   m.symmetrize();
+
+   p -= m;
+#endif
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/

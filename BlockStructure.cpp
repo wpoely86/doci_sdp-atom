@@ -365,6 +365,13 @@ void BlockStructure<Vector>::sort()
       blocks[i]->sort();
 }
 
+   template<class BlockType>
+void BlockStructure<BlockType>::sep_pm(BlockStructure<BlockType> &pos, BlockStructure<BlockType> &neg)
+{
+   for(int i=0;i<blocks.size();++i)
+      blocks[i]->sep_pm(*pos.blocks[i], *neg.blocks[i]);
+}
+
 template class BlockStructure<Matrix>;
 template class BlockStructure<Vector>;
 

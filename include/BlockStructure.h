@@ -125,6 +125,8 @@ class BlockStructure
 
       void sort();
 
+      void sep_pm(BlockStructure<BlockType> &, BlockStructure<BlockType> &);
+
    private:
 
       std::vector< std::unique_ptr<BlockType> > blocks;

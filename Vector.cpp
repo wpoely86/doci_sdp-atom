@@ -388,4 +388,17 @@ void Vector::sort()
    std::sort(vector.get(), &vector.get()[n] );
 }
 
+void Vector::sep_pm(Vector &pos, Vector &neg)
+{
+   assert(pos.n == n && neg.n == n);
+   pos = 0;
+   neg = 0;
+
+   for(int i=0;i<n;i++)
+      if(vector[i] < 0)
+         neg[i] = vector[i];
+      else
+         pos[i] = vector[i];
+}
+
 /* vim: set ts=3 sw=3 expandtab :*/

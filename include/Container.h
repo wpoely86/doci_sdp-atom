@@ -115,7 +115,7 @@ class Container
 
       void symmetrize();
 
-//      void sep_pm(Container &,Container &);
+      void sep_pm(Container &,Container &);
 
    private:
 
