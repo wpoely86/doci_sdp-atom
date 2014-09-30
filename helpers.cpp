@@ -199,6 +199,32 @@ std::unique_ptr<double []> matrix::svd()
     return sing_vals;
 }
 
+/**
+ * calculate eigenvalues of symmetric matrix
+ * @returns array with the eigenvalues
+ */
+std::unique_ptr<double []> matrix::sym_eig()
+{
+    assert(n==m);
+    std::unique_ptr<double []> eigs(new double[n]);
+
+    char jobz = 'N';
+    char uplo = 'U';
+
+    int lwork = 3*n - 1;
+
+    std::unique_ptr<double []> work (new double [lwork]);
+
+    int info = 0;
+
+    dsyev_(&jobz,&uplo,&n,mat.get(),&n,eigs.get(),work.get(),&lwork,&info);
+
+    if(info)
+        std::cerr << "dsyev failed. info = " << info << std::endl;
+
+    return eigs;
+}
+
 void matrix::Print() const
 {
     for(int i=0;i<n;i++)

@@ -63,6 +63,8 @@ class matrix
 
         std::unique_ptr<double []> svd();
 
+        std::unique_ptr<double []> sym_eig();
+
         void Print() const;
 
         double trace() const;
