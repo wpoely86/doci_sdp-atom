@@ -21,13 +21,9 @@ CPPSRC	=   Matrix.cpp\
 	    SUP.cpp\
 	    EIG.cpp\
 	    Lineq.cpp\
-#            SPM.cpp\
-#            TPM.cpp\
-#            PHM.cpp\
+            PHM.cpp\
 #            DPM.cpp\
 #            PPHM.cpp\
-#            SUP.cpp\
-#            EIG.cpp\
 
 OBJ	= $(CPPSRC:.cpp=.o)
 

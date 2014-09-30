@@ -125,7 +125,7 @@ class BlockStructure
 
       void sort();
 
-      void sep_pm(BlockStructure<BlockType> &, BlockStructure<BlockType> &);
+      virtual void sep_pm(BlockStructure<BlockType> &, BlockStructure<BlockType> &);
 
    private:
 

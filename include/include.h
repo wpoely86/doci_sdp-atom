@@ -47,6 +47,7 @@
 #include "Tools.h"
 #include "TPM.h"
 #include "SPM.h"
+#include "PHM.h"
 
 #include "SUP.h"
 #include "EIG.h"
