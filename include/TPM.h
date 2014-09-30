@@ -10,6 +10,7 @@
 
 class SUP;
 class Lineq;
+class PHM;
 
 class TPM: public Container
 {
@@ -82,6 +83,8 @@ class TPM: public Container
       int InverseS(TPM &, const Lineq &);
 
       double getDiag(int, int) const;
+
+      void G(const PHM &);
 
    private:
 

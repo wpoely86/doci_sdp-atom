@@ -883,4 +883,35 @@ int TPM::InverseS(TPM &b, const Lineq &lineq)
    return cg_iter;
 }
 
+void TPM::G(const PHM &phm)
+{
+   SPM spm(L,N);
+   spm.bar(1.0/(N-1.0), phm);
+
+   for(int i=0;i<L;i++)
+   {
+      int a = (*t2s)(i,0);
+
+      for(int j=i;j<L;j++)
+      {
+         int c = (*t2s)(j,0);
+
+         (*this)(0,i,j) = 2*(phm(a+L,c+L,c,a) - phm(a,c+L,c,a+L));
+
+         (*this)(0,j,i) = (*this)(0,i,j);
+      }
+
+      (*this)(0,i,i) += 2 * spm(0,a);
+   }
+
+   for(int i=0;i<gdimVector(0);i++)
+   {
+      int a = (*t2s)(L+i,0);
+      int b = (*t2s)(L+i,1);
+
+      (*this)(0,i) = spm(0,a) + spm(0,b);
+      (*this)(0,i) += 2*phm(a,a,b,b) - phm(a,b,a,b) - phm(b,a,b,a);
+   }
+}
+
 /*  vim: set ts=3 sw=3 expandtab :*/

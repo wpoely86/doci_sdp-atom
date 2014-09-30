@@ -6,6 +6,7 @@
 #include "BlockStructure.h"
 
 class TPM;
+class PHM;
 
 class SPM: public BlockVector
 {
@@ -47,6 +48,8 @@ class SPM: public BlockVector
       void bar2(double, const TPM &);
 
       void bar3(double, const TPM &);
+
+      void bar(double, const PHM &);
 
    private:
 

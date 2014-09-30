@@ -87,8 +87,7 @@ void SPM::bar2(double scal, const TPM &tpm)
       (*this)(0,i) = 0;
 
       for(int a=0;a<L;a++)
-         if(a!=i)
-            (*this)(0,i) += tpm.getDiag(i,a);
+         (*this)(0,i) += tpm.getDiag(i,a);
 
       (*this)(0,i) *= scal;
    }
@@ -107,8 +106,7 @@ void SPM::bar3(double scal, const TPM &tpm)
       (*this)(0,i) = tpm.getMatrix(0)(i,i);
 
       for(int a=0;a<L;a++)
-         if(i!=a)
-            (*this)(0,i) += 2 * tpm.getDiag(i,a);
+         (*this)(0,i) += 2 * tpm.getDiag(i,a);
 
       (*this)(0,i) *= scal;
    }
@@ -122,6 +120,19 @@ std::ostream &operator<<(std::ostream &output,SPM &spm)
       output << i << "\t|\t" << i << "  " << i << "\t\t" << spm(0,i) << std::endl;
 
    return output;
+}
+
+void SPM::bar(double scal, const PHM &phm)
+{
+   for(int i=0;i<L;i++)
+   {
+      (*this)(0,i) = 0;
+
+      for(int a=0;a<L;a++)
+         (*this)(0,i) += phm(i,a,i,a)+phm(i,a+L,i,a+L);
+
+      (*this)(0,i) *= scal;
+   }
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/
