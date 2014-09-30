@@ -95,7 +95,7 @@ int main(int argc,char **argv)
 
    int tot_iter = 0;
 
-   while(P_conv > tol_PD || D_conv > tol_PD || fabs(convergence) > tol_en)
+   while(P_conv > tol_PD || D_conv > tol_PD) // || fabs(convergence) > tol_en)
    {
       ++iter_primal;
 
