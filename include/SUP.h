@@ -49,6 +49,10 @@ class SUP
 
       TPM & getQ();
 
+      PHM const & getG() const;
+
+      PHM & getG();
+
       void invert();
 
       void fill(const TPM &);
@@ -79,6 +83,9 @@ class SUP
 
       //! the Q matrix
       std::unique_ptr<TPM> Q;
+
+      //! the G matrix
+      std::unique_ptr<PHM> G;
 };
 
 #endif /* SUP_H */

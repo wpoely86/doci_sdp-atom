@@ -10,6 +10,10 @@ SUP::SUP(int L, int N)
 #ifdef __Q_CON
    Q.reset(new TPM(L,N));
 #endif
+
+#ifdef __G_CON
+   G.reset(new PHM(L,N));
+#endif
 }
 
 SUP::SUP(const SUP &orig)
@@ -21,6 +25,10 @@ SUP::SUP(const SUP &orig)
 #ifdef __Q_CON
    Q.reset(new TPM(*orig.Q));
 #endif
+
+#ifdef __G_CON
+   G.reset(new PHM(*orig.G));
+#endif
 }
 
 SUP::SUP(SUP &&orig)
@@ -30,6 +38,7 @@ SUP::SUP(SUP &&orig)
 
    I = std::move(orig.I);
    Q = std::move(orig.Q);
+   G = std::move(orig.G);
 }
 
 SUP& SUP::operator=(const SUP &orig)
@@ -39,6 +48,10 @@ SUP& SUP::operator=(const SUP &orig)
    Q.reset(new TPM(*orig.Q));
 #endif
 
+#ifdef __G_CON
+   G.reset(new PHM(*orig.G));
+#endif
+
    return *this;
 }
 
@@ -46,6 +59,7 @@ SUP& SUP::operator=(SUP &&orig)
 {
    I = std::move(orig.I);
    Q = std::move(orig.Q);
+   G = std::move(orig.G);
 
    return *this;
 }
@@ -55,6 +69,10 @@ SUP& SUP::operator=(double a)
    (*I) = a;
 #ifdef __Q_CON
    (*Q) = a;
+#endif
+
+#ifdef __G_CON
+   (*G) = a;
 #endif
 
    return *this;
@@ -67,6 +85,10 @@ SUP& SUP::operator+=(const SUP &orig)
    (*Q) += (*orig.Q);
 #endif
 
+#ifdef __G_CON
+   (*G) += (*orig.G);
+#endif
+
    return *this;
 }
 
@@ -75,6 +97,10 @@ SUP& SUP::operator-=(const SUP &orig)
    (*I) -= (*orig.I);
 #ifdef __Q_CON
    (*Q) -= (*orig.Q);
+#endif
+
+#ifdef __G_CON
+   (*G) -= (*orig.G);
 #endif
 
    return *this;
@@ -87,6 +113,10 @@ SUP& SUP::operator*=(double alpha)
    (*Q) *= alpha;
 #endif
 
+#ifdef __G_CON
+   (*G) *= alpha;
+#endif
+
    return *this;
 }
 
@@ -95,6 +125,10 @@ SUP& SUP::operator/=(double alpha)
    (*I) /= alpha;
 #ifdef __Q_CON
    (*Q) /= alpha;
+#endif
+
+#ifdef __G_CON
+   (*G) /= alpha;
 #endif
 
    return *this;
@@ -106,6 +140,10 @@ void SUP::dscal(double alpha)
 
 #ifdef __Q_CON
    Q->dscal(alpha);
+#endif
+
+#ifdef __G_CON
+   G->dscal(alpha);
 #endif
 }
 
@@ -139,12 +177,26 @@ TPM& SUP::getQ()
    return *Q;
 }
 
+PHM const & SUP::getG() const
+{
+   return *G;
+}
+
+PHM& SUP::getG()
+{
+   return *G;
+}
+
 void SUP::invert()
 {
    I->invert();
 
 #ifdef __Q_CON
    Q->invert();
+#endif
+
+#ifdef __G_CON
+   G->invert();
 #endif
 }
 
@@ -159,6 +211,10 @@ void SUP::fill(const TPM &tpm)
 #ifdef __Q_CON
    Q->Q(tpm);
 #endif
+
+#ifdef __G_CON
+   G->G(tpm);
+#endif
 }
 
 void SUP::sqrt(int option)
@@ -167,6 +223,10 @@ void SUP::sqrt(int option)
 
 #ifdef __Q_CON
    Q->sqrt(option);
+#endif
+
+#ifdef __G_CON
+   G->sqrt(option);
 #endif
 }
 
@@ -177,6 +237,10 @@ void SUP::L_map(const SUP &A, const SUP &B)
 #ifdef __Q_CON
    Q->L_map(*A.Q,*B.Q);
 #endif
+
+#ifdef __G_CON
+   G->L_map(*A.G,*B.G);
+#endif
 }
 
 int SUP::gnr() const
@@ -185,6 +249,10 @@ int SUP::gnr() const
 
 #ifdef __Q_CON
    res += Q->gnr();
+#endif
+
+#ifdef __G_CON
+   res += G->gnr();
 #endif
 
    return res;
@@ -200,6 +268,11 @@ std::ostream &operator<<(std::ostream &output,SUP &sup)
    output << *sup.Q << std::endl;
 #endif
 
+#ifdef __G_CON
+   output << "G block:" << std::endl;
+   output << *sup.G << std::endl;
+#endif
+
    return output;
 }
 
@@ -213,6 +286,10 @@ double SUP::ddot(const SUP &x) const
    result += Q->ddot(*x.Q);
 #endif
 
+#ifdef __G_CON
+   result += G->ddot(*x.G);
+#endif
+
    return result;
 }
 
@@ -223,6 +300,10 @@ void SUP::daxpy(double alpha, const SUP &y)
 #ifdef __Q_CON
    Q->daxpy(alpha, *y.Q);
 #endif
+
+#ifdef __G_CON
+   G->daxpy(alpha, *y.G);
+#endif
 }
 
 void SUP::sep_pm(SUP &pos, SUP &neg)
@@ -231,6 +312,10 @@ void SUP::sep_pm(SUP &pos, SUP &neg)
    
 #ifdef __Q_CON
    Q->sep_pm(*pos.Q, *neg.Q);
+#endif
+
+#ifdef __G_CON
+   G->sep_pm(*pos.G, *neg.G);
 #endif
 }
 

@@ -485,6 +485,12 @@ void TPM::collaps(const SUP &S, const Lineq &lineq)
    (*this) += hulp;
 #endif
 
+#ifdef __G_CON
+   hulp.G(S.getG());
+
+   *this += hulp;
+#endif
+
    Proj_E(lineq);
 }
 
@@ -633,6 +639,25 @@ void TPM::H(double t,const TPM &delta,const SUP &S, const Lineq &lineq)
 
    (*this) += tmp1;
 
+#endif
+
+#ifdef __G_CON
+   //hulpje voor het PHM stuk
+   PHM hulp_ph(L,N);
+   PHM G_b(L,N);
+
+   //stop G(b) in G_b
+   G_b.G(delta);
+
+   //bereken G(rdm)^{-1}G(b)G(rdm)^{-1} en stop in hulp_ph
+   hulp_ph.L_map(S.getG(),G_b);
+
+   //tenslotte nog de antisymmetrische G hierop:
+   TPM hulp(L,N);
+   hulp.G(hulp_ph);
+
+   //en optellen bij this
+   *this += hulp;
 #endif
 
    (*this) *= t;
