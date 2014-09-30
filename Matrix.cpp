@@ -26,8 +26,8 @@ using std::ostream;
  * constructor 
  * @param n dimension of the matrix
  */
-Matrix::Matrix(int n){
-
+Matrix::Matrix(int n)
+{
    this->n = n;
 
    // we store column major (for Fortran compatiblity)
@@ -421,24 +421,24 @@ void Matrix::symmetrize()
 
 ostream &operator<<(ostream &output,Matrix &matrix_p)
 {
-   output << std::setprecision(2) << std::fixed;
-
-   for(int i = 0;i < matrix_p.gn();i++)
-   {
-      for(int j = 0;j < matrix_p.gn();j++)
-         output << std::setfill('0') << std::setw(6) << matrix_p(i,j) << " ";
-
-      output << endl;
-   }
-
-   output << endl;
-   output << std::setprecision(10) << std::scientific;
+//   output << std::setprecision(2) << std::fixed;
+//
+//   for(int i = 0;i < matrix_p.gn();i++)
+//   {
+//      for(int j = 0;j < matrix_p.gn();j++)
+//         output << std::setfill('0') << std::setw(6) << matrix_p(i,j) << " ";
+//
+//      output << endl;
+//   }
+//
+//   output << endl;
+//   output << std::setprecision(10) << std::scientific;
 
    for(int i = 0;i < matrix_p.gn();++i)
       for(int j = 0;j < matrix_p.gn();++j)
          output << i << "\t" << j << "\t" << matrix_p(i,j) << endl;
 
-   output.unsetf(std::ios_base::floatfield);
+//   output.unsetf(std::ios_base::floatfield);
 
    return output;
 }
@@ -517,8 +517,6 @@ void Matrix::sep_pm(Matrix &p,Matrix &m)
 
    if(info)
       std::cerr << "dsyevd in sep_pm failed..." << std::endl;
-
-   delete [] iwork;
 #else
    int lwork = 3*n - 1;
 
@@ -528,14 +526,9 @@ void Matrix::sep_pm(Matrix &p,Matrix &m)
 
    if(info)
       std::cerr << "dsyev in sep_pm failed..." << std::endl;
-
 #endif
 
 #ifdef __INTEL_COMPILER
-   assert(0 && "Still to check");
-
-   Matrix copy(*this);
-
    if( eigenvalues[0] >= 0 )
    {
       p = m;
@@ -551,10 +544,13 @@ void Matrix::sep_pm(Matrix &p,Matrix &m)
    while(i < n && eigenvalues[i] < 0.0)
       eigenvalues[i++] = 0;
 
+   Matrix copy(*this);
+
    int inc = 1;
 
+   // multiply each column with an eigenvalue
    for(i = 0;i < n;++i)
-      dscal_(&n,&eigenvalues[i],&matrix[i],&inc);
+      dscal_(&n,&eigenvalues[i],&matrix[i*n],&inc);
 
    char transA = 'N';
    char transB = 'T';
@@ -584,7 +580,6 @@ void Matrix::sep_pm(Matrix &p,Matrix &m)
       for(int j = 0;j < n;++j)
          for(int k = j;k < n;++k)
             m(j,k) += eigenvalues[i] * (*this)(j,i) * (*this)(k,i);
-               //* matrix[i][j] * matrix[i][k];
 
       ++i;
    }
@@ -593,6 +588,59 @@ void Matrix::sep_pm(Matrix &p,Matrix &m)
 
    p -= m;
 #endif
+}
+
+/**
+ * Special version of sep_pm that only works for 2x2 matrices
+ * @param pos the positive part of the matrix
+ * @param neg the negative part of the matrix
+ */
+void Matrix::sep_pm2(Matrix &pos,Matrix &neg)
+{
+   assert(n==2 && "Only works for 2x2 matrices");
+
+   // matrix has this form:
+   // a c
+   // c d
+   auto &a = matrix[0];
+   auto &c = matrix[1];
+   auto &d = matrix[3];
+
+   // there are 3 cases: both positive, both negative and one of each
+
+   // double discr = (a+d)*(a+d) - 4*(a*d-c*c);
+   double discr = a*a + d*d + 4*c*c - 2*a*d;
+   assert(!(discr < 0) && "Impossible!?!");
+
+   double x1 = (a+d) - std::sqrt(discr);
+   double x2 = (a+d) + std::sqrt(discr);
+
+   // both positive
+   if(x1>0)
+   {
+      pos = *this;
+      neg = 0;
+      return;
+   }
+
+   // both negative
+   if(x2<0)
+   {
+      pos = 0;
+      neg = *this;
+      return;
+   }
+
+   // one negative eigenvalue
+   x1 /= 2; // the actual eigenvalue still have to be divided by 2
+   double norm = 1.0/(1 + (x1-a)*(x1-a)/(c*c));
+
+   neg(0,0) = x1*norm;
+   neg(1,0) = neg(0,1) = x1*norm*(x1-a)/c;
+   neg(1,1) = x1*norm*(x1-a)*(x1-a)/(c*c);
+
+   pos = *this;
+   pos -= neg;
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/

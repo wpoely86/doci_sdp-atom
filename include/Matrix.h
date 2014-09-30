@@ -101,6 +101,8 @@ class Matrix
 
       void sep_pm(Matrix &,Matrix &);
 
+      void sep_pm2(Matrix &,Matrix &);
+
    private:
 
       //!pointer of doubles, contains the numbers, the matrix
