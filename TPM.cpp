@@ -108,10 +108,10 @@ double TPM::operator()(int a, int b, int c, int d) const
 
    int sign = 1;
 
-   if(a >= b)
+   if(a > b)
       sign *= -1;
 
-   if(c >= d)
+   if(c > d)
       sign *= -1;
 
    int i = (*s2t)(a,b);
@@ -120,7 +120,7 @@ double TPM::operator()(int a, int b, int c, int d) const
    if(i<L && j<L)
       return sign * (*this)(0,i,j);
    else if(i==j)
-      return (*this)(0,(i-L)%gdimVector(0));
+      return sign * (*this)(0,(i-L)%gdimVector(0));
    else
       return 0;
 }
@@ -780,6 +780,11 @@ std::vector<TPM> TPM::DOCI_constrains() const
  */
 double TPM::getDiag(int a, int b) const
 {
+   assert(a<L && b<L);
+
+   if(a==b)
+      return 0;
+
    int i = (*s2t)(a,b);
    return (*this)(0,i-L);
 }
