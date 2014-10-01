@@ -609,8 +609,6 @@ int TPM::solve(double t, const SUP &S, TPM &grad, const Lineq &lineq)
 
       grad += r;
 
- //     std::cout << "rr= " << rr << std::endl; 
-
       ++iter;
    }
 
