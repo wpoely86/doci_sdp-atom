@@ -44,6 +44,8 @@ class PHM: public BlockMatrix
 
       void sep_pm(BlockMatrix &, BlockMatrix &);
 
+      void sqrt(int);
+
    private:
 
       void constr_lists(int L);

@@ -355,6 +355,41 @@ void Matrix::sqrt(int option)
 }
 
 /**
+ * Take the square root out of the positive semidefinite matrix, destroys original matrix, square root will be put in (*this)
+ * Only works for 2x2 matrices
+ * @param option = 1, positive square root, = -1, negative square root.
+ */
+void Matrix::sqrt2(int option)
+{
+   assert(n==2 && "Only works for 2x2 matrices");
+
+   // matrix has this form:
+   // a c
+   // c d
+   auto a = matrix[0];
+   auto c = matrix[1];
+   auto &d = matrix[3];
+
+   // double discr = (a+d)*(a+d) - 4*(a*d-c*c);
+   double discr = a*a + d*d + 4*c*c - 2*a*d;
+   assert(!(discr < 0) && "Impossible!?!");
+
+   // calculate the sqrt from both eigenvalues
+   double x1 = ((a+d) - std::sqrt(discr))/2;
+   double x2 = ((a+d) + std::sqrt(discr))/2;
+
+   double norm1 = 1.0/(1 + (x1-a)*(x1-a)/(c*c));
+   double norm2 = 1.0/(1 + (x2-a)*(x2-a)/(c*c));
+
+   double x1_s = std::sqrt(x1);
+   double x2_s = std::sqrt(x2);
+
+   matrix[0] = norm1*x1_s + norm2*x2_s;
+   matrix[1] = matrix[2] = norm1*x1_s*(x1-a)/c + norm2*x2_s*(x2-a)/c;
+   matrix[3] = norm1*x1_s*(x1-a)/c*(x1-a)/c + norm2*x2_s*(x2-a)/c*(x2-a)/c;
+}
+
+/**
  * Multiply this matrix with diagonal matrix
  * @param diag Diagonal matrix to multiply with this, has to be allocated on matrix dimension.
  */

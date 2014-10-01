@@ -291,4 +291,18 @@ void PHM::sep_pm(BlockMatrix &pos, BlockMatrix &neg)
       (*this)[i].sep_pm2(pos[i], neg[i]);
 }
 
+/**
+ * Pull the sqrt out of this matrix.
+ * Optimized for the structure of the 2x2 matrices
+ * @param option 1 => positive sqrt, -1 => negative sqrt
+ */
+void PHM::sqrt(int option)
+{
+   (*this)[0].sqrt(option);
+
+#pragma omp parallel for if(gnr()>100)
+   for(int i=1;i<gnr();i++)
+      (*this)[i].sqrt2(option);
+}
+
 /*  vim: set ts=3 sw=3 expandtab :*/

@@ -91,6 +91,8 @@ class Matrix
       //positieve of negatieve vierkantswortel uit de matrix
       void sqrt(int option);
 
+      void sqrt2(int option);
+
       void mdiag(const Vector &);
 
       void L_map(const Matrix &,const Matrix &);
