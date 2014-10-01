@@ -6,28 +6,47 @@
  * standard constructor, only norm and DOCI constraints
  * @param L nr of levels
  * @param N nr of particles
+ * @param partial_trace use constraints for the block and vector seperatly
  */
-Lineq::Lineq(int L,int N)
+Lineq::Lineq(int L,int N, bool partial_trace)
 {
    this->L = L;
    this->N = N;
 
-   TPM trace_constr(L,N);
-   trace_constr.unit();
+   if(partial_trace)
+   {
+      TPM trace_constr(L,N);
+      trace_constr = 0;
 
-   // make room for 1 trace constrains and L DOCI constrains
-   E.reserve(1+L);
-   e.reserve(1+L);
-   e.resize(1+L, 0);
+      for(int i=0;i<trace_constr.gdimMatrix(0);i++)
+         trace_constr(0,i,i) = 1;
 
-   // first trace on Block
-   E.push_back(std::move(trace_constr));
-   e[0] = N*(N-1)/2.0;
+      E.push_back(trace_constr);
+      e.push_back(N/2.0);
 
-   auto doci_constr = trace_constr.DOCI_constrains();
-   E.insert(E.end(), std::make_move_iterator(doci_constr.begin()), std::make_move_iterator(doci_constr.end()));
+      trace_constr.getMatrix(0) = 0;
+      for(int i=0;i<trace_constr.gdimVector(0);i++)
+         trace_constr(0,i) = 1;
 
-   assert(E.size() == 1+L);
+      E.push_back(std::move(trace_constr));
+      e.push_back(N*(N/2.0-1)); // keep the fourfold degenaracy in mind
+   } else
+   {
+      TPM trace_constr(L,N);
+      trace_constr.unit();
+
+      // make room for 1 trace constrains and L DOCI constrains
+      e.resize(1+L, 0);
+
+      // first trace on Block
+      E.push_back(std::move(trace_constr));
+      e[0] = N*(N-1)/2.0;
+
+      auto doci_constr = trace_constr.DOCI_constrains();
+      E.insert(E.end(), std::make_move_iterator(doci_constr.begin()), std::make_move_iterator(doci_constr.end()));
+
+      assert(E.size() == 1+L);
+   }
 
    orthogonalize();//speaks for itself, doesn't it?
 

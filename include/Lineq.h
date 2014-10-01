@@ -25,7 +25,7 @@ class Lineq
 
    public:
 
-      Lineq(int L,int N);
+      Lineq(int L,int N, bool=false);
 
       Lineq(const Lineq &) = default;
 
