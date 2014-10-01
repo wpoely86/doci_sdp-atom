@@ -58,6 +58,17 @@ EIG::EIG(SUP &sup): BlockVector(sup.gnr())
       (*this)[tel++] = sup.getQ().getVector(i);
    }
 #endif
+
+#ifdef __G_CON
+   setDim(tel,sup.getG().gdim(0),sup.getG().gdeg(0));
+   (*this)[tel++].diagonalize(sup.getG()[0]);
+
+   for(int i=1;i<sup.getG().gnr();i++)
+   {
+      setDim(tel, sup.getG().gdim(i), sup.getG().gdeg(i));
+      (*this)[tel++].diagonalize(sup.getG()[i]);
+   }
+#endif
 }
 
 double EIG::min() const
