@@ -288,7 +288,7 @@ void PHM::sep_pm(BlockMatrix &pos, BlockMatrix &neg)
 
 #pragma omp parallel for if(gnr()>100)
    for(int i=1;i<gnr();i++)
-      (*this)[i].sep_pm2(pos[i], neg[i]);
+      (*this)[i].sep_pm_2x2(pos[i], neg[i]);
 }
 
 /**
@@ -302,7 +302,25 @@ void PHM::sqrt(int option)
 
 #pragma omp parallel for if(gnr()>100)
    for(int i=1;i<gnr();i++)
-      (*this)[i].sqrt2(option);
+      (*this)[i].sqrt_2x2(option);
+}
+
+void PHM::invert()
+{
+   (*this)[0].invert();
+
+#pragma omp parallel for if(gnr()>100)
+   for(int i=1;i<gnr();i++)
+      (*this)[i].invert_2x2();
+}
+
+void PHM::L_map(const BlockMatrix &map,const BlockMatrix &object)
+{
+   (*this)[0].L_map(map[0], object[0]);
+
+#pragma omp parallel for if(gnr()>100)
+   for(int i=1;i<gnr();i++)
+      (*this)[i].L_map_2x2(map[i], object[i]);
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/

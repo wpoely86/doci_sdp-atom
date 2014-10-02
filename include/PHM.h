@@ -46,6 +46,10 @@ class PHM: public BlockMatrix
 
       void sqrt(int);
 
+      void invert();
+
+      void L_map(const BlockMatrix &, const BlockMatrix &);
+
    private:
 
       void constr_lists(int L);
