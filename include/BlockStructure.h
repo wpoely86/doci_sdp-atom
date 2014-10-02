@@ -93,7 +93,7 @@ class BlockStructure
       //easy to access the numbers
       double operator()(int block,int index) const;
 
-      void diagonalize(BlockStructure<Matrix> &);
+//      virtual void diagonalize(BlockStructure<Matrix> &);
 
       int gnr() const;
 
@@ -113,13 +113,13 @@ class BlockStructure
 
       void fill_Random();
 
-      void invert();
+      virtual void invert();
 
-      void sqrt(int);
+      virtual void sqrt(int);
 
-      void L_map(const BlockStructure<BlockType> &map,const BlockStructure<BlockType> &object);
+      virtual void L_map(const BlockStructure<BlockType> &,const BlockStructure<BlockType> &);
 
-      BlockStructure<BlockType> &mprod(const BlockStructure<BlockType> &A, const BlockStructure<BlockType> &B);
+      virtual BlockStructure<BlockType> &mprod(const BlockStructure<BlockType> &, const BlockStructure<BlockType> &);
 
       void symmetrize();
 
