@@ -78,9 +78,13 @@ class Matrix
 
       Vector diagonalize();
 
+      Vector diagonalize_2x2();
+
       double ddot(const Matrix &) const;
 
       void invert();
+
+      void invert_2x2();
 
       void dscal(double alpha);
 
@@ -91,11 +95,13 @@ class Matrix
       //positieve of negatieve vierkantswortel uit de matrix
       void sqrt(int option);
 
-      void sqrt2(int option);
+      void sqrt_2x2(int option);
 
       void mdiag(const Vector &);
 
       void L_map(const Matrix &,const Matrix &);
+
+      void L_map_2x2(const Matrix &,const Matrix &);
 
       void symmetrize();
 
@@ -103,7 +109,7 @@ class Matrix
 
       void sep_pm(Matrix &,Matrix &);
 
-      void sep_pm2(Matrix &,Matrix &);
+      void sep_pm_2x2(Matrix &,Matrix &);
 
    private:
 

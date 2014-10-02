@@ -254,6 +254,43 @@ Vector Matrix::diagonalize()
 }
 
 /**
+ * Diagonalize 2x2 matrix
+ * Overwrite matrix with the (normed) eigenvectors
+ * @return Vector with the eigenvalues
+ */
+Vector Matrix::diagonalize_2x2()
+{
+   assert(n==2 && "Only works for 2x2 matrices");
+
+   // matrix has this form:
+   // a c
+   // c d
+   auto a = matrix[0];
+   auto c = matrix[1];
+   auto &d = matrix[3];
+
+   // double discr = (a+d)*(a+d) - 4*(a*d-c*c);
+   double discr = a*a + d*d + 4*c*c - 2*a*d;
+   assert(!(discr < 0) && "Impossible!?!");
+
+   Vector eig(2);
+   eig[0] = ((a+d) - std::sqrt(discr))/2;
+   eig[1] = ((a+d) + std::sqrt(discr))/2;
+
+   double norm = 1.0/std::sqrt(1 + (eig[0]-a)*(eig[0]-a)/(c*c));
+
+   matrix[0] = norm;
+   matrix[1] = norm*(eig[0]-a)/c;
+
+   norm = 1.0/std::sqrt(1 + (eig[1]-a)*(eig[1]-a)/(c*c));
+
+   matrix[2] = norm;
+   matrix[3] = norm*(eig[1]-a)/c;
+
+   return eig;
+}
+
+/**
  * @return inproduct of (*this) matrix with matrix_i, defined as Tr (A B)
  * @param matrix_i input matrix
  */
@@ -286,6 +323,28 @@ void Matrix::invert()
 
    //terug symmetrisch maken:
    this->symmetrize();
+}
+
+/**
+ * Invert 2x2 matrix
+ */
+void Matrix::invert_2x2()
+{
+   assert(n==2 && "Only works for 2x2 matrices");
+
+   // matrix has this form:
+   // a c
+   // c d
+   auto a = matrix[0];
+   auto &c = matrix[1];
+   auto &d = matrix[3];
+
+   double fac = 1.0/(a*d-c*c);
+
+   matrix[0] = fac * d;
+   matrix[3] = fac * a;
+   matrix[1] *= -fac;
+   matrix[2] *= -fac;
 }
 
 /**
@@ -359,7 +418,7 @@ void Matrix::sqrt(int option)
  * Only works for 2x2 matrices
  * @param option = 1, positive square root, = -1, negative square root.
  */
-void Matrix::sqrt2(int option)
+void Matrix::sqrt_2x2(int option)
 {
    assert(n==2 && "Only works for 2x2 matrices");
 
@@ -374,15 +433,24 @@ void Matrix::sqrt2(int option)
    double discr = a*a + d*d + 4*c*c - 2*a*d;
    assert(!(discr < 0) && "Impossible!?!");
 
-   // calculate the sqrt from both eigenvalues
+   // the eigenvalues
    double x1 = ((a+d) - std::sqrt(discr))/2;
    double x2 = ((a+d) + std::sqrt(discr))/2;
 
    double norm1 = 1.0/(1 + (x1-a)*(x1-a)/(c*c));
    double norm2 = 1.0/(1 + (x2-a)*(x2-a)/(c*c));
 
-   double x1_s = std::sqrt(x1);
-   double x2_s = std::sqrt(x2);
+   // calculate the sqrt from both eigenvalues
+   double x1_s, x2_s;
+
+   if(option)
+   {
+      x1_s = std::sqrt(x1);
+      x2_s = std::sqrt(x2);
+   } else {
+      x1_s = 1.0/std::sqrt(x1);
+      x2_s = 1.0/std::sqrt(x2);
+   }
 
    matrix[0] = norm1*x1_s + norm2*x2_s;
    matrix[1] = matrix[2] = norm1*x1_s*(x1-a)/c + norm2*x2_s*(x2-a)/c;
@@ -425,6 +493,31 @@ void Matrix::L_map(const Matrix &map,const Matrix &object)
 
    //expliciet symmetriseren van de uit matrix
    this->symmetrize();
+}
+
+/**
+ * L_map for 2x2 matrices. Will store map*object*map in this
+ * @param map matrix that will be multiplied to the left en to the right of matrix object
+ * @param object central matrix
+ */
+void Matrix::L_map_2x2(const Matrix &map,const Matrix &object)
+{
+   assert(n==2 && map.n==2 && object.n==2 && "Only works for 2x2 matrices");
+
+   // matrix has this form:
+   // a c
+   // c d
+   auto &a1 = object.matrix[0];
+   auto &c1 = object.matrix[1];
+   auto &d1 = object.matrix[3];
+
+   auto &a2 = map.matrix[0];
+   auto &c2 = map.matrix[1];
+   auto &d2 = map.matrix[3];
+
+   matrix[0] = a2*(a1*a2+c1*c2)+c2*(a2*c1+c2*d1);
+   matrix[1] = matrix[2] = a2*(a1*c2+c1*d2)+c2*(c1*c2+d1*d2);
+   matrix[3] = c2*(a1*c2+c1*d2)+d2*(c1*c2+d1*d2);
 }
 
 /**
@@ -630,7 +723,7 @@ void Matrix::sep_pm(Matrix &p,Matrix &m)
  * @param pos the positive part of the matrix
  * @param neg the negative part of the matrix
  */
-void Matrix::sep_pm2(Matrix &pos,Matrix &neg)
+void Matrix::sep_pm_2x2(Matrix &pos,Matrix &neg)
 {
    assert(n==2 && "Only works for 2x2 matrices");
 
