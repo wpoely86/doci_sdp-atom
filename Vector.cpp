@@ -35,20 +35,7 @@ Vector::Vector(Matrix &matrix)
 
    vector.reset(new double[n]);
 
-   //initialize
-   char jobz = 'V';
-   char uplo = 'U';
-
-   int lwork = 3*n - 1;
-
-   std::unique_ptr<double []> work (new double [lwork]);
-
-   int info = 0;
-
-   dsyev_(&jobz,&uplo,&n,matrix.gMatrix(),&n,vector.get(),work.get(),&lwork,&info);
-
-   if(info)
-      std::cerr << "dsyev failed. info = " << info << std::endl;
+   diagonalize(matrix);
 }
 
 /**
@@ -200,20 +187,7 @@ double Vector::operator[](int i) const
  */
 void Vector::diagonalize(Matrix &matrix)
 {
-   //initialize
-   char jobz = 'V';
-   char uplo = 'U';
-
-   int lwork = 3*n - 1;
-
-   std::unique_ptr<double []> work (new double [lwork]);
-
-   int info = 0;
-
-   dsyev_(&jobz,&uplo,&n,matrix.gMatrix(),&n,vector.get(),work.get(),&lwork,&info);
-
-   if(info)
-      std::cerr << "dsyev failed. info = " << info << std::endl;
+   *this = matrix.diagonalize();
 }
 
 /**
