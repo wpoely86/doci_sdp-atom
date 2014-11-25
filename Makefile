@@ -51,6 +51,7 @@ LDFLAGS	= -g -Wall -O2
 #   Targets & Rules
 # =============================================================================
 all:
+	$(MAKE) -C extern
 	@echo
 	@echo '  +++ Building $(BINNAME)...'
 	@echo	
@@ -146,6 +147,7 @@ new:	clean all
 #   Clean up all object files
 # -----------------------------------------------------------------------------
 clean:
+	$(MAKE) -C extern clean
 	@echo -n '  +++ Cleaning all object files ... '
 	@echo -n $(OBJ)
 	@rm -f $(OBJ) doci_bp.o doci_sdp.o
