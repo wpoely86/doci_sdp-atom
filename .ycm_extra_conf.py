@@ -3,6 +3,8 @@ import ycm_core
 
 flags = [
 '-Iinclude',
+'-I',
+'extern/include',
 '-I../integrals/include',
 '-I/usr/include/libint2',
 '-DBASISSETDIR="/home/ward/Documents/phd/linmol/basissets"',

@@ -33,9 +33,9 @@ OBJ	= $(CPPSRC:.cpp=.o)
 
 BRIGHT_ROOT= .
 
-INCLUDE = -Iinclude
+INCLUDE = -Iinclude -Iextern/include
 
-LIBS= -llapack -lblas -lhdf5
+LIBS= -llapack -lblas -lhdf5 -Lextern -lsimanneal
 
 CC	= clang
 CXX	= clang++
