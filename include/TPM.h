@@ -8,13 +8,16 @@
 #include "Container.h"
 #include "helpers.h"
 
+namespace doci2DM
+{
+
 class SUP;
 class Lineq;
 class PHM;
 
 class TPM: public Container
 {
-   friend std::ostream &operator<<(std::ostream &output,TPM &tpm);
+   friend std::ostream &operator<<(std::ostream &output,doci2DM::TPM &tpm);
 
    public:
 
@@ -107,6 +110,8 @@ class TPM: public Container
       //! table translating two particles indices to single particle indices
       static std::unique_ptr<helpers::matrix> t2s;
 };
+
+}
 
 #endif
 

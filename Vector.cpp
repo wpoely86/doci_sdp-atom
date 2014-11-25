@@ -14,6 +14,8 @@ using std::ifstream;
 #include "Vector.h"
 #include "lapack.h"
 
+using namespace doci2DM;
+
 /**
  * constructor that takes dimension as input
  * @param n dimension of the vector
@@ -278,12 +280,15 @@ void Vector::fill_Random()
       vector[i] = (double) rand()/RAND_MAX;
 }
 
-ostream &operator<<(ostream &output,const Vector &vector_p)
+namespace doci2DM 
 {
-   for(int i = 0;i < vector_p.gn();++i)
-      output << i << "\t" << vector_p[i] << endl;
+   std::ostream &operator<<(std::ostream &output,const doci2DM::Vector &vector_p)
+   {
+      for(int i = 0;i < vector_p.gn();++i)
+         output << i << "\t" << vector_p[i] << endl;
 
-   return output;
+      return output;
+   }
 }
 
 /**

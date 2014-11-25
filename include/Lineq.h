@@ -7,6 +7,9 @@
 #include "TPM.h"
 #include "SUP.h"
 
+namespace doci2DM
+{
+
 /**
  * @author Brecht Verstichel
  * @date 09-09-2010\n\n
@@ -83,6 +86,8 @@ class Lineq
       //!nr of sp orbs
       int L;
 };
+
+}
 
 #endif /* LINEQ_H */
 

@@ -3,6 +3,9 @@
 
 #include <string>
 
+namespace doci2DM
+{
+
 class Tools
 {
    public:
@@ -12,6 +15,8 @@ class Tools
 
       static double getNuclearRepulEnergy(std::string filename);
 };
+
+}
 
 #endif /* TOOLS_H */
 

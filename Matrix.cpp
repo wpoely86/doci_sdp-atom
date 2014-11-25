@@ -22,6 +22,8 @@ using std::ostream;
 }
 
 
+using namespace doci2DM;
+
 /**
  * constructor 
  * @param n dimension of the matrix
@@ -550,28 +552,30 @@ void Matrix::symmetrize()
          matrix[j+i*n] = matrix[i+n*j];
 }
 
-ostream &operator<<(ostream &output,Matrix &matrix_p)
-{
-//   output << std::setprecision(2) << std::fixed;
-//
-//   for(int i = 0;i < matrix_p.gn();i++)
-//   {
-//      for(int j = 0;j < matrix_p.gn();j++)
-//         output << std::setfill('0') << std::setw(6) << matrix_p(i,j) << " ";
-//
-//      output << endl;
-//   }
-//
-//   output << endl;
-//   output << std::setprecision(10) << std::scientific;
+namespace doci2DM {
+   std::ostream &operator<<(std::ostream &output,const doci2DM::Matrix &matrix_p)
+   {
+      //   output << std::setprecision(2) << std::fixed;
+      //
+      //   for(int i = 0;i < matrix_p.gn();i++)
+      //   {
+      //      for(int j = 0;j < matrix_p.gn();j++)
+      //         output << std::setfill('0') << std::setw(6) << matrix_p(i,j) << " ";
+      //
+      //      output << endl;
+      //   }
+      //
+      //   output << endl;
+      //   output << std::setprecision(10) << std::scientific;
 
-   for(int i = 0;i < matrix_p.gn();++i)
-      for(int j = 0;j < matrix_p.gn();++j)
-         output << i << "\t" << j << "\t" << matrix_p(i,j) << endl;
+      for(int i = 0;i < matrix_p.gn();++i)
+         for(int j = 0;j < matrix_p.gn();++j)
+            output << i << "\t" << j << "\t" << matrix_p(i,j) << endl;
 
-//   output.unsetf(std::ios_base::floatfield);
+      //   output.unsetf(std::ios_base::floatfield);
 
-   return output;
+      return output;
+   }
 }
 
 void Matrix::SaveRawToFile(const std::string filename) const

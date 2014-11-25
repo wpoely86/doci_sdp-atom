@@ -1,7 +1,11 @@
 #ifndef DPM_H
 #define DPM_H
 
+namespace doci2DM
+{
 
+
+}
 
 #endif
 

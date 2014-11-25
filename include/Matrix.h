@@ -5,6 +5,9 @@
 #include <cstdlib>
 #include <memory>
 
+namespace doci2DM
+{
+
 /**
  * @author Brecht Verstichel
  * @date 18-02-2010\n\n
@@ -25,7 +28,7 @@ class Matrix
     * @param output The stream to which you are writing (e.g. cout)
     * @param matrix_p de Matrix you want to print
     */
-   friend std::ostream &operator<<(std::ostream &output,Matrix &matrix_p);
+   friend std::ostream &operator<<(std::ostream &,const doci2DM::Matrix &);
 
    public:
 
@@ -119,6 +122,8 @@ class Matrix
       //!dimension of the matrix
       int n;
 };
+
+}
 
 #endif
 

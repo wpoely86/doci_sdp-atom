@@ -5,6 +5,9 @@
 
 #include "BlockStructure.h"
 
+namespace doci2DM
+{
+
 class TPM;
 class PHM;
 
@@ -59,6 +62,8 @@ class SPM: public BlockVector
       //! the size of the sp DOCI space (there are 2*L sp states)
       int L;
 };
+
+}
 
 #endif /* SPM_H */
 

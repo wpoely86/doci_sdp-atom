@@ -1,8 +1,11 @@
+#include <cstdio>
 #include <sstream>
 #include <assert.h>
 #include <hdf5.h>
 
 #include "include.h"
+
+using namespace doci2DM;
 
 // default empty
 std::unique_ptr<helpers::matrix> TPM::s2t = nullptr;
@@ -125,20 +128,22 @@ double TPM::operator()(int a, int b, int c, int d) const
       return 0;
 }
 
-std::ostream &operator<<(std::ostream &output,TPM &tpm)
-{
-   output << "Block: " << std::endl;
-   for(int i=0;i<tpm.L;i++)
-      for(int j=i;j<tpm.L;j++)
-         output << i << "\t" << j << "\t|\t" << (*tpm.t2s)(i,0) << "  " <<  (*tpm.t2s)(i,1) << " ; " <<  (*tpm.t2s)(j,0) << "  " <<  (*tpm.t2s)(j,1) << "\t\t" << tpm(0,i,j) << std::endl;
+namespace doci2DM {
+   std::ostream &operator<<(std::ostream &output,doci2DM::TPM &tpm)
+   {
+      output << "Block: " << std::endl;
+      for(int i=0;i<tpm.L;i++)
+         for(int j=i;j<tpm.L;j++)
+            output << i << "\t" << j << "\t|\t" << (*tpm.t2s)(i,0) << "  " <<  (*tpm.t2s)(i,1) << " ; " <<  (*tpm.t2s)(j,0) << "  " <<  (*tpm.t2s)(j,1) << "\t\t" << tpm(0,i,j) << std::endl;
 
-   output << std::endl;
+      output << std::endl;
 
-   output << "Vector (4x): " << std::endl;
-   for(int i=0;i<tpm.getVector(0).gn();i++)
-      output << i << "\t|\t" << (*tpm.t2s)(tpm.L+i,0) << "  " << (*tpm.t2s)(tpm.L+i,1) << "\t\t" << tpm(0,i) << std::endl;
+      output << "Vector (4x): " << std::endl;
+      for(int i=0;i<tpm.getVector(0).gn();i++)
+         output << i << "\t|\t" << (*tpm.t2s)(tpm.L+i,0) << "  " << (*tpm.t2s)(tpm.L+i,1) << "\t\t" << tpm(0,i) << std::endl;
 
-   return output;
+      return output;
+   }
 }
 
 void TPM::HF_molecule(std::string filename)

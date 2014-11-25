@@ -5,17 +5,9 @@
 
 #include "Matrix.h"
 
-/**
- * Output stream operator overloaded, the usage is simple, if you want to print to a file, make an
- * ifstream object and type:\n\n
- * object << vector << endl;\n\n
- * For output onto the screen type: \n\n
- * cout << vector << endl;\n\n
- * @param output The stream to which you are writing (e.g. cout)
- * @param vector_p de Vector you want to print
- */
-class Vector;
-std::ostream &operator<<(std::ostream &output,const Vector &vector_p);
+
+namespace doci2DM
+{
 
 /**
  * @author Brecht Verstichel
@@ -26,6 +18,18 @@ std::ostream &operator<<(std::ostream &output,const Vector &vector_p);
  */
 class Vector
 {
+
+   /**
+    * Output stream operator overloaded, the usage is simple, if you want to print to a file, make an
+    * ifstream object and type:\n\n
+    * object << vector << endl;\n\n
+    * For output onto the screen type: \n\n
+    * cout << vector << endl;\n\n
+    * @param output The stream to which you are writing (e.g. cout)
+    * @param vector_p de Vector you want to print
+    */
+   friend std::ostream &operator<<(std::ostream &output,const doci2DM::Vector &vector_p);
+
    public:
 
       //construct with as input a dimension
@@ -117,6 +121,8 @@ class Vector
       //!dimension of the vector
       int n;
 };
+
+}
 
 #endif
 

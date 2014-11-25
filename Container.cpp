@@ -2,6 +2,8 @@
 
 #include "Container.h"
 
+using namespace doci2DM;
+
 /**
  * @param n number of matrix
  * @param m number of vectors
@@ -273,15 +275,18 @@ void Container::sep_pm(Container &pos, Container &neg)
    vector->sep_pm(*pos.vector, *neg.vector);
 }
 
-std::ostream &operator<<(std::ostream &output,const Container &container)
+namespace doci2DM
 {
-   output << "Matrices: " << std::endl;
-   output << *container.matrix << std::endl;
+   std::ostream &operator<<(std::ostream &output,const doci2DM::Container &container)
+   {
+      output << "Matrices: " << std::endl;
+      output << *container.matrix << std::endl;
 
-   output << "Vectors: " << std::endl;
-   output << *container.vector << std::endl;
+      output << "Vectors: " << std::endl;
+      output << *container.vector << std::endl;
 
-   return output;
+      return output;
+   }
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/

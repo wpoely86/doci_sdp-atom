@@ -2,6 +2,8 @@
 
 #include "include.h"
 
+using namespace doci2DM;
+
 /**
  * standard constructor, only norm and DOCI constraints
  * @param L nr of levels
@@ -120,29 +122,32 @@ double Lineq::ge_ortho(int i) const
    return e_ortho[i];
 }
 
-std::ostream &operator<<(std::ostream &output,Lineq &lineq_p)
+namespace doci2DM
 {
-   output << "first print the constraint matrices:";
-   output << std::endl;
-   output << std::endl;
-
-   for(int i = 0;i < lineq_p.gnr();++i)
+   std::ostream &operator<<(std::ostream &output,doci2DM::Lineq &lineq_p)
    {
-      output << "constraint nr :" << i << std::endl;
+      output << "first print the constraint matrices:";
+      output << std::endl;
       output << std::endl;
 
-      output << lineq_p.gE(i);
+      for(int i = 0;i < lineq_p.gnr();++i)
+      {
+         output << "constraint nr :" << i << std::endl;
+         output << std::endl;
+
+         output << lineq_p.gE(i);
+      }
+
+      output << std::endl;
+      output << std::endl;
+      output << "the desired values are:" << std::endl;
+      output << std::endl;
+
+      for(int i = 0;i < lineq_p.gnr();++i)
+         output << i << "\t" << lineq_p.ge(i) << std::endl;
+
+      return output;
    }
-
-   output << std::endl;
-   output << std::endl;
-   output << "the desired values are:" << std::endl;
-   output << std::endl;
-
-   for(int i = 0;i < lineq_p.gnr();++i)
-      output << i << "\t" << lineq_p.ge(i) << std::endl;
-
-   return output;
 }
 
 /**

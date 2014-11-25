@@ -7,6 +7,7 @@ int main(int argc, char **argv)
 {
    using std::cout;
    using std::endl;
+   using namespace doci2DM;
 
    cout.precision(10);
 

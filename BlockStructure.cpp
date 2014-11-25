@@ -4,6 +4,8 @@
 #include "Vector.h"
 #include "BlockStructure.h"
 
+using namespace doci2DM;
+
 /**
  * constructor: Watch out, the matrices themself haven't been allocated yet. 
  * Only the Blockmatrix itself is allocated and the array containing the dimensions, but not initialized.
@@ -372,8 +374,17 @@ void BlockStructure<BlockType>::sep_pm(BlockStructure<BlockType> &pos, BlockStru
       blocks[i]->sep_pm(*pos.blocks[i], *neg.blocks[i]);
 }
 
-template class BlockStructure<Matrix>;
-template class BlockStructure<Vector>;
+
+namespace doci2DM
+{
+   // explicit instantiation must occur in namespace
+   template class BlockStructure<doci2DM::Matrix>;
+   template class BlockStructure<doci2DM::Vector>;
+
+   // also instantiation for friend functions
+   template std::ostream &operator<< (std::ostream &output,const doci2DM::BlockStructure<doci2DM::Matrix> &blocks_p);
+   template std::ostream &operator<< (std::ostream &output,const doci2DM::BlockStructure<doci2DM::Vector> &blocks_p);
+}
 
 
 /* vim: set ts=3 sw=3 expandtab :*/

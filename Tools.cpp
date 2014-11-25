@@ -1,6 +1,8 @@
 #include <hdf5.h>
 #include "include.h"
 
+using namespace doci2DM;
+
 int Tools::getspDimension(std::string filename)
 {
    hid_t       file_id, group_id, attribute_id;

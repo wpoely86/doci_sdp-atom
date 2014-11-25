@@ -2,6 +2,8 @@
 
 #include "include.h"
 
+using namespace doci2DM;
+
 // default empty
 std::unique_ptr<helpers::matrix> PHM::s2ph = nullptr;
 std::unique_ptr<helpers::matrix> PHM::ph2s = nullptr;
@@ -260,20 +262,23 @@ Matrix PHM::Gbuild() const
    return Gmat;
 }
 
-std::ostream &operator<<(std::ostream &output,PHM &phm)
+namespace doci2DM 
 {
-   output << "The LxL block: " << std::endl;
-   output << phm[0] << std::endl;
-
-   output << std::endl;
-
-   for(int i=1;i<phm.gnr();i++)
+   std::ostream &operator<<(std::ostream &output,doci2DM::PHM &phm)
    {
-      output << "Block " << i-1 << " for " << (*phm.b2s)(i,0) << "\t" << (*phm.b2s)(i,1) << std::endl;
-      output << phm[i] << std::endl;
-   }
+      output << "The LxL block: " << std::endl;
+      output << phm[0] << std::endl;
 
-   return output;
+      output << std::endl;
+
+      for(int i=1;i<phm.gnr();i++)
+      {
+         output << "Block " << i-1 << " for " << (*phm.b2s)(i,0) << "\t" << (*phm.b2s)(i,1) << std::endl;
+         output << phm[i] << std::endl;
+      }
+
+      return output;
+   }
 }
 
 /**

@@ -7,6 +7,9 @@
 
 #include "BlockStructure.h"
 
+namespace doci2DM
+{
+
 /**
  * Class to store combination of Blocks and Vectors
  */
@@ -21,7 +24,7 @@ class Container
     * @param output The stream to which you are writing (e.g. cout)
     * @param blockmatrix_p the BlockMatrix you want to print
     */
-   friend std::ostream &operator<<(std::ostream &output,const Container &container);
+   friend std::ostream &operator<<(std::ostream &output,const doci2DM::Container &container);
 
    public:
 
@@ -122,6 +125,8 @@ class Container
       std::unique_ptr<BlockMatrix> matrix;
       std::unique_ptr<BlockVector> vector;
 };
+
+}
 
 #endif
 

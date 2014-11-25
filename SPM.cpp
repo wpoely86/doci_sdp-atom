@@ -1,6 +1,8 @@
 #include "include.h"
 #include "lapack.h"
 
+using namespace doci2DM;
+
 /**
  * Create SPM matrix (vector)
  * @param L the number of orbitals (spinorbitals/2)

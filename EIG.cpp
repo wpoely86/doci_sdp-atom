@@ -2,6 +2,7 @@
 
 #include "EIG.h"
 
+using namespace doci2DM;
 
 EIG::EIG(BlockMatrix &mat): BlockVector(mat.gnr()) 
 {

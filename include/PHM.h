@@ -6,6 +6,9 @@
 #include "helpers.h"
 #include "BlockStructure.h"
 
+namespace doci2DM
+{
+
 class TPM;
 
 class PHM: public BlockMatrix
@@ -70,6 +73,8 @@ class PHM: public BlockMatrix
       //! table translating the block index to the single particle indices
       static std::unique_ptr<helpers::matrix> b2s;
 };
+
+}
 
 #endif /* PHM_H */
 

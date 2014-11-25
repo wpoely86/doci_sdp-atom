@@ -7,9 +7,12 @@
 
 #include "include.h"
 
+namespace doci2DM
+{
+
 class SUP
 {
-   friend std::ostream &operator<<(std::ostream &output,SUP &sup);
+   friend std::ostream &operator<<(std::ostream &output,doci2DM::SUP &sup);
 
    public:
 
@@ -87,6 +90,8 @@ class SUP
       //! the G matrix
       std::unique_ptr<PHM> G;
 };
+
+}
 
 #endif /* SUP_H */
 

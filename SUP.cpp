@@ -1,5 +1,6 @@
 #include "SUP.h"
 
+using namespace doci2DM;
 
 SUP::SUP(int L, int N)
 {
@@ -258,22 +259,25 @@ int SUP::gnr() const
    return res;
 }
 
-std::ostream &operator<<(std::ostream &output,SUP &sup)
+namespace doci2DM
 {
-   output << "I block:" << std::endl;
-   output << *sup.I << std::endl;
+   std::ostream &operator<<(std::ostream &output,doci2DM::SUP &sup)
+   {
+      output << "I block:" << std::endl;
+      output << *sup.I << std::endl;
 
 #ifdef __Q_CON
-   output << "Q block:" << std::endl;
-   output << *sup.Q << std::endl;
+      output << "Q block:" << std::endl;
+      output << *sup.Q << std::endl;
 #endif
 
 #ifdef __G_CON
-   output << "G block:" << std::endl;
-   output << *sup.G << std::endl;
+      output << "G block:" << std::endl;
+      output << *sup.G << std::endl;
 #endif
 
-   return output;
+      return output;
+   }
 }
 
 double SUP::ddot(const SUP &x) const

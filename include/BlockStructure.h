@@ -8,6 +8,11 @@
 #include "Matrix.h"
 #include "Vector.h"
 
+
+
+namespace doci2DM
+{
+
 /**
  * @author Brecht Verstichel
  * @date 5-04-2010\n\n
@@ -25,10 +30,11 @@ class BlockStructure
     * For output onto the screen type: \n\n
     * cout << blockmatrix << endl;\n\n
     * @param output The stream to which you are writing (e.g. cout)
-    * @param blockmatrix_p the BlockMatrix you want to print
+    * @param blocks_p the BlockMatrix you want to print
     */
 
-   friend std::ostream &operator<< (std::ostream &output,const BlockStructure<BlockType> &blocks_p)
+   template<class MyBlockType>
+   friend std::ostream &operator<< (std::ostream &output,const doci2DM::BlockStructure<MyBlockType> &blocks_p)
    {
       for(int i = 0;i < blocks_p.blocks.size();++i)
       {

@@ -5,6 +5,9 @@
 
 #include "include.h"
 
+namespace doci2DM
+{
+
 class EIG: public BlockVector
 {
    public:
@@ -29,6 +32,8 @@ class EIG: public BlockVector
 
       double lsfunc(double) const;
 };
+
+}
 
 #endif /* EIG_H */
 
