@@ -588,7 +588,7 @@ int TPM::solve(double t, const SUP &S, TPM &grad, const Lineq &lineq)
 
    TPM Hb(L,N);
 
-   while(rr > 1.0e-7)
+   while(rr > 1.0e-9)
    { 
       Hb.H(t,grad,S, lineq);
 
@@ -663,7 +663,7 @@ void TPM::H(double t,const TPM &delta,const SUP &S, const Lineq &lineq)
    Proj_E(lineq);
 }
 
-double TPM::line_search(double t, SUP &S, const TPM &ham)
+double TPM::line_search(double t, SUP &S, const TPM &ham) const
 {
    double tolerance = 1.0e-5*t;
 
@@ -940,6 +940,23 @@ void TPM::G(const PHM &phm)
       (*this)(0,i) = spm(0,a) + spm(0,b);
       (*this)(0,i) += 2*phm(a,a,b,b) - phm(a,b,a,b) - phm(b,a,b,a);
    }
+}
+
+/**
+ * line search for interpolation
+ * @param t barriere hight
+ * @param rdm current rdm
+ * @param ham the hamiltonian
+ * @return the step size
+ */
+double TPM::line_search(double t, const TPM &rdm, const TPM &ham) const
+{
+   SUP P(L,N);
+
+   P.fill(rdm);
+   P.invert();
+
+   return line_search(t,P,ham);
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/

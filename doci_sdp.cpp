@@ -50,6 +50,8 @@ int main(int argc, char **argv)
 
    TPM ham(L,N);
    ham.HF_molecule(integralsfile);
+   double norm_ham = std::sqrt(ham.ddot(ham));
+   ham /= norm_ham;
 
    TPM rdm(L,N);
    rdm.init(lineq);
@@ -74,13 +76,17 @@ int main(int argc, char **argv)
    double t = 1.0;
    double tolerance = 1.0e-5;
    double target = 1e-12;
+   int iter = 0;
+
+   TPM backup_rdm(rdm);
 
    //outer iteration: scaling of the potential barrier
    while(t > target)
    {
-      cout << t << "\t" << rdm.getMatrices().trace() << "\t" << rdm.getVectors().trace() << "\t" << rdm.ddot(ham) + nuclrep << "\t" << rdm.S_2() << std::endl;
+      cout << iter << "\t" << t << "\t" << rdm.getMatrices().trace() << "\t" << rdm.getVectors().trace() << "\t" << rdm.ddot(ham)*norm_ham + nuclrep << "\t" << rdm.S_2() << std::endl;
 
       double convergence = 1.0;
+      iter++;
 
       //inner iteration: 
       //Newton's method for finding the minimum of the current potential
@@ -107,7 +113,6 @@ int main(int argc, char **argv)
 
          //line search
          double a = delta.line_search(t,P,ham);
-         cout << a << endl;
 
          //rdm += a*delta;
          rdm.daxpy(a,delta);
@@ -123,10 +128,22 @@ int main(int argc, char **argv)
 
       if(tolerance < target)
          tolerance = target;
+
+      //extrapolatie:
+      TPM extrapol(rdm);
+
+      extrapol -= backup_rdm;
+
+      //overzetten voor volgende stap
+      backup_rdm = rdm;
+
+      double a = extrapol.line_search(t,rdm,ham);
+
+      rdm.daxpy(a,extrapol);
    } 
 
    cout << endl;
-   cout << "Energy: " << rdm.ddot(ham) + nuclrep << endl;
+   cout << "Energy: " << rdm.ddot(ham)*norm_ham + nuclrep << endl;
    cout << "Trace: " << rdm.trace() << endl;
    cout << "S^2: " << rdm.S_2() << endl;
    cout << "nuclrep: " << nuclrep << endl;

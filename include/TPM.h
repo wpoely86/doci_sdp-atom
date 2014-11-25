@@ -68,7 +68,9 @@ class TPM: public Container
 
       void H(double t,const TPM &, const SUP &, const Lineq &);
 
-      double line_search(double t, SUP &S, const TPM &ham);
+      double line_search(double t, SUP &, const TPM &) const;
+
+      double line_search(double t, const TPM &, const TPM &) const;
 
       void ReadFromFileFull(std::string filename);
 
