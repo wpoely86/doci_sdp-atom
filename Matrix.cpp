@@ -431,7 +431,10 @@ void Matrix::sqrt_2x2(int option)
 
    // double discr = (a+d)*(a+d) - 4*(a*d-c*c);
    double discr = a*a + d*d + 4*c*c - 2*a*d;
-   assert(!(discr < 0) && "Impossible!?!");
+   // sometimes, we get -1e15. Deal with it.
+   if(discr<0)
+      discr = 0;
+//   assert(!(discr < 0) && "Impossible!?!");
 
    // the eigenvalues
    double x1 = ((a+d) - std::sqrt(discr))/2;
