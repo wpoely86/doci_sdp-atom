@@ -36,16 +36,16 @@ int Tools::getNumberOfParticles(std::string filename)
    file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
    HDF5_STATUS_CHECK(file_id);
 
-   group_id = H5Gopen(file_id, "/integrals", H5P_DEFAULT);
+   group_id = H5Gopen(file_id, "/Data", H5P_DEFAULT);
    HDF5_STATUS_CHECK(group_id);
 
-   attribute_id = H5Aopen(group_id, "nelectrons", H5P_DEFAULT);
+   attribute_id = H5Dopen(group_id, "nelectrons", H5P_DEFAULT);
    HDF5_STATUS_CHECK(attribute_id);
 
-   status = H5Aread(attribute_id, H5T_NATIVE_INT, &nelectrons);
+   status = H5Dread(attribute_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &nelectrons);
    HDF5_STATUS_CHECK(status);
 
-   status = H5Aclose(attribute_id);
+   status = H5Dclose(attribute_id);
    HDF5_STATUS_CHECK(status);
 
    return nelectrons;
