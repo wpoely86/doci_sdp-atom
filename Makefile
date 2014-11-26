@@ -22,6 +22,7 @@ CPPSRC	=   Matrix.cpp\
 	    EIG.cpp\
 	    Lineq.cpp\
             PHM.cpp\
+	    BoundaryPoint.cpp\
 #            DPM.cpp\
 #            PPHM.cpp\
 
