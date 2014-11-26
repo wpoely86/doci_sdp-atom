@@ -146,6 +146,73 @@ namespace doci2DM {
    }
 }
 
+/**
+ * Build the reduced hamiltonian using 2 function objects: one for the one particles integrals,
+ * one for the two particle integrals. The functions should accept the spatial orbitals
+ * as argument.
+ * @param T a function that accepts 2 orbitals a and b and returns the <a|T|b> matrix element
+ * @param V a function that accepts 4 orbitals a, b, c and d and returns the <ab|V|cd> matrix element
+ */
+void TPM::ham(std::function<double(int,int)> &T, std::function<double(int,int,int,int)> &V)
+{
+   // make our life easier
+   auto calc_elem = [this,&T,&V] (int i, int j) {
+      int a = (*t2s)(i,0);
+      int b = (*t2s)(i,1);
+      int c = (*t2s)(j,0);
+      int d = (*t2s)(j,1);
+
+      int a_ = a % L;
+      int b_ = b % L;
+      int c_ = c % L;
+      int d_ = d % L;
+
+      double result = 0;
+
+      // sp terms
+      if(i==j)
+         result += (T(a_,a_) + T(b_,b_))/(N - 1.0);
+
+      // tp terms:
+
+      // a \bar a ; b \bar b
+      if(b==(a+L) && d==(c+L))
+         result += V(a_,b_,c_,d_);
+
+      // a b ; a b
+      if(i==j && a<L && b<L && a!=b)
+         result += V(a_,b_,c_,d_) - V(a_,b_,d_,c_);
+
+      // \bar a \bar b ; \bar a \bar b
+      if(i==j && a>=L && b>=L && a!=b)
+         result += V(a_,b_,c_,d_) - V(a_,b_,d_,c_);
+
+      // a \bar b ; a \bar b
+      if(i==j && a<L && b>=L && a%L!=b%L)
+         result += V(a_,b_,c_,d_);
+
+      // \bar a b ; \bar a b
+      if(i==j && a>=L && b<L && a%L!=b%L)
+         result += V(a_,b_,c_,d_);
+
+      return result;
+   };
+
+
+   auto& hamB = getMatrix(0);
+
+   for(int i=0;i<L;++i)
+      for(int j=i;j<L;++j)
+         hamB(i,j) = hamB(j,i) = calc_elem(i,j);
+
+   auto& hamV = getVector(0);
+
+   for(int i=0;i<hamV.gn();i++)
+      // keep in mind that the degen of the vector is 4. We need prefactor of 2, so
+      // we end up with 0.5
+      hamV[i] = 0.5*calc_elem(L+i,L+i) + 0.5*calc_elem(L*L+i,L*L+i);
+}
+
 void TPM::HF_molecule(std::string filename)
 {
    hid_t       file_id, group_id, dataset_id;
@@ -186,62 +253,21 @@ void TPM::HF_molecule(std::string filename)
    status = H5Fclose(file_id);
    HDF5_STATUS_CHECK(status);
 
+//   printf("0\t0\t0\t0\t0\n");
+//   for(int a=0;a<L;a++)
+//      for(int b=0;b<L;b++)
+//         printf("%20.15f\t%d\t%d\t0\t0\n", OEI(a,b), a+1,b+1);
+//
+//   for(int a=0;a<L;a++)
+//      for(int b=0;b<L;b++)
+//         for(int c=0;c<L;c++)
+//            for(int d=0;d<L;d++)
+//               printf("%20.15f\t%d\t%d\t%d\t%d\n", TEI(a*L+b,c*L+d), a+1,c+1,b+1,d+1);
 
-   // make our life easier
-   auto calc_elem = [this,&OEI,&TEI] (int i, int j) {
-      int a = (*t2s)(i,0);
-      int b = (*t2s)(i,1);
-      int c = (*t2s)(j,0);
-      int d = (*t2s)(j,1);
+   std::function<double(int,int)> getT = [&OEI] (int a, int b) -> double { return OEI(a,b); };
+   std::function<double(int,int,int,int)> getV = [&TEI,this] (int a, int b, int c, int d) -> double { return TEI(a*L + b,c*L + d); };
 
-      int a_ = a % L;
-      int b_ = b % L;
-      int c_ = c % L;
-      int d_ = d % L;
-
-      double result = 0;
-
-      // sp terms
-      if(i==j)
-         result += (OEI(a_,a_) + OEI(b_,b_))/(N - 1.0);
-
-      // tp terms:
-
-      // a \bar a ; b \bar b
-      if(b==(a+L) && d==(c+L))
-         result += TEI(a_*L + b_, c_*L + d_);
-
-      // a b ; a b
-      if(i==j && a<L && b<L && a!=b)
-         result += TEI(a_*L + b_, c_*L + d_) - TEI(a_*L + b_, d_*L + c_);
-
-      // \bar a \bar b ; \bar a \bar b
-      if(i==j && a>=L && b>=L && a!=b)
-         result += TEI(a_*L + b_, c_*L + d_) - TEI(a_*L + b_, d_*L + c_);
-
-      // a \bar b ; a \bar b
-      if(i==j && a<L && b>=L && a%L!=b%L)
-         result += TEI(a_*L + b_, c_*L + d_);
-
-      // \bar a b ; \bar a b
-      if(i==j && a>=L && b<L && a%L!=b%L)
-         result += TEI(a_*L + b_, c_*L + d_);
-
-      return result;
-   };
-
-   auto& hamB = getMatrix(0);
-
-   for(int i=0;i<L;++i)
-      for(int j=i;j<L;++j)
-         hamB(i,j) = hamB(j,i) = calc_elem(i,j);
-
-   auto& hamV = getVector(0);
-
-   for(int i=0;i<hamV.gn();i++)
-      // keep in mind that the degen of the vector is 4. We need prefactor of 2, so
-      // we end up with 0.5
-      hamV[i] = 0.5*calc_elem(L+i,L+i) + 0.5*calc_elem(L*L+i,L*L+i);
+   ham(getT,getV);
 }
 
 

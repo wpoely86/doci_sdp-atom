@@ -4,6 +4,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <functional>
 
 #include "Container.h"
 #include "helpers.h"
@@ -46,6 +47,8 @@ class TPM: public Container
       int gn() const;
 
       void HF_molecule(std::string filename);
+
+      void ham(std::function<double(int,int)> &T, std::function<double(int,int,int,int)> &V);
 
       void WriteToFile(std::string filename) const;
 
