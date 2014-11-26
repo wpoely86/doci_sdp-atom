@@ -22,6 +22,8 @@ class BoundaryPoint
 
       double getEnergy() const;
 
+      double getFullEnergy() const;
+
       void set_tol_PD(double);
 
       void set_tol_en(double);

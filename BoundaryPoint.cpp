@@ -158,6 +158,8 @@ void BoundaryPoint::Run()
          sigma /= 1.01;
    }
 
+   energy = ham->ddot(Z.getI());
+
    std::cout << std::endl;
    std::cout << "Energy: " << ham->ddot(Z.getI()) + nuclrep << std::endl;
    std::cout << "Trace: " << Z.getI().trace() << std::endl;
@@ -170,9 +172,20 @@ void BoundaryPoint::Run()
    std::cout << "total nr of iterations = " << tot_iter << std::endl;
 }
 
+/**
+ * @return the energy without the nuclear replusion part
+ */
 double BoundaryPoint::getEnergy() const
 {
     return energy;
+}
+
+/**
+ * @return the full energy (with the nuclear replusion part)
+ */
+double BoundaryPoint::getFullEnergy() const
+{
+    return energy + nuclrep;
 }
 
 void BoundaryPoint::set_tol_PD(double tol)
