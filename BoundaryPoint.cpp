@@ -7,7 +7,7 @@ using doci2DM::BoundaryPoint;
 
 BoundaryPoint::BoundaryPoint(const CheMPS2::Hamiltonian &hamin)
 {
-   N = Tools::getNumberOfParticles("CheMPS2_Ham_parent.h5");
+   N = hamin.getNe();
    L = hamin.getL();
    nuclrep = hamin.getEconst();
 
@@ -29,6 +29,68 @@ BoundaryPoint::BoundaryPoint(const CheMPS2::Hamiltonian &hamin)
    mazzy = 1.0;
 
    max_iter = 5;
+}
+
+BoundaryPoint::BoundaryPoint(const BoundaryPoint &orig)
+{
+   N = orig.N;
+   L = orig.L;
+   nuclrep = orig.nuclrep;
+
+   ham.reset(new TPM(*orig.ham));
+
+   X.reset(new SUP(*orig.X));
+   Z.reset(new SUP(*orig.Z));
+
+   lineq.reset(new Lineq(*orig.lineq));
+
+   sigma = orig.sigma;;
+
+   tol_PD = orig.tol_PD;
+   tol_en = orig.tol_en;
+
+   mazzy = orig.mazzy;
+
+   max_iter = orig.max_iter;
+
+   energy = orig.energy;
+}
+
+BoundaryPoint& BoundaryPoint::operator=(const BoundaryPoint &orig)
+{
+   N = orig.N;
+   L = orig.L;
+   nuclrep = orig.nuclrep;
+
+   (*ham) = *orig.ham;
+
+   (*X) = *orig.X;
+   (*Z) = *orig.Z;
+
+   (*lineq) = *orig.lineq;
+
+   sigma = orig.sigma;;
+
+   tol_PD = orig.tol_PD;
+   tol_en = orig.tol_en;
+
+   mazzy = orig.mazzy;
+
+   max_iter = orig.max_iter;
+
+   energy = orig.energy;
+
+   return *this;
+}
+
+BoundaryPoint* BoundaryPoint::Clone() const
+{
+   return new BoundaryPoint(*this);
+}
+
+BoundaryPoint* BoundaryPoint::Move()
+{
+   return new BoundaryPoint(std::move(*this));
 }
 
 /**
@@ -79,7 +141,7 @@ void BoundaryPoint::Run()
 
    double D_conv(1.0),P_conv(1.0),convergence(1.0);
 
-   int iter_dual,iter_primal(0);
+   int iter_dual(0),iter_primal(0);
 
    int tot_iter = 0;
 
@@ -173,14 +235,6 @@ void BoundaryPoint::Run()
 }
 
 /**
- * @return the energy without the nuclear replusion part
- */
-double BoundaryPoint::getEnergy() const
-{
-    return energy;
-}
-
-/**
  * @return the full energy (with the nuclear replusion part)
  */
 double BoundaryPoint::getFullEnergy() const
@@ -226,6 +280,12 @@ doci2DM::SUP& BoundaryPoint::getZ() const
 doci2DM::Lineq& BoundaryPoint::getLineq() const
 {
     return (*lineq);
+}
+
+
+doci2DM::TPM& BoundaryPoint::getRDM() const
+{
+   return Z->getI();
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/

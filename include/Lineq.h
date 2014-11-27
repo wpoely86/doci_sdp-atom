@@ -30,10 +30,6 @@ class Lineq
 
       Lineq(int L,int N, bool=false);
 
-      Lineq(const Lineq &) = default;
-
-      Lineq(Lineq &&) = default;
-
       virtual ~Lineq() = default;
 
       int gN() const;

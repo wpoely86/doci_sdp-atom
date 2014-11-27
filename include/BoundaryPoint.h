@@ -8,19 +8,29 @@ namespace CheMPS2 { class Hamiltonian; }
 namespace doci2DM
 {
 
-class BoundaryPoint
+class BoundaryPoint: public Method
 {
    public:
 
       BoundaryPoint(const CheMPS2::Hamiltonian &);
 
+      BoundaryPoint(const BoundaryPoint &);
+
+      BoundaryPoint(BoundaryPoint &&) = default;
+
       virtual ~BoundaryPoint() = default;
+
+      BoundaryPoint& operator=(const BoundaryPoint &);
+
+      BoundaryPoint& operator=(BoundaryPoint &&) = default;
+
+      BoundaryPoint* Clone() const;
+
+      BoundaryPoint* Move();
 
       void BuildHam(const CheMPS2::Hamiltonian &);
 
       void Run();
-
-      double getEnergy() const;
 
       double getFullEnergy() const;
 
@@ -40,6 +50,8 @@ class BoundaryPoint
 
       Lineq& getLineq() const;
 
+      TPM& getRDM() const;
+
    private:
 
       std::unique_ptr<TPM> ham;
@@ -50,10 +62,6 @@ class BoundaryPoint
 
       std::unique_ptr<Lineq> lineq;
 
-      int L;
-
-      int N;
-
       double nuclrep;
 
       double tol_PD, tol_en;
@@ -63,8 +71,6 @@ class BoundaryPoint
       double sigma;
 
       int max_iter;
-
-      double energy;
 };
 
 }
