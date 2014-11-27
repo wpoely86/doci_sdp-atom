@@ -606,3 +606,40 @@ void CheMPS2::Hamiltonian::setNe(int ne)
 }
 
 
+CheMPS2::Hamiltonian CheMPS2::Hamiltonian::CreateFromH5(const string filename)
+{
+    //The hdf5 file
+    hid_t file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+
+    //The data
+    hid_t group_id = H5Gopen(file_id, "/Data",H5P_DEFAULT);
+
+    //The number of orbitals: Set L directly!
+    int L;
+    hid_t dataset_id1 = H5Dopen(group_id, "L", H5P_DEFAULT);
+    H5Dread(dataset_id1, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &L);
+
+    //The group number: SymmInfo.setGroup()
+    hid_t dataset_id2 = H5Dopen(group_id, "nGroup", H5P_DEFAULT);
+    int nGroup_LOADH5;
+    H5Dread(dataset_id2, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &nGroup_LOADH5);
+
+    //The irrep of each orbital: Create and fill orb2irrep directly!
+    hid_t dataset_id3 = H5Dopen(group_id, "orb2irrep", H5P_DEFAULT);
+    std::unique_ptr<int []> orb2irrep(new int[L]);
+    H5Dread(dataset_id3, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, orb2irrep.get());
+
+    H5Dclose(dataset_id1);
+    H5Dclose(dataset_id2);
+    H5Dclose(dataset_id3);
+
+    H5Gclose(group_id);
+
+    H5Fclose(file_id);
+
+    Hamiltonian my_obj(L, nGroup_LOADH5, orb2irrep.get());
+
+    my_obj.read2(filename);
+
+    return my_obj;
+}

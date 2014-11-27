@@ -162,6 +162,8 @@ namespace CheMPS2{
          
          //! Debug check certain elements and sums
          void debugcheck() const;
+
+         static Hamiltonian CreateFromH5(const string filename);
       
       private:
       
