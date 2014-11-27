@@ -16,7 +16,7 @@ class UnitaryMatrix;
 class OrbitalTransform
 {
     public :
-        OrbitalTransform(CheMPS2::Hamiltonian& ham);
+        OrbitalTransform(const CheMPS2::Hamiltonian& ham);
         virtual ~OrbitalTransform() = default;
 
         void fillHamCI(CheMPS2::Hamiltonian& HamCI);	

@@ -31,14 +31,14 @@ using std::max;
 using CheMPS2::Hamiltonian;
 using namespace simanneal;
 
-OrbitalTransform::OrbitalTransform(Hamiltonian& HamIn):
+OrbitalTransform::OrbitalTransform(const Hamiltonian& HamIn):
     index(HamIn)
 {
     OptIndex index(HamIn);
     numberOfIrreps = index.getNirreps();
     int L = HamIn.getL();
     SymmInfo.setGroup(HamIn.getNGroup());
-    _hamorig.reset(new Hamiltonian(HamIn));
+    _hamorig.reset(new CheMPS2::Hamiltonian(HamIn));
 
     _unitary.reset(new UnitaryMatrix(index));
 
