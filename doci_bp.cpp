@@ -5,12 +5,14 @@
 #include "BoundaryPoint.h"
 // from CheMPS2
 #include "Hamiltonian.h"
+#include "SimulatedAnnealing.h"
 
 int main(int argc,char **argv)
 {
    using std::cout;
    using std::endl;
    using namespace doci2DM;
+   using simanneal::SimulatedAnnealing;
 
    cout.precision(10);
 
@@ -44,14 +46,14 @@ int main(int argc,char **argv)
 
    cout << "Reading: " << integralsfile << endl;
 
-//   const int L = Tools::getspDimension(integralsfile);//dim sp hilbert space
-   const int N = Tools::getNumberOfParticles("CheMPS2_Ham_parent.h5");//nr of particles
-
-   CheMPS2::Hamiltonian ham(true, "CheMPS2_Ham_parent.h5", "CheMPS2_Ham_Tmat.h5", "CheMPS2_Ham_Vmat.h5");
-
-   cout << "Starting with L=" << ham.getL() << " N=" << N << endl;
+   auto ham = CheMPS2::Hamiltonian::CreateFromH5(integralsfile);
 
    BoundaryPoint method(ham);
+
+   const auto L = ham.getL(); //dim sp hilbert space
+   const auto N = ham.getNe(); //nr of particles
+
+   cout << "Starting with L=" << L << " N=" << N << endl;
 
    method.Run();
 
@@ -62,7 +64,7 @@ int main(int argc,char **argv)
    else
       h5_name << "rdm.h5";
 
-   method.getZ().getI().WriteToFile(h5_name.str().c_str());
+   method.getRDM().WriteToFile(h5_name.str().c_str());
 
    return 0;
 }

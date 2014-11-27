@@ -23,6 +23,7 @@ CPPSRC	=   Matrix.cpp\
 	    Lineq.cpp\
             PHM.cpp\
 	    BoundaryPoint.cpp\
+	    PotentialReduction.cpp\
 #            DPM.cpp\
 #            PPHM.cpp\
 
@@ -38,8 +39,13 @@ INCLUDE = -Iinclude -Iextern/include
 
 LIBS= -llapack -lblas -lhdf5 -Lextern -lsimanneal
 
-CC	= clang
-CXX	= clang++
+ifeq ($(origin CC), default)
+    CC = clang
+endif
+
+ifeq ($(origin CXX), default)
+    CXX = clang++
+endif
 
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
@@ -163,5 +169,9 @@ doc:
 bp: $(OBJ) doci_bp.o
 	@echo 'Building boundary point method'
 	$(CXX) $(LDFLAGS) $(SFLAGS) -o $(BRIGHT_ROOT)/doci_bp doci_bp.o $(OBJ) $(LIBS)
+
+sdp: $(OBJ) doci_sdp.o
+	@echo 'Building Potential reduction method'
+	$(CXX) $(LDFLAGS) $(SFLAGS) -o $(BRIGHT_ROOT)/doci_sdp doci_sdp.o $(OBJ) $(LIBS)
 
 # ====================== End of file 'makefile.in' ========================== #
