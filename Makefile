@@ -8,7 +8,7 @@
 #   Sources for all modules
 # -----------------------------------------------------------------------------
 # prefix for binaries
-BINNAME = doci_sdp
+BINNAME = doci
 
 CPPSRC	=   Matrix.cpp\
 	    Vector.cpp\
@@ -142,9 +142,9 @@ PQGT:
 # -----------------------------------------------------------------------------
 #   Link everything together
 # -----------------------------------------------------------------------------
-$(BRIGHT_ROOT)/$(BINNAME):	Makefile $(OBJ) doci_sdp.o
+$(BRIGHT_ROOT)/$(BINNAME):	Makefile $(OBJ) doci.o
 	@echo; echo "Linker: creating $(BRIGHT_ROOT)/$(BINNAME) ..."
-	$(CXX) $(LDFLAGS) $(SFLAGS) -o $(BRIGHT_ROOT)/$(BINNAME) doci_sdp.o $(OBJ) $(LIBS)
+	$(CXX) $(LDFLAGS) $(SFLAGS) -o $(BRIGHT_ROOT)/$(BINNAME) doci.o $(OBJ) $(LIBS)
 
 # -----------------------------------------------------------------------------
 #   Create everything newly from scratch
