@@ -37,6 +37,8 @@ namespace CheMPS2{
          /** \param nGroup The symmetry group number (see Irreps.h)
              \param IrrepSizes Array with length the number of irreps of the specified group, containing the number of orbitals of that irrep */
          TwoIndex(const int nGroup, const int * IrrepSizes);
+
+         TwoIndex(const TwoIndex &);
          
          //! Destructor
          virtual ~TwoIndex();
@@ -58,10 +60,14 @@ namespace CheMPS2{
          //! Save the TwoIndex object
          /** \param name filename */
          void save(const std::string name) const;
+
+         void save2(const std::string name) const;
          
          //! Load the TwoIndex object
          /** \param name filename */
          void read(const std::string name);
+
+         void read2(const std::string name);
       
       private:
       

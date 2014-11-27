@@ -22,6 +22,7 @@
 #include <iostream>
 #include <sstream>
 #include <string>
+#include <cstring>
 
 #include "FourIndex.h"
 #include "Lapack.h"
@@ -43,6 +44,21 @@ CheMPS2::FourIndex::FourIndex(const int nGroup, const int * IrrepSizes){
    arrayLength = calcNumberOfUniqueElements(true); //true means allocate the storage!
    theElements = new double[arrayLength];
    
+}
+
+CheMPS2::FourIndex::FourIndex(const CheMPS2::FourIndex &orig)
+{
+   SymmInfo = orig.SymmInfo;
+   
+   Isizes = new int[SymmInfo.getNumberOfIrreps()];
+   storage = new long long****[SymmInfo.getNumberOfIrreps()];
+   
+   memcpy(Isizes, orig.Isizes, sizeof(int)*SymmInfo.getNumberOfIrreps());
+   
+   arrayLength = calcNumberOfUniqueElements(true); //true means allocate the storage!
+   theElements = new double[arrayLength];
+
+   memcpy(theElements, orig.theElements, sizeof(double)*arrayLength);
 }
 
 long long CheMPS2::FourIndex::calcNumberOfUniqueElements(const bool allocate){
@@ -363,6 +379,69 @@ void CheMPS2::FourIndex::save(const std::string name) const{
 
 }
 
+
+void CheMPS2::FourIndex::save2(const std::string name) const
+{
+   //The hdf5 file
+   hid_t file_id = H5Fopen(name.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
+
+   hid_t group_id2 = H5Gcreate(file_id, "FourIndex", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+      
+   //The metadata
+   hid_t group_id = H5Gcreate(group_id2, "MetaData", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+   //The IrrepSizes
+   hsize_t dimarray       = SymmInfo.getNumberOfIrreps();
+   hid_t dataspace_id     = H5Screate_simple(1, &dimarray, NULL);
+   hid_t dataset_id       = H5Dcreate(group_id, "IrrepSizes", H5T_STD_I32LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+   H5Dwrite(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, Isizes);
+
+   //Attributes
+   hid_t attribute_space_id1  = H5Screate(H5S_SCALAR);
+   hid_t attribute_id1        = H5Acreate(dataset_id, "nGroup", H5T_STD_I32LE, attribute_space_id1, H5P_DEFAULT, H5P_DEFAULT);
+   int nGroup                 = SymmInfo.getGroupNumber();
+   H5Awrite(attribute_id1, H5T_NATIVE_INT, &nGroup); 
+
+   hid_t attribute_space_id2  = H5Screate(H5S_SCALAR);
+   hid_t attribute_id2        = H5Acreate(dataset_id, "nIrreps", H5T_STD_I32LE, attribute_space_id2, H5P_DEFAULT, H5P_DEFAULT);
+   int nIrreps                = SymmInfo.getNumberOfIrreps();
+   H5Awrite(attribute_id2, H5T_NATIVE_INT, &nIrreps); 
+
+   hid_t attribute_space_id3  = H5Screate(H5S_SCALAR);
+   hid_t attribute_id3        = H5Acreate(dataset_id, "theTotalSize", H5T_STD_I64LE, attribute_space_id3, H5P_DEFAULT, H5P_DEFAULT);
+   H5Awrite(attribute_id3, H5T_NATIVE_LLONG, &arrayLength); 
+
+   H5Aclose(attribute_id1);
+   H5Aclose(attribute_id2);
+   H5Aclose(attribute_id3);
+   H5Sclose(attribute_space_id1);
+   H5Sclose(attribute_space_id2);
+   H5Sclose(attribute_space_id3);
+
+   H5Dclose(dataset_id);
+   H5Sclose(dataspace_id);
+
+   H5Gclose(group_id);
+
+   //The object itself
+   hid_t group_id7 = H5Gcreate(group_id2, "FourIndexObject", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+   hsize_t dimarray7       = arrayLength; //hsize_t is defined by default as unsigned long long, so no problem
+   hid_t dataspace_id7     = H5Screate_simple(1, &dimarray7, NULL);
+   hid_t dataset_id7       = H5Dcreate(group_id7, "Matrix elements", H5T_IEEE_F64LE, dataspace_id7, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+   H5Dwrite(dataset_id7, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, theElements);
+
+   H5Dclose(dataset_id7);
+   H5Sclose(dataspace_id7);
+
+   H5Gclose(group_id7);
+
+   H5Gclose(group_id2);
+
+   H5Fclose(file_id);
+
+}
+
 void CheMPS2::FourIndex::read(const std::string name){
  
    //The hdf5 file
@@ -421,3 +500,61 @@ void CheMPS2::FourIndex::read(const std::string name){
 
 }
 
+
+void CheMPS2::FourIndex::read2(const std::string name)
+{
+    //The hdf5 file
+    hid_t file_id = H5Fopen(name.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+
+    //The metadata
+    hid_t group_id = H5Gopen(file_id, "/FourIndex/MetaData",H5P_DEFAULT);
+
+    //The IrrepSizes
+    hid_t dataset_id = H5Dopen(group_id, "IrrepSizes", H5P_DEFAULT);
+
+    //Attributes
+    hid_t attribute_id1 = H5Aopen_by_name(group_id,"IrrepSizes", "nGroup", H5P_DEFAULT, H5P_DEFAULT);
+    int nGroup;
+    H5Aread(attribute_id1, H5T_NATIVE_INT, &nGroup);
+    assert( nGroup==SymmInfo.getGroupNumber() );
+
+    hid_t attribute_id2 = H5Aopen_by_name(group_id,"IrrepSizes", "nIrreps", H5P_DEFAULT, H5P_DEFAULT);
+    int nIrreps;
+    H5Aread(attribute_id2, H5T_NATIVE_INT, &nIrreps);
+    assert( nIrreps==SymmInfo.getNumberOfIrreps() );
+
+    hid_t attribute_id3 = H5Aopen_by_name(group_id,"IrrepSizes", "theTotalSize", H5P_DEFAULT, H5P_DEFAULT);
+    long long theTotalSize;
+    H5Aread(attribute_id3, H5T_NATIVE_LLONG, &theTotalSize);
+    assert( theTotalSize==arrayLength );
+
+    H5Aclose(attribute_id1);
+    H5Aclose(attribute_id2);
+    H5Aclose(attribute_id3);
+
+    int * IsizesAgain = new int[SymmInfo.getNumberOfIrreps()];
+    H5Dread(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, IsizesAgain);
+    for (int cnt=0; cnt<SymmInfo.getNumberOfIrreps(); cnt++){
+        assert( IsizesAgain[cnt]==Isizes[cnt] );
+    }
+    delete [] IsizesAgain;
+    H5Dclose(dataset_id);
+
+    H5Gclose(group_id);
+
+    std::cout << "FourIndex::read : loading " << arrayLength << " doubles." << std::endl;
+
+    //The object itself.
+    hid_t group_id7 = H5Gopen(file_id, "/FourIndex/FourIndexObject", H5P_DEFAULT);
+
+    hid_t dataset_id7 = H5Dopen(group_id7, "Matrix elements", H5P_DEFAULT);
+    H5Dread(dataset_id7, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, theElements);
+    H5Dclose(dataset_id7);
+
+    H5Gclose(group_id7);
+
+    H5Fclose(file_id);
+
+    std::cout << "FourIndex::read : everything loaded!" << std::endl;
+
+}

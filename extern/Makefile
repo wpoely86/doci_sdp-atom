@@ -6,10 +6,15 @@ OBJ	= $(patsubst %.cpp,%.o,$(CPPSRC))
 
 INCLUDE = -Iinclude
 
-CC	= clang
-CXX	= clang++
+ifeq ($(origin CC), default)
+    CC = clang
+endif
 
-CFLAGS	= $(INCLUDE) -std=c++11 -g -Wall -O2 -march=native -Wno-unused-variable
+ifeq ($(origin CXX), default)
+    CXX = clang++
+endif
+
+CFLAGS	= $(INCLUDE) -std=c++11 -g -Wall -O2 -march=native -Wno-unused-variable -fPIC
 CXXFLAGS = $(CFLAGS)
 LDFLAGS	= -g -Wall -O2 -march=native
 

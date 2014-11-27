@@ -21,6 +21,7 @@
 #include <assert.h>
 #include <iostream>
 #include <string>
+#include <cstring>
 #include <fstream>
 
 #include "Irreps.h"
@@ -41,10 +42,10 @@ CheMPS2::Hamiltonian::Hamiltonian(const int Norbitals, const int nGroup, const i
    assert( nGroup<=7 );
    SymmInfo.setGroup(nGroup);
    
-   orb2irrep = new int[L];
-   orb2indexSy = new int[L];
+   orb2irrep.reset(new int[L]);
+   orb2indexSy.reset(new int[L]);
    int nIrreps = SymmInfo.getNumberOfIrreps();
-   irrep2num_orb = new int[nIrreps];
+   irrep2num_orb.reset(new int[nIrreps]);
    for (int cnt=0; cnt<nIrreps; cnt++) irrep2num_orb[cnt] = 0;
    for (int cnt=0; cnt<L; cnt++){
       assert( OrbIrreps[cnt]>=0 );
@@ -54,9 +55,30 @@ CheMPS2::Hamiltonian::Hamiltonian(const int Norbitals, const int nGroup, const i
       irrep2num_orb[orb2irrep[cnt]]++;
    }
    
-   Tmat = new TwoIndex(SymmInfo.getGroupNumber(),irrep2num_orb);
-   Vmat = new FourIndex(SymmInfo.getGroupNumber(),irrep2num_orb);
+   Tmat.reset(new TwoIndex(SymmInfo.getGroupNumber(),irrep2num_orb.get()));
+   Vmat.reset(new FourIndex(SymmInfo.getGroupNumber(),irrep2num_orb.get()));
 
+   Ne = 0;
+}
+
+CheMPS2::Hamiltonian::Hamiltonian(const Hamiltonian &orig)
+{
+    L = orig.L;
+    Ne = orig.Ne;
+    SymmInfo = orig.SymmInfo;
+    Econst = orig.Econst;
+
+   orb2irrep.reset(new int[L]);
+   orb2indexSy.reset(new int[L]);
+   int nIrreps = SymmInfo.getNumberOfIrreps();
+   irrep2num_orb.reset(new int[nIrreps]);
+
+    memcpy(orb2irrep.get(), orig.orb2irrep.get(), sizeof(int)*L);
+    memcpy(orb2indexSy.get(), orig.orb2indexSy.get(), sizeof(int)*L);
+    memcpy(irrep2num_orb.get(), orig.irrep2num_orb.get(), sizeof(int)*nIrreps);
+
+    Tmat.reset(new TwoIndex(*orig.Tmat));
+    Vmat.reset(new FourIndex(*orig.Vmat));
 }
 
 CheMPS2::Hamiltonian::Hamiltonian(const string file_psi4text){
@@ -67,6 +89,8 @@ CheMPS2::Hamiltonian::Hamiltonian(const string file_psi4text){
 
 CheMPS2::Hamiltonian::Hamiltonian(const bool fileh5, const string main_file, const string file_tmat, const string file_vmat){
 
+    Ne = 0;
+
    if (fileh5){
       CreateAndFillFromH5( main_file, file_tmat, file_vmat );
    } else {
@@ -75,6 +99,7 @@ CheMPS2::Hamiltonian::Hamiltonian(const bool fileh5, const string main_file, con
    
 }
 
+/*
 CheMPS2::Hamiltonian::~Hamiltonian(){
    
    delete [] orb2irrep;
@@ -84,6 +109,7 @@ CheMPS2::Hamiltonian::~Hamiltonian(){
    delete Vmat;
    
 }
+*/
 
 int CheMPS2::Hamiltonian::getL() const{ return L; }
 
@@ -164,7 +190,7 @@ void CheMPS2::Hamiltonian::save(const string file_parent, const string file_tmat
          hsize_t dimarray3      = L;
          hid_t dataspace_id3    = H5Screate_simple(1, &dimarray3, NULL);
          hid_t dataset_id3      = H5Dcreate(group_id, "orb2irrep", H5T_STD_I32LE, dataspace_id3, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-         H5Dwrite(dataset_id3, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, orb2irrep);
+         H5Dwrite(dataset_id3, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, orb2irrep.get());
          
          //Econst
          hsize_t dimarray4      = 1;
@@ -253,31 +279,37 @@ void CheMPS2::Hamiltonian::CreateAndFillFromH5(const string file_parent, const s
          int nGroup_LOADH5;
          H5Dread(dataset_id2, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &nGroup_LOADH5);
          SymmInfo.setGroup( nGroup_LOADH5 );
+
+
+         hid_t dataset_id5 = H5Dopen(group_id, "nelectrons", H5P_DEFAULT);
+         H5Dread(dataset_id5, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &Ne);
          
          //The irrep of each orbital: Create and fill orb2irrep directly!
          hid_t dataset_id3 = H5Dopen(group_id, "orb2irrep", H5P_DEFAULT);
-         orb2irrep = new int[ L ];
-         H5Dread(dataset_id3, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, orb2irrep);
+         orb2irrep.reset(new int[L]);
+         H5Dread(dataset_id3, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, orb2irrep.get());
     
          H5Dclose(dataset_id1);
          H5Dclose(dataset_id2);
          H5Dclose(dataset_id3);
+         H5Dclose(dataset_id5);
 
       H5Gclose(group_id);
       
    H5Fclose(file_id);
-   
-   orb2indexSy = new int[ L ];
+
+   orb2indexSy.reset(new int[L]);
    int nIrreps = SymmInfo.getNumberOfIrreps();
-   irrep2num_orb = new int[ nIrreps ];
+   irrep2num_orb.reset(new int[nIrreps]);
+   
    for (int irrep = 0; irrep < nIrreps; irrep++){ irrep2num_orb[ irrep ] = 0; }
    for (int orb = 0; orb < L; orb++){
       orb2indexSy[ orb ] = irrep2num_orb[ orb2irrep[ orb ] ];
       irrep2num_orb[ orb2irrep[ orb ] ]++;
    }
    
-   Tmat = new TwoIndex(  SymmInfo.getGroupNumber(), irrep2num_orb );
-   Vmat = new FourIndex( SymmInfo.getGroupNumber(), irrep2num_orb );
+   Tmat.reset(new TwoIndex(SymmInfo.getGroupNumber(),irrep2num_orb.get()));
+   Vmat.reset(new FourIndex(SymmInfo.getGroupNumber(),irrep2num_orb.get()));
 
    read(file_parent, file_tmat, file_vmat);
 
@@ -333,11 +365,11 @@ void CheMPS2::Hamiltonian::CreateAndFillFromPsi4dump(const string filename){
    
    //This line contains the irrep numbers --> allocate, read in & set
    getline(inputfile,line);
-   
-   orb2irrep = new int[L];
-   orb2indexSy = new int[L];
+
+   orb2irrep.reset(new int[L]);
+   orb2indexSy.reset(new int[L]);
    int nIrreps = SymmInfo.getNumberOfIrreps();
-   irrep2num_orb = new int[nIrreps];
+   irrep2num_orb.reset(new int[nIrreps]);
    
    pos = 0;
    do {
@@ -350,8 +382,8 @@ void CheMPS2::Hamiltonian::CreateAndFillFromPsi4dump(const string filename){
       orb2indexSy[cnt] = irrep2num_orb[orb2irrep[cnt]];
       irrep2num_orb[orb2irrep[cnt]]++;
    }
-   Tmat = new TwoIndex(SymmInfo.getGroupNumber(),irrep2num_orb);
-   Vmat = new FourIndex(SymmInfo.getGroupNumber(),irrep2num_orb);
+   Tmat.reset(new TwoIndex(SymmInfo.getGroupNumber(),irrep2num_orb.get()));
+   Vmat.reset(new FourIndex(SymmInfo.getGroupNumber(),irrep2num_orb.get()));
    
    //Skip three lines --> number of double occupations, single occupations and test line
    getline(inputfile,line);
@@ -451,6 +483,126 @@ void CheMPS2::Hamiltonian::debugcheck() const{
    cout << "2-electron integrals: Sum over all elements          : " << test << endl;
    cout << "2-electron integrals: Sum over Vijkl with i<=j<=k<=l : " << test2 << endl;
 
+}
+
+
+int CheMPS2::Hamiltonian::getNe() const
+{
+    return Ne;
+}
+
+void CheMPS2::Hamiltonian::save2(const string filename) const
+{
+   //The hdf5 file
+   hid_t file_id = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+      
+      //The data
+      hid_t group_id = H5Gcreate(file_id, "/Data", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+       
+         //The chain length
+         hsize_t dimarray       = 1;
+         hid_t dataspace_id     = H5Screate_simple(1, &dimarray, NULL);
+         hid_t dataset_id       = H5Dcreate(group_id, "L", H5T_STD_I32LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+         H5Dwrite(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &L);
+         
+         //The group number
+         hsize_t dimarray2      = 1;
+         hid_t dataspace_id2    = H5Screate_simple(1, &dimarray2, NULL);
+         hid_t dataset_id2      = H5Dcreate(group_id, "nGroup", H5T_STD_I32LE, dataspace_id2, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+         int nGroup = SymmInfo.getGroupNumber();
+         H5Dwrite(dataset_id2, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &nGroup);
+         
+         //orb2irrep
+         hsize_t dimarray3      = L;
+         hid_t dataspace_id3    = H5Screate_simple(1, &dimarray3, NULL);
+         hid_t dataset_id3      = H5Dcreate(group_id, "orb2irrep", H5T_STD_I32LE, dataspace_id3, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+         H5Dwrite(dataset_id3, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, orb2irrep.get());
+         
+         //Econst
+         hsize_t dimarray4      = 1;
+         hid_t dataspace_id4    = H5Screate_simple(1, &dimarray4, NULL);
+         hid_t dataset_id4      = H5Dcreate(group_id, "Econst", H5T_IEEE_F64LE, dataspace_id4, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+         H5Dwrite(dataset_id4, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &Econst);
+
+         hid_t dataspace_id5    = H5Screate(H5S_SCALAR);
+         hid_t dataset_id5      = H5Dcreate(group_id, "nelectrons", H5T_STD_I32LE, dataspace_id5, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+         H5Dwrite(dataset_id5, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &Ne);
+    
+         H5Dclose(dataset_id);
+         H5Sclose(dataspace_id);
+         H5Dclose(dataset_id2);
+         H5Sclose(dataspace_id2);
+         H5Dclose(dataset_id3);
+         H5Sclose(dataspace_id3);
+         H5Dclose(dataset_id4);
+         H5Sclose(dataspace_id4);
+         H5Dclose(dataset_id5);
+         H5Sclose(dataspace_id5);
+
+      H5Gclose(group_id);
+      
+   H5Fclose(file_id);
+
+   Tmat->save2(filename);
+   Vmat->save2(filename);
+}
+
+void CheMPS2::Hamiltonian::read2(const string filename)
+{
+   Tmat->read2(filename);
+   Vmat->read2(filename);
+
+   //The hdf5 file
+   hid_t file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+      
+      //The data
+      hid_t group_id = H5Gopen(file_id, "/Data",H5P_DEFAULT);
+       
+         //The chain length
+         hid_t dataset_id1 = H5Dopen(group_id, "L", H5P_DEFAULT);
+         int Lagain;
+         H5Dread(dataset_id1, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &Lagain);
+         assert( L==Lagain );
+
+         //The group number
+         hid_t dataset_id2 = H5Dopen(group_id, "nGroup", H5P_DEFAULT);
+         int nGroup;
+         H5Dread(dataset_id2, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &nGroup);
+         assert( nGroup==SymmInfo.getGroupNumber() );
+
+         hid_t dataset_id5 = H5Dopen(group_id, "nelectrons", H5P_DEFAULT);
+         H5Dread(dataset_id5, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &Ne);
+         
+         //orb2irrep
+         hid_t dataset_id3 = H5Dopen(group_id, "orb2irrep", H5P_DEFAULT);
+         int * orb2irrepAgain = new int[L];
+         H5Dread(dataset_id3, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, orb2irrepAgain);
+         for (int cnt=0; cnt<L; cnt++){
+            assert( orb2irrep[cnt]==orb2irrepAgain[cnt] );
+         }
+         delete [] orb2irrepAgain;
+         
+         //Econst
+         hid_t dataset_id4 = H5Dopen(group_id, "Econst", H5P_DEFAULT);
+         H5Dread(dataset_id4, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, &Econst);
+    
+         H5Dclose(dataset_id1);
+         H5Dclose(dataset_id2);
+         H5Dclose(dataset_id3);
+         H5Dclose(dataset_id4);
+         H5Dclose(dataset_id5);
+
+      H5Gclose(group_id);
+      
+   H5Fclose(file_id);
+   
+   if (CheMPS2::HAMILTONIAN_debugPrint) debugcheck();
+
+}
+
+void CheMPS2::Hamiltonian::setNe(int ne)
+{
+    this->Ne = ne;
 }
 
 

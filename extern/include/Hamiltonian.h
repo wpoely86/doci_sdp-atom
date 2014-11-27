@@ -21,6 +21,7 @@
 #define HAMILTONIAN_CHEMPS2_H
 
 #include <string>
+#include <memory>
 
 #include "Irreps.h"
 #include "TwoIndex.h"
@@ -74,9 +75,13 @@ namespace CheMPS2{
              \param file_tmat The HDF5 Hamiltonian Tmat filename
              \param file_vmat The HDF5 Hamiltonian Vmat filename */
          Hamiltonian(const bool fileh5, const string main_file=HAMILTONIAN_ParentStorageName, const string file_tmat=HAMILTONIAN_TmatStorageName, const string file_vmat=HAMILTONIAN_VmatStorageName);
-         
+
+         Hamiltonian(const Hamiltonian &);
+
+         Hamiltonian(Hamiltonian &&) = default;
+
          //! Destructor
-         virtual ~Hamiltonian();
+         virtual ~Hamiltonian() = default;
          
          //! Get the number of orbitals
          /** \return The number of orbitals */
@@ -146,6 +151,14 @@ namespace CheMPS2{
              \param file_tmat The HDF5 Hamiltonian Tmat filename
              \param file_vmat The HDF5 Hamiltonian Vmat filename */
          void read(const string file_parent=HAMILTONIAN_ParentStorageName, const string file_tmat=HAMILTONIAN_TmatStorageName, const string file_vmat=HAMILTONIAN_VmatStorageName);
+
+         void save2(const string filename) const;
+
+         void read2(const string filename);
+
+         void setNe(int);
+
+         int getNe() const;
          
          //! Debug check certain elements and sums
          void debugcheck() const;
@@ -154,24 +167,27 @@ namespace CheMPS2{
       
          //number of orbitals
          int L;
+
+         //number of electrons
+         int Ne;
          
          //symmetry info
          Irreps SymmInfo;
          
          //irrep of each orbital
-         int * orb2irrep;
+         std::unique_ptr<int []> orb2irrep;
          
          //number of orbitals per irrep
-         int * irrep2num_orb;
+         std::unique_ptr<int []> irrep2num_orb;
          
          //index of an orbital within irrep block
-         int * orb2indexSy;
+         std::unique_ptr<int []> orb2indexSy;
          
          //1-particle matrix elements
-         TwoIndex * Tmat;
+         std::unique_ptr<TwoIndex> Tmat;
          
          //2-particle matrix elements
-         FourIndex * Vmat;
+         std::unique_ptr<FourIndex> Vmat;
          
          //Constant part of the Hamiltonian
          double Econst;
