@@ -24,6 +24,7 @@ CPPSRC	=   Matrix.cpp\
             PHM.cpp\
 	    BoundaryPoint.cpp\
 	    PotentialReduction.cpp\
+	    SimulatedAnnealing.cpp\
 #            DPM.cpp\
 #            PPHM.cpp\
 
