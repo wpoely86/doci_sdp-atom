@@ -8,8 +8,6 @@
 #include "Matrix.h"
 #include "Vector.h"
 
-
-
 namespace doci2DM
 {
 
@@ -34,18 +32,7 @@ class BlockStructure
     */
 
    template<class MyBlockType>
-   friend std::ostream &operator<< (std::ostream &output,const doci2DM::BlockStructure<MyBlockType> &blocks_p)
-   {
-      for(int i = 0;i < blocks_p.blocks.size();++i)
-      {
-         output << i << "\t" << blocks_p.blocks[i]->gn() << "\t" << blocks_p.degen[i] << std::endl;
-         output << std::endl;
-
-         output << *blocks_p.blocks[i] << std::endl;
-      }
-
-      return output;
-   }
+   friend std::ostream &operator<< (std::ostream &output,const doci2DM::BlockStructure<MyBlockType> &blocks_p);
 
    public:
 

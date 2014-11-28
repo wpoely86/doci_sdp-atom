@@ -179,6 +179,7 @@ BlockStructure<BlockType> &BlockStructure<BlockType>::operator*=(double c)
    return *this;
 }
 
+namespace doci2DM {
 /**
  * write access to your blocks, change the number in block "block", on row i and column j
  * @param block The index of the block you want to access
@@ -215,6 +216,8 @@ template<>
 double BlockStructure<Vector>::operator()(int block,int index) const
 {
    return (*blocks[block])[index];
+}
+
 }
 
 /**
@@ -360,23 +363,39 @@ void BlockStructure<BlockType>::symmetrize()
       blocks[i]->symmetrize();
 }
 
+namespace doci2DM {
 template<>
 void BlockStructure<Vector>::sort()
 {
-   for(int i = 0;i < blocks.size();++i)
+   for(unsigned int i = 0;i < blocks.size();++i)
       blocks[i]->sort();
+}
 }
 
    template<class BlockType>
 void BlockStructure<BlockType>::sep_pm(BlockStructure<BlockType> &pos, BlockStructure<BlockType> &neg)
 {
-   for(int i=0;i<blocks.size();++i)
+   for(unsigned int i=0;i<blocks.size();++i)
       blocks[i]->sep_pm(*pos.blocks[i], *neg.blocks[i]);
 }
 
 
 namespace doci2DM
 {
+   template<class MyBlockType>
+   std::ostream &operator<< (std::ostream &output,const doci2DM::BlockStructure<MyBlockType> &blocks_p)
+   {
+      for(int i = 0;i < blocks_p.blocks.size();++i)
+      {
+         output << i << "\t" << blocks_p.blocks[i]->gn() << "\t" << blocks_p.degen[i] << std::endl;
+         output << std::endl;
+
+         output << *blocks_p.blocks[i] << std::endl;
+      }
+
+      return output;
+   }
+
    // explicit instantiation must occur in namespace
    template class BlockStructure<doci2DM::Matrix>;
    template class BlockStructure<doci2DM::Vector>;
