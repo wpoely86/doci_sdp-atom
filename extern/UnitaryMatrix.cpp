@@ -24,6 +24,7 @@
 #include <sstream>
 #include <algorithm>
 #include <cstring>
+#include <mpi.h>
 
 #include "MyHDF5.h"
 #include "Lapack.h"
@@ -431,6 +432,26 @@ void UnitaryMatrix::print_unitary() const
         }
         cout << endl;
     }
+}
+
+/**
+ * Spread the UnitaryMatrix from rank orig to all
+ * other UnitaryMatrices in the world
+ */
+void UnitaryMatrix::sendreceive(int orig)
+{
+    for (int irrep=0; irrep<_index->getNirreps(); irrep++)
+    {
+        const int linsize = _index->getNORB(irrep);
+        const int size = linsize * linsize;
+        MPI_Bcast(unitary[irrep].get(), size, MPI_DOUBLE, orig, MPI_COMM_WORLD);
+    }
+}
+
+
+int UnitaryMatrix::get_Nirrep() const
+{
+    return _index->getNirreps();
 }
 
 /* vim: set ts=4 sw=4 expandtab :*/

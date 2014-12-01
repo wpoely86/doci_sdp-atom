@@ -1,5 +1,7 @@
 #include <iostream>
+#include <chrono>
 #include <getopt.h>
+#include <mpi.h>
 
 #include "include.h"
 #include "BoundaryPoint.h"
@@ -60,6 +62,8 @@ int main(int argc,char **argv)
 
    cout << "Reading: " << integralsfile << endl;
 
+   MPI_Init(&argc,&argv);
+
    SimulatedAnnealing opt(CheMPS2::Hamiltonian::CreateFromH5(integralsfile));
 
    if(bp)
@@ -73,6 +77,7 @@ int main(int argc,char **argv)
    const auto N = ham.getNe(); //nr of particles
 
    cout << "Starting with L=" << L << " N=" << N << endl;
+   auto start = std::chrono::high_resolution_clock::now();
 
    opt.Set_start_temp(0.1);
    opt.Set_delta_temp(0.99);
@@ -84,7 +89,11 @@ int main(int argc,char **argv)
 
    opt.calc_energy();
 
-   opt.optimize();
+   opt.optimize_mpi();
+
+   auto end = std::chrono::high_resolution_clock::now();
+
+   cout << "Total Runtime: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << endl;
 
    std::stringstream h5_name;
 
@@ -93,7 +102,12 @@ int main(int argc,char **argv)
    else
       h5_name << "rdm.h5";
 
-   opt.getMethod().getRDM().WriteToFile(h5_name.str().c_str());
+   int rank;
+   MPI_Comm_rank(MPI_COMM_WORLD, &rank);
+   if(rank == 0)
+      opt.getMethod().getRDM().WriteToFile(h5_name.str().c_str());
+
+   MPI_Finalize();
 
    return 0;
 }

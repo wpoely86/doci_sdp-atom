@@ -24,6 +24,8 @@ class SimulatedAnnealing
 
       void optimize();
 
+      void optimize_mpi();
+
       double calc_new_energy();
 
       void calc_energy();
@@ -78,7 +80,11 @@ class SimulatedAnnealing
       //! max number of steps
       unsigned int max_steps;
 
+      //! current temperature
       double cur_temp;
+
+      //! number of unaccepted steps
+      unsigned int unaccepted;
 
       //! the real random input (hopefully)
       std::random_device rd;

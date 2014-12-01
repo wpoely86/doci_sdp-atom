@@ -103,6 +103,10 @@ class UnitaryMatrix
 
         void build_skew_symm_x(const int irrep, double * xblock , const double * Xelem) const;
 
+        void sendreceive(int);
+
+        int get_Nirrep() const;
+
     private:
       
         //Externally created and destroyed index handler

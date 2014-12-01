@@ -45,13 +45,13 @@ ifeq ($(origin CC), default)
 endif
 
 ifeq ($(origin CXX), default)
-    CXX = clang++
+    CXX = mpicxx
 endif
 
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
-CFLAGS	= $(INCLUDE) -std=c++11 -g -Wall -O2 -march=native -Wno-unused-variable
+CFLAGS	= $(INCLUDE) -std=c++11 -g -Wall -O2 -march=native -Wno-unused-variable -Wno-unknown-pragmas
 LDFLAGS	= -g -Wall -O2
 
 

@@ -7,6 +7,8 @@ flags = [
 'extern/include',
 '-I../integrals/include',
 '-I/usr/include/libint2',
+'-I',
+'/usr/include/mpich-x86_64',
 '-DBASISSETDIR="/home/ward/Documents/phd/linmol/basissets"',
 '-Wall',
 '-DPQGT',
