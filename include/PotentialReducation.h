@@ -30,7 +30,7 @@ class PotentialReduction: public Method
 
       void BuildHam(const CheMPS2::Hamiltonian &);
 
-      void Run();
+      unsigned int Run();
 
       double getFullEnergy() const;
 

@@ -1,3 +1,5 @@
+#include <fstream>
+#include <chrono>
 #include <functional>
 #include "PotentialReducation.h"
 #include "Hamiltonian.h"
@@ -95,24 +97,38 @@ void PotentialReduction::BuildHam(const CheMPS2::Hamiltonian &hamin)
  * Do an actual calculation: calcalute the energy of the
  * reduced hamiltonian in ham
  */
-void PotentialReduction::Run()
+unsigned int PotentialReduction::Run()
 {
    rdm->init(*lineq);
 
-   int tot_iter = 0.0;
+   unsigned int tot_iter = 0;
 
    double t = 1.0;
    int iter = 0;
 
    TPM backup_rdm(*rdm);
 
+   std::ostream* fp = &std::cout;
+   std::ofstream fout;
+   if(!outfile.empty())
+   {
+      fout.open(outfile, std::ios::out | std::ios::app);
+      fp = &fout;
+    }
+   std::ostream &out = *fp;
+   out.precision(10);
+
+   auto start = std::chrono::high_resolution_clock::now();
+
    //outer iteration: scaling of the potential barrier
    while(t > target)
    {
-      std::cout << iter << "\t" << t << "\t" << rdm->getMatrices().trace() << "\t" << rdm->getVectors().trace() << "\t" << rdm->ddot(*ham)*norm_ham + nuclrep << "\t" << rdm->S_2() << std::endl;
+      if(do_output)
+         out << iter << "\t" << t << "\t" << rdm->getMatrices().trace() << "\t" << rdm->getVectors().trace() << "\t" << rdm->ddot(*ham)*norm_ham + nuclrep << "\t" << rdm->S_2() << std::endl;
 
       double convergence = 1.0;
       iter++;
+      auto break_iters = 0u;
 
       //inner iteration: 
       //Newton's method for finding the minimum of the current potential
@@ -135,7 +151,8 @@ void PotentialReduction::Run()
          TPM delta(L,N);
 
          //los het hessiaan stelsel op:
-         std::cout << delta.solve(t,P,grad,*lineq) << std::endl;
+         if(do_output)
+            out << delta.solve(t,P,grad,*lineq) << std::endl;
 
          //line search
          double a = delta.line_search(t,P,*ham);
@@ -144,9 +161,16 @@ void PotentialReduction::Run()
          rdm->daxpy(a,delta);
 
          convergence = a*a*delta.ddot(delta);
+
+         if(tot_iter>10000)
+         {
+            break_iters++;
+            break;
+         }
       }
 
-      std::cout << std::endl;
+      if(do_output)
+         out << std::endl;
       t *= reductionfac;
 
       //what is the tolerance for the newton method?
@@ -166,17 +190,28 @@ void PotentialReduction::Run()
       double a = extrapol.line_search(t,*rdm,*ham);
 
       rdm->daxpy(a,extrapol);
+
+      if(break_iters > 100)
+         break;
    } 
+
+   auto end = std::chrono::high_resolution_clock::now();
 
    energy = norm_ham*ham->ddot(*rdm);
 
-   std::cout << std::endl;
-   std::cout << "Energy: " << getFullEnergy() << std::endl;
-   std::cout << "Trace: " << rdm->trace() << std::endl;
-   std::cout << "S^2: " << rdm->S_2() << std::endl;
+   out << std::endl;
+   out << "Energy: " << getFullEnergy() << std::endl;
+   out << "Trace: " << rdm->trace() << std::endl;
+   out << "S^2: " << rdm->S_2() << std::endl;
+   out << "Runtime: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << std::endl;
 
-   std::cout << std::endl;
-   std::cout << "total nr of iterations = " << tot_iter << std::endl;
+   out << std::endl;
+   out << "total nr of iterations = " << tot_iter << std::endl;
+
+   if(!outfile.empty())
+      fout.close();
+
+   return tot_iter;
 }
 
 /**

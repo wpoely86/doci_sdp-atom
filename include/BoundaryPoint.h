@@ -30,7 +30,7 @@ class BoundaryPoint: public Method
 
       void BuildHam(const CheMPS2::Hamiltonian &);
 
-      void Run();
+      unsigned int Run();
 
       double getFullEnergy() const;
 
@@ -71,6 +71,11 @@ class BoundaryPoint: public Method
       double sigma;
 
       int max_iter;
+
+      unsigned int avg_iters;
+
+      unsigned int iters;
+      unsigned int runs;
 };
 
 }

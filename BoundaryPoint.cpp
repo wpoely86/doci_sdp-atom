@@ -1,3 +1,5 @@
+#include <fstream>
+#include <chrono>
 #include <functional>
 #include "BoundaryPoint.h"
 #include "Hamiltonian.h"
@@ -29,6 +31,10 @@ BoundaryPoint::BoundaryPoint(const CheMPS2::Hamiltonian &hamin)
    mazzy = 1.0;
 
    max_iter = 5;
+
+   avg_iters = 100000000; // first step we don't really limited anything
+   iters = 0;
+   runs = 0;
 }
 
 BoundaryPoint::BoundaryPoint(const BoundaryPoint &orig)
@@ -54,6 +60,10 @@ BoundaryPoint::BoundaryPoint(const BoundaryPoint &orig)
    max_iter = orig.max_iter;
 
    energy = orig.energy;
+
+   avg_iters = orig.avg_iters;
+   iters = orig.iters;
+   runs = orig.runs;
 }
 
 BoundaryPoint& BoundaryPoint::operator=(const BoundaryPoint &orig)
@@ -79,6 +89,10 @@ BoundaryPoint& BoundaryPoint::operator=(const BoundaryPoint &orig)
    max_iter = orig.max_iter;
 
    energy = orig.energy;
+
+   avg_iters = orig.avg_iters;
+   iters = orig.iters;
+   runs = orig.runs;
 
    return *this;
 }
@@ -110,7 +124,7 @@ void BoundaryPoint::BuildHam(const CheMPS2::Hamiltonian &hamin)
  * Do an actual calculation: calcalute the energy of the
  * reduced hamiltonian in ham
  */
-void BoundaryPoint::Run()
+unsigned int BoundaryPoint::Run()
 {
    TPM ham_copy(*ham);
 
@@ -144,6 +158,19 @@ void BoundaryPoint::Run()
    int iter_dual(0),iter_primal(0);
 
    int tot_iter = 0;
+
+   std::ostream* fp = &std::cout;
+   std::ofstream fout;
+   if(!outfile.empty())
+   {
+      fout.open(outfile, std::ios::out | std::ios::app);
+      fp = &fout;
+    }
+   std::ostream &out = *fp;
+   out.precision(10);
+   out.unsetf(std::ios_base::floatfield);
+
+   auto start = std::chrono::high_resolution_clock::now();
 
    while(P_conv > tol_PD || D_conv > tol_PD) // || fabs(convergence) > tol_en)
    {
@@ -212,26 +239,48 @@ void BoundaryPoint::Run()
 
       convergence = Z.getI().ddot(ham_copy) + X.ddot(u_0);
 
-      std::cout << P_conv << "\t" << D_conv << "\t" << sigma << "\t" << convergence << "\t" << Z.getI().ddot(*ham) + nuclrep << "\t" << Z.getI().S_2() << std::endl;
+      if(do_output && iter_primal%500 == 0)
+         out << P_conv << "\t" << D_conv << "\t" << sigma << "\t" << convergence << "\t" << Z.getI().ddot(*ham) + nuclrep << "\t" << Z.getI().S_2() << std::endl;
 
       if(D_conv < P_conv)
          sigma *= 1.01;
       else
          sigma /= 1.01;
+
+      if(iter_primal>avg_iters*100)
+         break;
    }
 
-   energy = ham->ddot(Z.getI());
+   auto end = std::chrono::high_resolution_clock::now();
 
-   std::cout << std::endl;
-   std::cout << "Energy: " << ham->ddot(Z.getI()) + nuclrep << std::endl;
-   std::cout << "Trace: " << Z.getI().trace() << std::endl;
-   std::cout << "pd gap: " << Z.ddot(X) << std::endl;
-   std::cout << "S^2: " << Z.getI().S_2() << std::endl;
-   std::cout << "dual conv: " << D_conv << std::endl;
-   std::cout << "primal conv: " << P_conv << std::endl;
+   if(iter_primal>avg_iters*100)
+      energy = 1e24; // something big so we're sure the step will be rejected
+   else
+   {
+      energy = ham->ddot(Z.getI());
+      runs++;
+      iters += iter_primal;
+      avg_iters = iters/runs;
+   }
 
-   std::cout << std::endl;
-   std::cout << "total nr of iterations = " << tot_iter << std::endl;
+   out << std::endl;
+   out << "Energy: " << ham->ddot(Z.getI()) + nuclrep << std::endl;
+   out << "Trace: " << Z.getI().trace() << std::endl;
+   out << "pd gap: " << Z.ddot(X) << std::endl;
+   out << "S^2: " << Z.getI().S_2() << std::endl;
+   out << "dual conv: " << D_conv << std::endl;
+   out << "primal conv: " << P_conv << std::endl;
+   out << "Runtime: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << std::endl;
+   out << "Primal iters: " << iter_primal << std::endl;
+   out << "avg primal iters: " << avg_iters << std::endl;
+
+   out << std::endl;
+   out << "total nr of iterations = " << tot_iter << std::endl;
+
+   if(!outfile.empty())
+      fout.close();
+
+   return iter_primal;
 }
 
 /**

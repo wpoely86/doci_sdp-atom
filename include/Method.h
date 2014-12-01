@@ -13,9 +13,11 @@ class Method
 {
    public:
 
+      Method() { do_output = true; }
+
       virtual ~Method() = default;
 
-      virtual void Run() = 0;
+      virtual unsigned int Run() = 0;
 
       virtual void BuildHam(const CheMPS2::Hamiltonian &) = 0;
 
@@ -27,6 +29,10 @@ class Method
 
       double getEnergy() const { return energy; }
 
+      virtual void set_output(bool out) { do_output = out; } 
+
+      virtual void set_outfile(std::string filename) { outfile = filename; }
+
    protected:
 
       int L;
@@ -34,6 +40,10 @@ class Method
       int N;
 
       double energy;
+
+      bool do_output;
+
+      std::string outfile;
 };
 
 }
