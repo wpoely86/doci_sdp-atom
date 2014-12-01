@@ -62,6 +62,12 @@ int main(int argc,char **argv)
 
    cout << "Reading: " << integralsfile << endl;
 
+   // make sure we have a save path, even if it's not specify already
+   // This will not overwrite an already set SAVE_H5_PATH
+   setenv("SAVE_H5_PATH", "./", 0);
+
+   cout << "Using save path: " << getenv("SAVE_H5_PATH") << endl;
+
    MPI_Init(&argc,&argv);
 
    SimulatedAnnealing opt(CheMPS2::Hamiltonian::CreateFromH5(integralsfile));
@@ -95,17 +101,17 @@ int main(int argc,char **argv)
 
    cout << "Total Runtime: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << endl;
 
-   std::stringstream h5_name;
-
-   if(getenv("SAVE_H5_FILE"))
-      h5_name << getenv("SAVE_H5_FILE");
-   else
-      h5_name << "rdm.h5";
-
    int rank;
    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
    if(rank == 0)
+   {
+      std::stringstream h5_name;
+      h5_name << getenv("SAVE_H5_PATH") << "/rdm.h5";
       opt.getMethod().getRDM().WriteToFile(h5_name.str().c_str());
+
+      h5_name << getenv("SAVE_H5_PATH") << "/optimale-uni.h5";
+      opt.get_Optimal_Unitary().saveU(h5_name.str());
+   }
 
    MPI_Finalize();
 

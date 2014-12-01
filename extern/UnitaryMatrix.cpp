@@ -395,13 +395,18 @@ void UnitaryMatrix::loadU(string unitname)
        
    for (int irrep=0; irrep<_index->getNirreps(); irrep++)
    {
-      std::stringstream irrepname;
-      irrepname << "irrep_" << irrep;
+       int norb = _index->getNORB(irrep); 
 
-      hid_t dataset_id = H5Dopen(group_id, irrepname.str().c_str(), H5P_DEFAULT);
-      H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, unitary[irrep].get());
-         
-      H5Dclose(dataset_id);
+       if(norb > 0)
+       {
+           std::stringstream irrepname;
+           irrepname << "irrep_" << irrep;
+
+           hid_t dataset_id = H5Dopen(group_id, irrepname.str().c_str(), H5P_DEFAULT);
+           H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, unitary[irrep].get());
+
+           H5Dclose(dataset_id);
+       }
    }
 
    H5Gclose(group_id);

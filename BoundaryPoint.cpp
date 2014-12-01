@@ -165,7 +165,7 @@ unsigned int BoundaryPoint::Run()
    {
       fout.open(outfile, std::ios::out | std::ios::app);
       fp = &fout;
-    }
+   }
    std::ostream &out = *fp;
    out.precision(10);
    out.unsetf(std::ios_base::floatfield);

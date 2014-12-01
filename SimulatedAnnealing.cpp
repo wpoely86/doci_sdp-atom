@@ -153,7 +153,7 @@ void simanneal::SimulatedAnnealing::optimize()
    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
    std::stringstream out_name;
-   out_name << "output-" << rank << ".txt";
+   out_name << getenv("SAVE_H5_PATH") << "/output-" << rank << ".txt";
 
    std::ostream* fp = &std::cout;
    std::ofstream fout;
@@ -161,8 +161,7 @@ void simanneal::SimulatedAnnealing::optimize()
    {
       fout.open(out_name.str(), std::ios::out | std::ios::app);
       fp = &fout;
-   } else
-      method->set_outfile("");
+   }
    std::ostream &out = *fp;
    out.precision(10);
 
@@ -268,7 +267,7 @@ void simanneal::SimulatedAnnealing::UsePotentialReduction()
 
 void simanneal::SimulatedAnnealing::optimize_mpi()
 {
-   max_steps = 100;
+   max_steps = 200;
    bool keepsearch = true;
 
    int size, rank;
@@ -276,8 +275,9 @@ void simanneal::SimulatedAnnealing::optimize_mpi()
    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
    std::stringstream h5_name;
-   h5_name << "output-" << rank << ".txt";
-   method->set_outfile(h5_name.str());
+   h5_name << getenv("SAVE_H5_PATH") << "/output-" << rank << ".txt";
+   if(size > 1)
+      method->set_outfile(h5_name.str());
    std::ofstream myfile;
    myfile.open(h5_name.str(), std::ios::out | std::ios::trunc | std::ios::binary);
    myfile.close();
@@ -312,6 +312,9 @@ void simanneal::SimulatedAnnealing::optimize_mpi()
       MPI_Bcast(&energy, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
       MPI_Bcast(&min_rank, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
+      h5_name << getenv("SAVE_H5_PATH") << "/unitary-" << max_steps << "-" << rank << ".h5";
+      orbtrans->get_unitary().saveU(h5_name.str());
+
       orbtrans->get_unitary().sendreceive(min_rank);
 
       max_steps *= 10;
@@ -321,11 +324,11 @@ void simanneal::SimulatedAnnealing::optimize_mpi()
 
       start_temp = cur_temp / delta_temp;
 
-      if(max_steps >= 20000)
+      if(max_steps >= 200000)
          keepsearch = false;
 
       // sleep rank seconds to avoid overlap in printing (nasty, I know)
-      sleep(rank);
+      sleep(rank+1);
       std::cout << "P=" << rank << "\tMPI Step runtime: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << std::endl;
    }
 }
