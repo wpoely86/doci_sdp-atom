@@ -641,6 +641,9 @@ int TPM::solve(double t, const SUP &S, TPM &grad, const Lineq &lineq)
       grad += r;
 
       ++iter;
+
+      if(iter>10000)
+         break;
    }
 
    return iter;
