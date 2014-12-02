@@ -247,13 +247,13 @@ unsigned int BoundaryPoint::Run()
       else
          sigma /= 1.01;
 
-      if(iter_primal>avg_iters*100)
+      if(iter_primal>avg_iters*20)
          break;
    }
 
    auto end = std::chrono::high_resolution_clock::now();
 
-   if(iter_primal>avg_iters*100)
+   if(iter_primal>avg_iters*20)
       energy = 1e24; // something big so we're sure the step will be rejected
    else
    {
