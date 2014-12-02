@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <sstream>
 #include <chrono>
 #include <cassert>
 #include <unistd.h>
@@ -274,12 +275,12 @@ void simanneal::SimulatedAnnealing::optimize_mpi()
    MPI_Comm_size(MPI_COMM_WORLD, &size);
    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
 
-   std::stringstream h5_name;
-   h5_name << getenv("SAVE_H5_PATH") << "/output-" << rank << ".txt";
+   std::stringstream out_name;
+   out_name << getenv("SAVE_H5_PATH") << "/output-" << rank << ".txt";
    if(size > 1)
-      method->set_outfile(h5_name.str());
+      method->set_outfile(out_name.str());
    std::ofstream myfile;
-   myfile.open(h5_name.str(), std::ios::out | std::ios::trunc | std::ios::binary);
+   myfile.open(out_name.str(), std::ios::out | std::ios::trunc | std::ios::binary);
    myfile.close();
 
    std::vector<double> energies(size);
@@ -312,6 +313,7 @@ void simanneal::SimulatedAnnealing::optimize_mpi()
       MPI_Bcast(&energy, 1, MPI_DOUBLE, 0, MPI_COMM_WORLD);
       MPI_Bcast(&min_rank, 1, MPI_INT, 0, MPI_COMM_WORLD);
 
+      std::stringstream h5_name;
       h5_name << getenv("SAVE_H5_PATH") << "/unitary-" << max_steps << "-" << rank << ".h5";
       orbtrans->get_unitary().saveU(h5_name.str());
 
