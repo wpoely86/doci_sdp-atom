@@ -42,7 +42,9 @@ class BoundaryPoint: public Method
 
       void set_sigma(double);
 
-      void set_max_iter(int);
+      void set_max_iter(unsigned int);
+
+      double get_tol_PD() const;
 
       SUP& getX() const;
 
@@ -72,7 +74,7 @@ class BoundaryPoint: public Method
 
       double sigma;
 
-      int max_iter;
+      unsigned int max_iter;
 
       unsigned int avg_iters;
 

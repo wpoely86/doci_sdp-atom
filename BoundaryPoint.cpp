@@ -316,7 +316,7 @@ void BoundaryPoint::set_sigma(double sig)
     this->sigma = sig;
 }
 
-void BoundaryPoint::set_max_iter(int iters)
+void BoundaryPoint::set_max_iter(unsigned int iters)
 {
     this->max_iter = iters;
 }
@@ -346,6 +346,11 @@ doci2DM::TPM& BoundaryPoint::getRDM() const
 void BoundaryPoint::set_use_prev_result(bool new_val)
 {
    useprevresult = new_val;
+}
+
+double BoundaryPoint::get_tol_PD() const
+{
+   return tol_PD;
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/
