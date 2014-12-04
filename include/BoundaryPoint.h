@@ -52,6 +52,8 @@ class BoundaryPoint: public Method
 
       TPM& getRDM() const;
 
+      void set_use_prev_result(bool);
+
    private:
 
       std::unique_ptr<TPM> ham;
@@ -76,6 +78,8 @@ class BoundaryPoint: public Method
 
       unsigned int iters;
       unsigned int runs;
+
+      bool useprevresult;
 };
 
 }

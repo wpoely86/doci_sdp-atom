@@ -18,6 +18,10 @@ BoundaryPoint::BoundaryPoint(const CheMPS2::Hamiltonian &hamin)
    X.reset(new SUP(L,N));
    Z.reset(new SUP(L,N));
 
+   useprevresult = false;
+   (*X) = 0.0;
+   (*Z) = 0.0;
+
    lineq.reset(new Lineq(L,N));
 
    BuildHam(hamin);
@@ -50,6 +54,8 @@ BoundaryPoint::BoundaryPoint(const BoundaryPoint &orig)
 
    lineq.reset(new Lineq(*orig.lineq));
 
+   useprevresult = orig.useprevresult;
+
    sigma = orig.sigma;;
 
    tol_PD = orig.tol_PD;
@@ -78,6 +84,8 @@ BoundaryPoint& BoundaryPoint::operator=(const BoundaryPoint &orig)
    (*Z) = *orig.Z;
 
    (*lineq) = *orig.lineq;
+
+   useprevresult = orig.useprevresult;
 
    sigma = orig.sigma;;
 
@@ -131,11 +139,11 @@ unsigned int BoundaryPoint::Run()
    //only traceless hamiltonian needed in program.
    ham_copy.Proj_E(*lineq);
 
-   //primal
-   SUP X(L,N);
-
-   //dual
-   SUP Z(L,N);
+   if(!useprevresult)
+   {
+      (*X) = 0;
+      (*Z) = 0;
+   }
 
    //Lagrange multiplier
    SUP V(L,N);
@@ -150,14 +158,11 @@ unsigned int BoundaryPoint::Run()
 
    u_0.init_S(*lineq);
 
-   X = 0.0;
-   Z = 0.0;
-
    double D_conv(1.0),P_conv(1.0),convergence(1.0);
 
-   int iter_dual(0),iter_primal(0);
+   unsigned int iter_dual(0),iter_primal(0);
 
-   int tot_iter = 0;
+   unsigned int tot_iter = 0;
 
    std::ostream* fp = &std::cout;
    std::ofstream fout;
@@ -187,11 +192,11 @@ unsigned int BoundaryPoint::Run()
          ++iter_dual;
 
          //solve system
-         SUP B(Z);
+         SUP B(*Z);
 
          B -= u_0;
 
-         B.daxpy(1.0/sigma,X);
+         B.daxpy(1.0/sigma,*X);
 
          TPM b(L,N);
 
@@ -208,10 +213,10 @@ unsigned int BoundaryPoint::Run()
 
          W += u_0;
 
-         W.daxpy(-mazzy/sigma,X);
+         W.daxpy(-mazzy/sigma,*X);
 
          //update Z and V with eigenvalue decomposition:
-         W.sep_pm(Z,V);
+         W.sep_pm(*Z,V);
 
          V.dscal(-sigma);
 
@@ -226,48 +231,48 @@ unsigned int BoundaryPoint::Run()
      }
 
       //update primal:
-      X = V;
+      *X = V;
 
       //check dual feasibility (W is a helping variable now)
       W.fill(hulp);
 
       W += u_0;
 
-      W -= Z;
+      W -= *Z;
 
       P_conv = sqrt(W.ddot(W));
 
-      convergence = Z.getI().ddot(ham_copy) + X.ddot(u_0);
+      convergence = Z->getI().ddot(ham_copy) + X->ddot(u_0);
 
       if(do_output && iter_primal%500 == 0)
-         out << P_conv << "\t" << D_conv << "\t" << sigma << "\t" << convergence << "\t" << Z.getI().ddot(*ham) + nuclrep << "\t" << Z.getI().S_2() << std::endl;
+         out << P_conv << "\t" << D_conv << "\t" << sigma << "\t" << convergence << "\t" << Z->getI().ddot(*ham) + nuclrep << "\t" << Z->getI().S_2() << std::endl;
 
       if(D_conv < P_conv)
          sigma *= 1.01;
       else
          sigma /= 1.01;
 
-      if(iter_primal>avg_iters*20)
+      if(iter_primal>avg_iters*5)
          break;
    }
 
    auto end = std::chrono::high_resolution_clock::now();
 
-   if(iter_primal>avg_iters*20)
+   if(iter_primal>avg_iters*5)
       energy = 1e24; // something big so we're sure the step will be rejected
    else
    {
-      energy = ham->ddot(Z.getI());
+      energy = ham->ddot(Z->getI());
       runs++;
       iters += iter_primal;
       avg_iters = iters/runs;
    }
 
    out << std::endl;
-   out << "Energy: " << ham->ddot(Z.getI()) + nuclrep << std::endl;
-   out << "Trace: " << Z.getI().trace() << std::endl;
-   out << "pd gap: " << Z.ddot(X) << std::endl;
-   out << "S^2: " << Z.getI().S_2() << std::endl;
+   out << "Energy: " << ham->ddot(Z->getI()) + nuclrep << std::endl;
+   out << "Trace: " << Z->getI().trace() << std::endl;
+   out << "pd gap: " << Z->ddot(*X) << std::endl;
+   out << "S^2: " << Z->getI().S_2() << std::endl;
    out << "dual conv: " << D_conv << std::endl;
    out << "primal conv: " << P_conv << std::endl;
    out << "Runtime: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << std::endl;
@@ -335,6 +340,12 @@ doci2DM::Lineq& BoundaryPoint::getLineq() const
 doci2DM::TPM& BoundaryPoint::getRDM() const
 {
    return Z->getI();
+}
+
+
+void BoundaryPoint::set_use_prev_result(bool new_val)
+{
+   useprevresult = new_val;
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/
