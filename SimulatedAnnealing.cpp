@@ -1,9 +1,11 @@
-#include <iostream>
-#include <iomanip>
-#include <fstream>
-#include <sstream>
-#include <chrono>
 #include <cassert>
+#include <chrono>
+#include <fstream>
+#include <iomanip>
+#include <iostream>
+#include <numeric>
+#include <sstream>
+#include <stdexcept>
 #include <unistd.h>
 #include <hdf5.h>
 #include <mpi.h>
