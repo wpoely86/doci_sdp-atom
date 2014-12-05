@@ -94,6 +94,8 @@ class TPM: public Container
 
       void G(const PHM &);
 
+      void pairing(double);
+
    private:
 
       void constr_lists(int L);

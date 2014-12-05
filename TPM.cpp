@@ -993,4 +993,76 @@ double TPM::line_search(double t, const TPM &rdm, const TPM &ham) const
    return line_search(t,P,ham);
 }
 
+/**
+ * Build pairing hamiltonian
+ * @param g the pairing strength
+ */
+void TPM::pairing(double g)
+{
+   std::vector<double> Elevels(L);
+
+   // picket fence sp levels
+   for(int i=0;i<L;i++)
+      Elevels[i] = -1.0/L*(L-i);
+
+   std::vector<double> x(L);
+
+   //pairing interaction term
+   for(int a=0;a<L;a++)
+      x[a] = 1.0;
+
+   //normeren op 1/2
+   double bright = 0.0;
+
+   for(auto &elem: x)
+      bright += elem*elem;
+
+   bright *= 2;
+
+   bright = 1.0/std::sqrt(bright);
+
+   for(auto &elem: x)
+      elem *= bright;
+
+   // make our life easier
+   auto calc_elem = [this,&g,&Elevels,&x] (int i, int j) {
+      int a = (*t2s)(i,0);
+      int b = (*t2s)(i,1);
+      int c = (*t2s)(j,0);
+      int d = (*t2s)(j,1);
+
+      int a_ = a % L;
+      int b_ = b % L;
+      int c_ = c % L;
+      int d_ = d % L;
+
+      double result = 0;
+
+      if(i==j)
+      {
+         result += (Elevels[a_] + Elevels[b_])*1.0/(N-1.0);
+
+         if(a_ == b_)
+            result -= 2 * g * x[a_] * x[a_];
+      }
+      else if(a_ == b_ && c_ == d_)
+         result -= 2 * g * x[a_] * x[c_];
+
+      return result;
+   };
+
+   auto& hamB = getMatrix(0);
+
+   for(int i=0;i<L;++i)
+      for(int j=i;j<L;++j)
+         hamB(i,j) = hamB(j,i) = calc_elem(i,j);
+
+   auto& hamV = getVector(0);
+
+   for(int i=0;i<hamV.gn();i++)
+      // keep in mind that the degen of the vector is 4. We need prefactor of 2, so
+      // we end up with 0.5
+      hamV[i] = 0.5*calc_elem(L+i,L+i) + 0.5*calc_elem(L*L+i,L*L+i);
+}
+
 /*  vim: set ts=3 sw=3 expandtab :*/
