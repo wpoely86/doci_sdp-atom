@@ -99,6 +99,14 @@ int main(int argc,char **argv)
 //   opt.get_Optimal_Unitary().loadU("optimale-uni.h5");
 //   opt.calc_new_energy();
 
+   if(bp)
+      try {
+         opt.getMethod_BP().set_use_prev_result(true);
+      } catch (const std::bad_cast err)
+      {
+         std::cerr << "Shit just hit the fan!\t" << err.what() << std::endl;
+      }
+
    opt.calc_energy();
 
    opt.optimize_mpi();
