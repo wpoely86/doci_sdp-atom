@@ -8,6 +8,11 @@
 #include "UnitaryMatrix.h"
 #include "OrbitalTransform.h"
 
+namespace doci2DM {
+class PotentialReduction;
+class BoundaryPoint;
+}
+
 namespace simanneal
 { 
 
@@ -52,6 +57,10 @@ class SimulatedAnnealing
 
       void UsePotentialReduction();
 
+      doci2DM::PotentialReduction& getMethod_PR() const;
+
+      doci2DM::BoundaryPoint& getMethod_BP() const;
+
    private:
 
       std::unique_ptr<doci2DM::Method> method;
@@ -85,6 +94,9 @@ class SimulatedAnnealing
 
       //! number of unaccepted steps
       unsigned int unaccepted;
+
+      //! bool to indicate if we should quite the optimalisation
+      bool stop_running;
 
       //! the real random input (hopefully)
       std::random_device rd;
