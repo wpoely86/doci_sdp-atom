@@ -27,6 +27,26 @@ PotentialReduction::PotentialReduction(const CheMPS2::Hamiltonian &hamin)
    reductionfac = 1.0/2.0;
 }
 
+PotentialReduction::PotentialReduction(const TPM &hamin)
+{
+   N = hamin.gN();
+   L = hamin.gL();
+   nuclrep = 0;
+
+   ham.reset(new TPM(hamin));
+
+   rdm.reset(new TPM(L,N));
+
+   lineq.reset(new Lineq(L,N));
+
+   BuildHam(hamin);
+
+   // some default values
+   tolerance = 1.0e-5;
+   target = 1e-12;
+   reductionfac = 1.0/2.0;
+}
+
 PotentialReduction::PotentialReduction(const PotentialReduction &orig)
 {
    N = orig.N;
@@ -91,6 +111,15 @@ void PotentialReduction::BuildHam(const CheMPS2::Hamiltonian &hamin)
 
    norm_ham = std::sqrt(ham->ddot(*ham));
    (*ham) /= norm_ham;
+}
+
+/**
+ * Copy the reduced hamiltonian from a TPM object
+ * @param ham the TPM object to use
+ */
+void PotentialReduction::BuildHam(const TPM &hamin)
+{
+   (*ham) = hamin;
 }
 
 /**

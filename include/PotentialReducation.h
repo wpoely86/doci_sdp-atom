@@ -14,6 +14,8 @@ class PotentialReduction: public Method
 
       PotentialReduction(const CheMPS2::Hamiltonian &);
 
+      PotentialReduction(const TPM &);
+
       PotentialReduction(const PotentialReduction &);
 
       PotentialReduction(PotentialReduction &&) = default;
@@ -29,6 +31,8 @@ class PotentialReduction: public Method
       PotentialReduction& operator=(const PotentialReduction &);
 
       void BuildHam(const CheMPS2::Hamiltonian &);
+
+      void BuildHam(const TPM &);
 
       unsigned int Run();
 

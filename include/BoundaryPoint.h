@@ -14,6 +14,8 @@ class BoundaryPoint: public Method
 
       BoundaryPoint(const CheMPS2::Hamiltonian &);
 
+      BoundaryPoint(const TPM &);
+
       BoundaryPoint(const BoundaryPoint &);
 
       BoundaryPoint(BoundaryPoint &&) = default;
@@ -29,6 +31,8 @@ class BoundaryPoint: public Method
       BoundaryPoint* Move();
 
       void BuildHam(const CheMPS2::Hamiltonian &);
+
+      void BuildHam(const TPM &);
 
       unsigned int Run();
 

@@ -21,6 +21,8 @@ class Method
 
       virtual void BuildHam(const CheMPS2::Hamiltonian &) = 0;
 
+      virtual void BuildHam(const TPM &) = 0;
+
       virtual Method* Clone() const = 0;
 
       virtual Method* Move() = 0;

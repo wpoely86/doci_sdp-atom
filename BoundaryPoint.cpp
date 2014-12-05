@@ -41,6 +41,40 @@ BoundaryPoint::BoundaryPoint(const CheMPS2::Hamiltonian &hamin)
    runs = 0;
 }
 
+BoundaryPoint::BoundaryPoint(const TPM &hamin)
+{
+   N = hamin.gN();
+   L = hamin.gL();
+   nuclrep = 0;
+
+   ham.reset(new TPM(hamin));
+
+   X.reset(new SUP(L,N));
+   Z.reset(new SUP(L,N));
+
+   useprevresult = false;
+   (*X) = 0.0;
+   (*Z) = 0.0;
+
+   lineq.reset(new Lineq(L,N));
+
+   BuildHam(hamin);
+
+   // some default values
+   sigma = 1.0;
+
+   tol_PD = 3.0e-6;
+   tol_en = 1.0e-3;
+
+   mazzy = 1.0;
+
+   max_iter = 5;
+
+   avg_iters = 100000000; // first step we don't really limited anything
+   iters = 0;
+   runs = 0;
+}
+
 BoundaryPoint::BoundaryPoint(const BoundaryPoint &orig)
 {
    N = orig.N;
@@ -126,6 +160,15 @@ void BoundaryPoint::BuildHam(const CheMPS2::Hamiltonian &hamin)
    std::function<double(int,int,int,int)> getV = [&hamin] (int a, int b, int c, int d) -> double { return hamin.getVmat(a,b,c,d); };
 
    ham->ham(getT, getV);
+}
+
+/**
+ * Copy the new reduced hamiltonian from the TPM object
+ * @param ham the TPM object to use
+ */
+void BoundaryPoint::BuildHam(const TPM &hamin)
+{
+   (*ham) = hamin;
 }
 
 /**
