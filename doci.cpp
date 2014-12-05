@@ -60,6 +60,12 @@ int main(int argc,char **argv)
             break;
       }
 
+   if(!bp && !pr)
+   {
+      std::cout << "Tell me what to do..." << std::endl;
+      return 0;
+   }
+
    cout << "Reading: " << integralsfile << endl;
 
    // make sure we have a save path, even if it's not specify already
@@ -105,12 +111,13 @@ int main(int argc,char **argv)
    MPI_Comm_rank(MPI_COMM_WORLD, &rank);
    if(rank == 0)
    {
-      std::stringstream h5_name;
-      h5_name << getenv("SAVE_H5_PATH") << "/rdm.h5";
-      opt.getMethod().getRDM().WriteToFile(h5_name.str().c_str());
+      std::stringstream h5_name1;
+      h5_name1 << getenv("SAVE_H5_PATH") << "/rdm.h5";
+      opt.getMethod().getRDM().WriteToFile(h5_name1.str().c_str());
 
-      h5_name << getenv("SAVE_H5_PATH") << "/optimale-uni.h5";
-      opt.get_Optimal_Unitary().saveU(h5_name.str());
+      std::stringstream h5_name2;
+      h5_name2 << getenv("SAVE_H5_PATH") << "/optimale-uni.h5";
+      opt.get_Optimal_Unitary().saveU(h5_name2.str());
    }
 
    MPI_Finalize();
