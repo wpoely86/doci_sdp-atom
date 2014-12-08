@@ -228,15 +228,17 @@ void simanneal::SimulatedAnnealing::optimize()
 //            break;
 //         }
 
-      }
 
-      if(bp_meth)
-      {
-         // in a 1000 steps to final accuracy
-//         bp_meth->set_tol_PD(std::max(3e-6,1e-5-i*7e-9));
-         auto tol_pd = bp_meth->get_tol_PD() * 0.99;
-         bp_meth->set_tol_PD(std::max(3e-6,tol_pd));
+         if(bp_meth)
+         {
+            // in a 1000 steps to final accuracy
+            //         bp_meth->set_tol_PD(std::max(3e-6,1e-5-i*7e-9));
+            auto tol_pd = bp_meth->get_tol_PD() * 0.99;
+            bp_meth->set_tol_PD(std::max(3e-6,tol_pd));
+         }
       }
+      else
+         i = (i>0) ? --i : i;
    }
 
    if(bp_meth)
@@ -248,7 +250,6 @@ void simanneal::SimulatedAnnealing::optimize()
       for(int j=i+1;j<ham->getL();j++)
          if(sample_pairs(i,j) >= 0)
             out << ham->getOrbitalIrrep(i) << "\t" << i << "\t" << j << "\t" << sample_pairs(i,j) << std::endl;
-
 
    if(size > 1)
       fout.close();
