@@ -313,7 +313,7 @@ void simanneal::SimulatedAnnealing::UsePotentialReduction()
 
 void simanneal::SimulatedAnnealing::optimize_mpi()
 {
-   max_steps = 100;
+   max_steps = 500;
 
    int size, rank;
    MPI_Comm_size(MPI_COMM_WORLD, &size);
@@ -390,10 +390,9 @@ void simanneal::SimulatedAnnealing::optimize_mpi()
 
       orbtrans->get_unitary().sendreceive(min_rank);
 
-//      max_steps *= 10;
-//
-//      if(max_steps >= 200000)
-//         keepsearch = false;
+      max_steps -= 10;
+      if(max_steps<100)
+         max_steps = 100;
 
       if(rank == 0)
          std::cout << "New max steps is " << max_steps << std::endl;
@@ -407,18 +406,26 @@ void simanneal::SimulatedAnnealing::optimize_mpi()
       count_iters++;
 
       unsigned int total_unaccepted = 0;
-      MPI_Reduce(&unaccepted, &total_unaccepted, 1, MPI_UNSIGNED, MPI_MIN, 0, MPI_COMM_WORLD);
+      MPI_Reduce(&unaccepted, &total_unaccepted, 1, MPI_UNSIGNED, MPI_SUM, 0, MPI_COMM_WORLD);
+
+      unsigned int min_unaccepted = 0;
+      MPI_Reduce(&unaccepted, &min_unaccepted, 1, MPI_UNSIGNED, MPI_MIN, 0, MPI_COMM_WORLD);
 
       if(rank == 0)
       {
          std::cout << "Total unaccepted = " << total_unaccepted << std::endl;
+         std::cout << "Minimal unaccepted = " << min_unaccepted << std::endl;
+         std::cout << "Run: " << count_iters << std::endl;
 
-         if(total_unaccepted > 1000)
+         if(min_unaccepted > 1000)
             stop_running = true;
       }
 
       MPI_Bcast(&stop_running, 1, MPI::BOOL, 0, MPI_COMM_WORLD);
    }
+
+   // wait on everybody before exiting.
+   MPI_Barrier(MPI_COMM_WORLD);
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/
