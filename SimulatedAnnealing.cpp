@@ -357,12 +357,13 @@ void simanneal::SimulatedAnnealing::optimize_mpi()
          std::cout << "Avg energy = " << energy_avg + ham->getEconst() << std::endl;
          std::cout << "Cur temp = " << cur_temp << std::endl;
 
+         stop_running = true;
+
          for(int i=0;i<size;i++)
          {
             std::cout << i << "\t" << energies[i] + ham->getEconst() << "\t" << fabs(energies[i]-energy_avg) << std::endl;
 
             // if all values are super close together, stop calculating
-            stop_running = true;
             if(fabs(energies[i]-energy_avg) > 1e-5)
                stop_running = false;
 
@@ -372,6 +373,9 @@ void simanneal::SimulatedAnnealing::optimize_mpi()
 
          if(size == 1)
             stop_running = false;
+
+         if(stop_running)
+            std::cout << "Gonna stop!" << std::endl;
 
          energy = energies[min_rank];
          std::cout << "Rank " << min_rank << " has the lowest energy => " << get_energy() << std::endl;
