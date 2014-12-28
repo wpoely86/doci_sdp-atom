@@ -778,4 +778,15 @@ void Matrix::sep_pm_2x2(Matrix &pos,Matrix &neg)
    pos -= neg;
 }
 
+/**
+ * Set this matrix to a unit matrix
+ */
+void Matrix::unit()
+{
+   (*this) = 0;
+
+   for(int i=0;i<n;i++)
+      matrix[i*n+i] = 1.0;
+}
+
 /* vim: set ts=3 sw=3 expandtab :*/

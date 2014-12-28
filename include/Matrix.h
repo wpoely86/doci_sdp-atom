@@ -114,6 +114,8 @@ class Matrix
 
       void sep_pm_2x2(Matrix &,Matrix &);
 
+      void unit();
+
    private:
 
       //!pointer of doubles, contains the numbers, the matrix
