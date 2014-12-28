@@ -2,7 +2,8 @@ import os
 import ycm_core
 
 flags = [
-'-Iinclude',
+'-I',
+'include',
 '-I',
 'extern/include',
 '-I../integrals/include',
