@@ -96,6 +96,10 @@ class TPM: public Container
 
       void pairing(double);
 
+      double rotate(const TPM &, int, int, double) const;
+
+      double rotate_slow(const TPM &, int, int, double) const;
+
    private:
 
       void constr_lists(int L);
