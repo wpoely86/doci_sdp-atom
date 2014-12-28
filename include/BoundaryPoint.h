@@ -58,6 +58,8 @@ class BoundaryPoint: public Method
 
       TPM& getRDM() const;
 
+      TPM& getHam() const;
+
       void set_use_prev_result(bool);
 
    private:

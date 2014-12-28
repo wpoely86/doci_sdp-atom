@@ -29,6 +29,8 @@ class Method
 
       virtual TPM& getRDM() const = 0;
 
+      virtual TPM& getHam() const = 0;
+
       double getEnergy() const { return energy; }
 
       virtual void set_output(bool out) { do_output = out; } 

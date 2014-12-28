@@ -276,4 +276,9 @@ doci2DM::Lineq& PotentialReduction::getLineq() const
     return (*lineq);
 }
 
+doci2DM::TPM& PotentialReduction::getHam() const
+{
+   return *ham;
+}
+
 /* vim: set ts=3 sw=3 expandtab :*/

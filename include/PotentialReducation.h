@@ -46,6 +46,8 @@ class PotentialReduction: public Method
 
       TPM& getRDM() const;
 
+      TPM& getHam() const;
+
       Lineq& getLineq() const;
 
    private:

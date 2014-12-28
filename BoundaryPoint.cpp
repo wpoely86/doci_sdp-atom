@@ -396,4 +396,9 @@ double BoundaryPoint::get_tol_PD() const
    return tol_PD;
 }
 
+doci2DM::TPM& BoundaryPoint::getHam() const
+{
+   return *ham;
+}
+
 /* vim: set ts=3 sw=3 expandtab :*/
