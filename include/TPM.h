@@ -96,9 +96,15 @@ class TPM: public Container
 
       void pairing(double);
 
-      double rotate(const TPM &, int, int, double) const;
+      void rotate(int, int, double);
 
-      double rotate_slow(const TPM &, int, int, double) const;
+      TPM rotate2(int, int, double) const;
+
+      double calc_rotate(const TPM &, int, int, double) const;
+
+      double calc_rotate_slow(const TPM &, int, int, double) const;
+
+      double find_min_angle(const TPM &, int, int, double=0) const;
 
    private:
 

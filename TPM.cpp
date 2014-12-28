@@ -1074,24 +1074,24 @@ void TPM::pairing(double g)
  * @param theta the angle to rotate over
  * @return the new energy
  */
-double TPM::rotate(const TPM &ham, int k, int l, double theta) const
+double TPM::calc_rotate(const TPM &ham, int k, int l, double theta) const
 {
-   Matrix rot(L);
-   rot.unit();
-
-   rot(k,k) = std::cos(theta);
-   rot(l,l) = std::cos(theta);
-   rot(k,l) = -1 * std::sin(theta);
-   rot(l,k) = std::sin(theta);
-
    double energy = 0;
 
-   for(int a=0;a<L;a++)
-      for(int b=0;b<L;b++)
-         for(int a2=0;a2<L;a2++)
-            for(int b2=0;b2<L;b2++)
-            {
-/*                // a \bar a ; b \bar b
+/*    Matrix rot(L);
+ *    rot.unit();
+ * 
+ *    rot(k,k) = std::cos(theta);
+ *    rot(l,l) = std::cos(theta);
+ *    rot(k,l) = -1 * std::sin(theta);
+ *    rot(l,k) = std::sin(theta);
+ * 
+ *    for(int a=0;a<L;a++)
+ *       for(int b=0;b<L;b++)
+ *          for(int a2=0;a2<L;a2++)
+ *             for(int b2=0;b2<L;b2++)
+ *             {
+ *                // a \bar a ; b \bar b
  *                energy += ham(a,a+L,b,b+L) * (
  *                      rot(a,a2) * rot(a,a2) * rot(b,b2) * rot(b,b2) * (*this)(a2,a2+L,b2,b2+L) +
  *                      rot(a,a2) * rot(a,b2) * rot(b,a2) * rot(b,b2) * (*this)(a2,b2,a2,b2)
@@ -1120,19 +1120,47 @@ double TPM::rotate(const TPM &ham, int k, int l, double theta) const
  *                      rot(b,a2) * rot(a,a2) * rot(b,b2) * rot(a,b2) * (*this)(a2,a2+L,b2,b2+L) +
  *                      rot(a,a2) * rot(a,a2) * rot(b,b2) * rot(b,b2) * (*this)(a2,b2,a2,b2)
  *                      );
+ * 
+ * 
+ * 
+ *                energy += rot(a,a2) * rot(a,a2) * rot(b,b2) * rot(b,b2) * (ham(a,a+L,b,b+L)*(*this)(a2,a2+L,b2,b2+L) + 2*ham(a,b,a,b)*(*this)(a2,b2,a2,b2) );
+ * 
+ *                energy += rot(b,a2) * rot(a,a2) * rot(b,b2) * rot(a,b2) * (ham(a,a+L,b,b+L)*(*this)(a2,b2,a2,b2) + ham(a,b,a,b)*((*this)(a2,a2+L,b2,b2+L) - (*this)(a2,b2,a2,b2)) );
+ * 
+ *             }
  */
 
+   auto A = [&] (int a, int b, int a2, int b2) -> double { return ham(a,a+L,b,b+L)*(*this)(a2,a2+L,b2,b2+L) + 2*ham(a,b,a,b)*(*this)(a2,b2,a2,b2); };
+   auto B = [&] (int a, int b, int a2, int b2) -> double { return ham(a,a+L,b,b+L)*(*this)(a2,b2,a2,b2) + ham(a,b,a,b)*((*this)(a2,a2+L,b2,b2+L) - (*this)(a2,b2,a2,b2)); };
 
-               energy += rot(a,a2) * rot(a,a2) * rot(b,b2) * rot(b,b2) * (ham(a,a+L,b,b+L)*(*this)(a2,a2+L,b2,b2+L) + 2*ham(a,b,a,b)*(*this)(a2,b2,a2,b2) );
+   for(int a=0;a<L;a++)
+   {
+      if(a==k || a==l)
+         continue;
 
-               energy += rot(b,a2) * rot(a,a2) * rot(b,b2) * rot(a,b2) * (ham(a,a+L,b,b+L)*(*this)(a2,b2,a2,b2) + ham(a,b,a,b)*((*this)(a2,a2+L,b2,b2+L) - (*this)(a2,b2,a2,b2)) );
+      for(int b=0;b<L;b++)
+         if(b==k || b==l)
+            continue;
+         else
+            energy += A(a,b,a,b);
 
-            }
+      energy += 2 * std::cos(theta)*std::cos(theta) * ( A(k,a,k,a) + A(l,a,l,a) ) + 2 * std::sin(theta)*std::sin(theta) * ( A(k,a,l,a) + A(l,a,k,a) );
+   }
+
+   // cos^4
+   energy += std::cos(theta)*std::cos(theta)*std::cos(theta)*std::cos(theta) * (A(l,l,l,l)+A(k,k,k,k)+2*A(k,l,k,l));
+
+   // sin^4
+   energy += std::sin(theta)*std::sin(theta)*std::sin(theta)*std::sin(theta) * (A(k,k,l,l)+A(l,l,k,k)+2*A(k,l,k,l) + B(l,l,k,k) + B(k,k,l,l));
+
+   // sin^2 cos^2
+   energy += std::cos(theta)*std::cos(theta)*std::sin(theta)*std::sin(theta) * 2.0 * (A(l,l,k,l)+A(k,l,l,l)+A(k,l,k,k)+A(k,k,k,l) + \
+         B(l,l,k,l)+B(k,l,l,l)+B(k,l,k,k)+B(k,k,k,l) -2*B(k,l,k,l));
 
    return energy;
 }
 
-double TPM::rotate_slow(const TPM &ham, int k, int l, double theta) const
+double TPM::calc_rotate_slow(const TPM &ham, int k, int l, double theta) const
 {
    double energy = 0;
 
@@ -1164,6 +1192,80 @@ double TPM::rotate_slow(const TPM &ham, int k, int l, double theta) const
             }
 
    return energy;
+}
+
+
+/**
+ * Find the minimum with Newton-Raphson for the angle of a jacobi rotation between
+ * orbitals k and l.
+ * @param ham the hamiltonian to use
+ * @param k the first orbital
+ * @param l the second orbital
+ * @param start_angle the starting point for the Newton-Raphson (defaults to zero)
+ * @return the angle with the lowest energy
+ */
+double TPM::find_min_angle(const TPM &ham, int k, int l, double start_angle) const
+{
+   double theta = start_angle;
+
+   auto A = [&] (int a, int b, int a2, int b2) -> double { return ham(a,a+L,b,b+L)*(*this)(a2,a2+L,b2,b2+L) + 2*ham(a,b,a,b)*(*this)(a2,b2,a2,b2); };
+   auto B = [&] (int a, int b, int a2, int b2) -> double { return ham(a,a+L,b,b+L)*(*this)(a2,b2,a2,b2) + ham(a,b,a,b)*((*this)(a2,a2+L,b2,b2+L) - (*this)(a2,b2,a2,b2)); };
+
+
+   double sum1 = 0;
+   double sum2 = 0;
+
+   for(int a=0;a<L;a++)
+   {
+      if(a==k || a==l)
+         continue;
+
+      sum1 += A(k,a,k,a) + A(l,a,l,a);
+      sum2 += A(k,a,l,a) + A(l,a,k,a);
+   }
+
+   const double cos4 = A(l,l,l,l) + A(k,k,k,k) + 2*A(k,l,k,l);
+   const double sin4 = A(k,k,l,l) + A(l,l,k,k) + 2*A(k,l,k,l) + B(l,l,k,k) + B(k,k,l,l);
+   const double cos2sin2 = A(l,l,k,l) + A(k,l,l,l) + A(k,l,k,k) + A(k,k,k,l) + \
+                           B(l,l,k,l) + B(k,l,l,l) + B(k,l,k,k) + B(k,k,k,l) - 2*B(l,k,l,k);
+
+//   std::cout << "sum1 = " << sum1 << std::endl; 
+//   std::cout << "sum2 = " << sum2 << std::endl; 
+//   std::cout << "cos4 = " << cos4 << std::endl; 
+//   std::cout << "sin4 = " << sin4 << std::endl; 
+//   std::cout << "cos2sin2 = " << cos2sin2 << std::endl; 
+
+   auto gradient = [&] (double t) -> double {
+      return -4*std::sin(t)*std::cos(t) * (std::cos(t)*std::cos(t)*(cos4 + sin4 - 2 * cos2sin2) + cos2sin2 - sin4 + sum1 - sum2);
+   };
+
+   auto hessian = [&] (double t) -> double {
+      return ((-cos4-sin4+2*cos2sin2) * 16 * std::cos(t)*std::cos(t) + (12*cos4+20*sin4-8*sum1+8*sum2-32*cos2sin2))*std::cos(t)*std::cos(t)-4*sin4+4*sum1-4*sum2+4*cos2sin2;
+   };
+
+   int max_iters = 100;
+   double new_theta;
+
+   for(int iter=0;iter<max_iters;iter++)
+   {
+      new_theta = theta - gradient(theta)/hessian(theta);
+
+      theta = new_theta;
+
+      if(fabs(gradient(theta)) < 1e-12)
+         break;
+   }
+
+   std::cout << "grad = " << gradient(theta) << std::endl;
+
+//   int Na = 5000;
+//   for(int i=0;i<Na;i++)
+//   {
+//      double t = 2 * M_PI / (1.0*Na) * i;
+//      std::cout << t << "\t" << rotate(ham,k,l,t) << "\t" << gradient(t) << "\t" << hessian(t) << std::endl;
+//   }
+
+   return theta;
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/
