@@ -1208,7 +1208,7 @@ double TPM::calc_rotate(const TPM &ham, int k, int l, double theta) const
    energy += std::cos(theta)*std::cos(theta)*std::cos(theta)*std::cos(theta) * (A(l,l,l,l)+A(k,k,k,k)+2*A(k,l,k,l));
 
    // sin^4
-   energy += std::sin(theta)*std::sin(theta)*std::sin(theta)*std::sin(theta) * (A(k,k,l,l)+A(l,l,k,k)+2*A(k,l,k,l) + B(l,l,k,k) + B(k,k,l,l));
+   energy += std::sin(theta)*std::sin(theta)*std::sin(theta)*std::sin(theta) * (A(k,k,l,l)+A(l,l,k,k)+2*A(k,l,k,l));
 
    // sin^2 cos^2
    energy += std::cos(theta)*std::cos(theta)*std::sin(theta)*std::sin(theta) * 2.0 * (A(l,l,k,l)+A(k,l,l,l)+A(k,l,k,k)+A(k,k,k,l) + \
@@ -1282,15 +1282,9 @@ double TPM::find_min_angle(const TPM &ham, int k, int l, double start_angle) con
    }
 
    const double cos4 = A(l,l,l,l) + A(k,k,k,k) + 2*A(k,l,k,l);
-   const double sin4 = A(k,k,l,l) + A(l,l,k,k) + 2*A(k,l,k,l) + B(l,l,k,k) + B(k,k,l,l);
+   const double sin4 = A(k,k,l,l) + A(l,l,k,k) + 2*A(k,l,k,l);
    const double cos2sin2 = A(l,l,k,l) + A(k,l,l,l) + A(k,l,k,k) + A(k,k,k,l) + \
                            B(l,l,k,l) + B(k,l,l,l) + B(k,l,k,k) + B(k,k,k,l) - 2*B(l,k,l,k);
-
-//   std::cout << "sum1 = " << sum1 << std::endl; 
-//   std::cout << "sum2 = " << sum2 << std::endl; 
-//   std::cout << "cos4 = " << cos4 << std::endl; 
-//   std::cout << "sin4 = " << sin4 << std::endl; 
-//   std::cout << "cos2sin2 = " << cos2sin2 << std::endl; 
 
    auto gradient = [&] (double t) -> double {
       return -4*std::sin(t)*std::cos(t) * (std::cos(t)*std::cos(t)*(cos4 + sin4 - 2 * cos2sin2) + cos2sin2 - sin4 + sum1 - sum2);
