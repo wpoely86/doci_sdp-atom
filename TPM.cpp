@@ -1065,6 +1065,63 @@ void TPM::pairing(double g)
       hamV[i] = 0.5*calc_elem(L+i,L+i) + 0.5*calc_elem(L*L+i,L*L+i);
 }
 
+/**
+ * Rotate this TPM object with a jacobi rotation between orbitals
+ * k and l over an angle of angle
+ * @param k the first orbital
+ * @param l the second orbital
+ * @param angle the angle to rotate over
+ */
+void TPM::rotate(int k, int l, double angle)
+{
+   TPM new_rdm(*this);
+
+   auto& rdmB = new_rdm.getMatrix(0);
+   auto& rdmV = new_rdm.getVector(0);
+
+   const double cos = std::cos(angle);
+   const double sin = std::sin(angle);
+   const double cos2 = cos*cos;
+   const double sin2 = sin*sin;
+   const double cos4 = cos2*cos2;
+   const double sin4 = sin2*sin2;
+   const double cos2sin2 = cos2*sin2;
+
+   for(int p=0;p<L;p++)
+      if(p == k || p ==l)
+         continue;
+      else
+      {
+         rdmB(k,p) = rdmB(p,k) = cos2*(*this)(0,k,p)+sin2*(*this)(0,l,p);
+
+         rdmB(l,p) = rdmB(p,l) = cos2*(*this)(0,l,p)+sin2*(*this)(0,k,p);
+
+         int idx1 = (*s2t)(k,p) - L;
+         int idx2 = (*s2t)(l,p) - L;
+
+         rdmV[idx1] = cos2 * (*this)(k,p,k,p) + sin2 * (*this)(l,p,l,p);
+         rdmV[idx2] = cos2 * (*this)(l,p,l,p) + sin2 * (*this)(k,p,k,p);
+      }
+
+   // k \bar k; k \bar k
+   rdmB(k,k) = cos4 * (*this)(0,k,k) + 2 * cos2sin2 * (*this)(0,k,l) + sin4 * (*this)(0,l,l) + \
+               2 * cos2sin2 * (*this)(k,l,k,l);
+
+   // l \bar l; l \bar l
+   rdmB(l,l) = cos4 * (*this)(0,l,l) + 2 * cos2sin2 * (*this)(0,k,l) + sin4 * (*this)(0,k,k) + \
+               2 * cos2sin2 * (*this)(k,l,k,l);
+
+   // k \bar k; l \bar l
+   rdmB(k,l) = cos2sin2 * (*this)(0,k,k) + (cos4 + sin4) * (*this)(0,k,l) + cos2sin2 * (*this)(0,l,l) - \
+               2 * cos2sin2 * (*this)(k,l,k,l);
+   rdmB(l,k) = rdmB(k,l);
+
+   int idx = (*s2t)(k,l) - L;
+   rdmV[idx] += cos2sin2*((*this)(0,k,k)+(*this)(0,l,l)-2*(*this)(0,k,l))+(cos4+sin4)*(*this)(k,l,k,l);
+   rdmV[idx] *= 0.5;
+
+   (*this) = std::move(new_rdm);
+}
 
 /**
  * Calculate the energy change when you rotate orbital k and l over an angle of theta
