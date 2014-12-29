@@ -1286,11 +1286,11 @@ double TPM::find_min_angle(const TPM &ham, int k, int l, double start_angle) con
    const double cos2sin2 = A(l,l,k,l) + A(k,l,l,l) + A(k,l,k,k) + A(k,k,k,l) + \
                            B(l,l,k,l) + B(k,l,l,l) + B(k,l,k,k) + B(k,k,k,l) - 2*B(l,k,l,k);
 
-   auto gradient = [&] (double t) -> double {
+   auto gradient = [&cos4,&sin4,&cos2sin2,&sum1,&sum2] (double t) -> double {
       return -4*std::sin(t)*std::cos(t) * (std::cos(t)*std::cos(t)*(cos4 + sin4 - 2 * cos2sin2) + cos2sin2 - sin4 + sum1 - sum2);
    };
 
-   auto hessian = [&] (double t) -> double {
+   auto hessian = [&cos4,&sin4,&cos2sin2,&sum1,&sum2] (double t) -> double {
       return ((-cos4-sin4+2*cos2sin2) * 16 * std::cos(t)*std::cos(t) + (12*cos4+20*sin4-8*sum1+8*sum2-32*cos2sin2))*std::cos(t)*std::cos(t)-4*sin4+4*sum1-4*sum2+4*cos2sin2;
    };
 
