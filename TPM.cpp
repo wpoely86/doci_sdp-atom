@@ -1135,60 +1135,8 @@ double TPM::calc_rotate(const TPM &ham, int k, int l, double theta) const
 {
    double energy = 0;
 
-/*    Matrix rot(L);
- *    rot.unit();
- * 
- *    rot(k,k) = std::cos(theta);
- *    rot(l,l) = std::cos(theta);
- *    rot(k,l) = -1 * std::sin(theta);
- *    rot(l,k) = std::sin(theta);
- * 
- *    for(int a=0;a<L;a++)
- *       for(int b=0;b<L;b++)
- *          for(int a2=0;a2<L;a2++)
- *             for(int b2=0;b2<L;b2++)
- *             {
- *                // a \bar a ; b \bar b
- *                energy += ham(a,a+L,b,b+L) * (
- *                      rot(a,a2) * rot(a,a2) * rot(b,b2) * rot(b,b2) * (*this)(a2,a2+L,b2,b2+L) +
- *                      rot(a,a2) * rot(a,b2) * rot(b,a2) * rot(b,b2) * (*this)(a2,b2,a2,b2)
- *                      );
- * 
- *                // a \bar b
- *                energy += 0.5 * ham(a,b,a,b) * (
- *                      rot(a,a2) * rot(b,a2) * rot(a,b2) * rot(b,b2) * (*this)(a2,a2+L,b2,b2+L) +
- *                      rot(a,a2) * rot(b,b2) * rot(a,a2) * rot(b,b2) * (*this)(a2,b2,a2,b2)
- *                      );
- * 
- *                // a b
- *                energy += 0.5 * ham(a,b,a,b) * (
- *                      rot(a,a2) * rot(b,b2) * rot(a,a2) * rot(b,b2) * (*this)(a2,b2,a2,b2) +
- *                      -1 * rot(a,b2) * rot(b,a2) * rot(a,a2) * rot(b,b2) * (*this)(a2,b2,a2,b2)
- *                      );
- * 
- *                // \bar a \bar b
- *                energy += 0.5 * ham(a,b,a,b) * (
- *                      rot(a,a2) * rot(b,b2) * rot(a,a2) * rot(b,b2) * (*this)(a2,b2,a2,b2) +
- *                      -1 * rot(a,b2) * rot(b,a2) * rot(a,a2) * rot(b,b2) * (*this)(a2,b2,a2,b2)
- *                      );
- * 
- *                // b \bar a
- *                energy += 0.5 * ham(a,b,a,b) * (
- *                      rot(b,a2) * rot(a,a2) * rot(b,b2) * rot(a,b2) * (*this)(a2,a2+L,b2,b2+L) +
- *                      rot(a,a2) * rot(a,a2) * rot(b,b2) * rot(b,b2) * (*this)(a2,b2,a2,b2)
- *                      );
- * 
- * 
- * 
- *                energy += rot(a,a2) * rot(a,a2) * rot(b,b2) * rot(b,b2) * (ham(a,a+L,b,b+L)*(*this)(a2,a2+L,b2,b2+L) + 2*ham(a,b,a,b)*(*this)(a2,b2,a2,b2) );
- * 
- *                energy += rot(b,a2) * rot(a,a2) * rot(b,b2) * rot(a,b2) * (ham(a,a+L,b,b+L)*(*this)(a2,b2,a2,b2) + ham(a,b,a,b)*((*this)(a2,a2+L,b2,b2+L) - (*this)(a2,b2,a2,b2)) );
- * 
- *             }
- */
-
-   auto A = [&] (int a, int b, int a2, int b2) -> double { return ham(a,a+L,b,b+L)*(*this)(a2,a2+L,b2,b2+L) + 2*ham(a,b,a,b)*(*this)(a2,b2,a2,b2); };
-   auto B = [&] (int a, int b, int a2, int b2) -> double { return ham(a,a+L,b,b+L)*(*this)(a2,b2,a2,b2) + ham(a,b,a,b)*((*this)(a2,a2+L,b2,b2+L) - (*this)(a2,b2,a2,b2)); };
+   auto A = [&] (int a, int b, int a2, int b2) -> double { return ham(0,a,b)*(*this)(0,a2,b2) + 2*ham(a,b,a,b)*(*this)(a2,b2,a2,b2); };
+   auto B = [&] (int a, int b, int a2, int b2) -> double { return ham(0,a,b)*(*this)(a2,b2,a2,b2) + ham(a,b,a,b)*((*this)(0,a2,b2) - (*this)(a2,b2,a2,b2)); };
 
    for(int a=0;a<L;a++)
    {
@@ -1239,13 +1187,21 @@ double TPM::calc_rotate_slow(const TPM &ham, int k, int l, double theta) const
       for(int b=0;b<2*L;b++)
          for(int c=0;c<2*L;c++)
             for(int d=0;d<2*L;d++)
-   for(int a2=0;a2<2*L;a2++)
-      for(int b2=0;b2<2*L;b2++)
-         for(int c2=0;c2<2*L;c2++)
-            for(int d2=0;d2<2*L;d2++)
             {
-               energy += 0.25 * ham(a,b,c,d) * rot(a,a2) * rot(b,b2) * \
-                     rot(c,c2)* rot(d,d2)* (*this)(a2,b2,c2,d2);
+               if(fabs(ham(a,b,c,d)) < 1e-12)
+                  continue;
+
+               for(int a2=0;a2<2*L;a2++)
+                  for(int b2=0;b2<2*L;b2++)
+                     for(int c2=0;c2<2*L;c2++)
+                        for(int d2=0;d2<2*L;d2++)
+                        {
+                           if(fabs(rot(a,a2) * rot(b,b2) * rot(c,c2)* rot(d,d2)* (*this)(a2,b2,c2,d2)) < 1e-12)
+                              continue;
+
+                           energy += 0.25 * ham(a,b,c,d) * rot(a,a2) * rot(b,b2) * \
+                                     rot(c,c2)* rot(d,d2)* (*this)(a2,b2,c2,d2);
+                        }
             }
 
    return energy;

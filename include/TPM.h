@@ -98,8 +98,6 @@ class TPM: public Container
 
       void rotate(int, int, double);
 
-      TPM rotate2(int, int, double) const;
-
       double calc_rotate(const TPM &, int, int, double) const;
 
       double calc_rotate_slow(const TPM &, int, int, double) const;
