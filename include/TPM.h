@@ -104,7 +104,7 @@ class TPM: public Container
 
       double calc_rotate_slow(const TPM &, int, int, double) const;
 
-      double find_min_angle(const TPM &, int, int, double=0) const;
+      std::pair<double,bool> find_min_angle(const TPM &, int, int, double=0) const;
 
    private:
 

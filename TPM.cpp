@@ -1259,9 +1259,9 @@ double TPM::calc_rotate_slow(const TPM &ham, int k, int l, double theta) const
  * @param k the first orbital
  * @param l the second orbital
  * @param start_angle the starting point for the Newton-Raphson (defaults to zero)
- * @return the angle with the lowest energy
+ * @return pair of the angle with the lowest energy and boolean, true => minimum, false => maximum
  */
-double TPM::find_min_angle(const TPM &ham, int k, int l, double start_angle) const
+std::pair<double,bool> TPM::find_min_angle(const TPM &ham, int k, int l, double start_angle) const
 {
    double theta = start_angle;
 
@@ -1307,16 +1307,15 @@ double TPM::find_min_angle(const TPM &ham, int k, int l, double start_angle) con
          break;
    }
 
-   std::cout << "grad = " << gradient(theta) << std::endl;
-
 //   int Na = 5000;
 //   for(int i=0;i<Na;i++)
 //   {
-//      double t = 2 * M_PI / (1.0*Na) * i;
-//      std::cout << t << "\t" << rotate(ham,k,l,t) << "\t" << gradient(t) << "\t" << hessian(t) << std::endl;
+//      double t = 2.0 * M_PI / (1.0*Na) * i;
+//      std::cout << t << "\t" << calc_rotate(ham,k,l,t)  << "\t" << gradient(t) << "\t" << hessian(t) << std::endl;
+//// calc_rotate_slow(ham,k,l,t) << "\t" << 
 //   }
 
-   return theta;
+   return std::make_pair(theta, hessian(theta)>0);
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/
