@@ -1125,13 +1125,14 @@ void TPM::rotate(int k, int l, double angle)
 
 /**
  * Calculate the energy change when you rotate orbital k and l over an angle of theta
+ * in the DOCI space.
  * @param ham the hamiltonian to use
  * @param k the first orbital
  * @param l the second orbital
  * @param theta the angle to rotate over
  * @return the new energy
  */
-double TPM::calc_rotate(const TPM &ham, int k, int l, double theta) const
+double TPM::calc_rotate_doci(const TPM &ham, int k, int l, double theta) const
 {
    double energy = 0;
 
@@ -1165,7 +1166,15 @@ double TPM::calc_rotate(const TPM &ham, int k, int l, double theta) const
    return energy;
 }
 
-double TPM::calc_rotate_slow(const TPM &ham, int k, int l, double theta) const
+/**
+ * The slow version of TPM::calc_rotate_doci()
+ * @param ham the hamiltonian to use
+ * @param k the first orbital
+ * @param l the second orbital
+ * @param theta the angle to rotate over
+ * @return the new energy
+ */
+double TPM::calc_rotate_slow_doci(const TPM &ham, int k, int l, double theta) const
 {
    double energy = 0;
 
@@ -1210,14 +1219,14 @@ double TPM::calc_rotate_slow(const TPM &ham, int k, int l, double theta) const
 
 /**
  * Find the minimum with Newton-Raphson for the angle of a jacobi rotation between
- * orbitals k and l.
+ * orbitals k and l in the DOCI space.
  * @param ham the hamiltonian to use
  * @param k the first orbital
  * @param l the second orbital
  * @param start_angle the starting point for the Newton-Raphson (defaults to zero)
  * @return pair of the angle with the lowest energy and boolean, true => minimum, false => maximum
  */
-std::pair<double,bool> TPM::find_min_angle(const TPM &ham, int k, int l, double start_angle) const
+std::pair<double,bool> TPM::find_min_angle_doci(const TPM &ham, int k, int l, double start_angle) const
 {
    double theta = start_angle;
 
@@ -1272,6 +1281,125 @@ std::pair<double,bool> TPM::find_min_angle(const TPM &ham, int k, int l, double 
 //   }
 
    return std::make_pair(theta, hessian(theta)>0);
+}
+
+/**
+ * The slow version of TPM::calc_rotate()
+ * @param k the first orbital
+ * @param l the second orbital
+ * @param theta the angle to rotate over
+ * @param T function that returns the one-particle matrix elements
+ * @param V function that returns the two-particle matrix elements
+ * @return the new energy
+ */
+double TPM::calc_rotate_slow(int k, int l, double theta, std::function<double(int,int)> &T, std::function<double(int,int,int,int)> &V) const
+{
+   double energy = 0;
+
+   Matrix rot(L);
+   rot = 0;
+   rot.unit();
+   rot(k,k) = std::cos(theta);
+   rot(l,l) = std::cos(theta);
+   rot(k,l) = -1*std::sin(theta);
+   rot(l,k) = std::sin(theta);
+
+   for(int a=0;a<L;a++)
+      for(int b=0;b<L;b++)
+         for(int a2=0;a2<L;a2++)
+            for(int b2=0;b2<L;b2++)
+            {
+               energy += 2.0/(N-1.0) * (rot(a,a2)*rot(a,b2)+rot(b,a2)*rot(b,b2))*(*this)(a,b,a,b)*T(a2,b2);
+
+               if(a==b)
+                  energy += 2.0/(N-1.0)*rot(a,a2)*rot(a,b2)*(*this)(a,a+L,a,a+L)*T(a2,b2);
+
+               for(int c2=0;c2<L;c2++)
+                  for(int d2=0;d2<L;d2++)
+                     energy += V(a2,b2,c2,d2) * ( \
+                           rot(a,a2)*rot(a,b2)*rot(b,c2)*rot(b,d2)* (*this)(a,a+L,b,b+L) + \
+                           rot(a,a2)*rot(b,b2)*( \
+                              2*rot(a,c2)*rot(b,d2) -
+                              rot(b,c2)*rot(a,d2) ) * \
+                           (*this)(a,b,a,b) \
+                           );
+            }
+
+   return energy;
+}
+
+/**
+ * Calculate the energy change when you rotate orbital k and l over an angle of theta with
+ * the rotation in the full space of the orbitals.
+ * @param k the first orbital
+ * @param l the second orbital
+ * @param theta the angle to rotate over
+ * @param T function that returns the one-particle matrix elements
+ * @param V function that returns the two-particle matrix elements
+ * @return the new energy
+ */
+double TPM::calc_rotate(int k, int l, double theta, std::function<double(int,int)> &T, std::function<double(int,int,int,int)> &V) const
+{
+   double energy = 0;
+
+   const double cos = std::cos(theta);
+   const double sin = std::sin(theta);
+   const double cos2 = cos*cos;
+   const double sin2 = sin*sin;
+   const double cos4 = cos2*cos2;
+   const double sin4 = sin2*sin2;
+   const double cossin = cos*sin;
+   const double cos2sin2 = cos2*sin2;
+   const double cos3sin = cos2*cossin;
+   const double cossin3 = cossin*sin2;
+
+   const double fac1 = cos2*T(k,k)+sin2*T(l,l)-2*cossin*T(k,l);
+   const double fac2 = cos2*T(l,l)+sin2*T(k,k)+2*cossin*T(k,l);
+
+   for(int a=0;a<L;a++)
+   {
+      if(a==k || a==l)
+         continue;
+
+      energy += 2.0/(N-1.0) * T(a,a) * (*this)(a,a+L,a,a+L);
+
+      for(int b=0;b<L;b++)
+      {
+         if(b==k || b==l)
+            continue;
+
+         energy += 2.0/(N-1.0) * (T(a,a)+T(b,b)) * (*this)(a,b,a,b);
+
+         energy += V(a,a,b,b) * (*this)(a,a+L,b,b+L);
+
+         energy += (2*V(a,b,a,b)-V(a,b,b,a)) * (*this)(a,b,a,b);
+      }
+
+      energy += 4.0/(N-1.0) * (T(a,a)+ fac1) * (*this)(a,k,a,k);
+      energy += 4.0/(N-1.0) * (T(a,a)+ fac2) * (*this)(a,l,a,l);
+
+      energy += 2*(cos2*V(k,k,a,a)-2*cossin*V(k,l,a,a)+sin2*V(l,l,a,a))*(*this)(k,k+L,a,a+L);
+
+      energy += 2*(cos2*V(l,l,a,a)+2*cossin*V(k,l,a,a)+sin2*V(k,k,a,a))*(*this)(l,l+L,a,a+L);
+
+      energy += 2*(cos2*(2*V(k,a,k,a)-V(k,a,a,k))-2*cossin*(2*V(k,a,l,a)-V(k,a,a,l))+sin2*(2*V(l,a,l,a)-V(l,a,a,l)))*(*this)(k,a,k,a);
+
+      energy += 2*(cos2*(2*V(l,a,l,a)-V(l,a,a,l))+2*cossin*(2*V(l,a,k,a)-V(k,a,a,l))+sin2*(2*V(k,a,k,a)-V(k,a,a,k)))*(*this)(l,a,l,a);
+   }
+
+   energy += 2.0/(N-1.0)*fac1*(*this)(k,k+L,k,k+L);
+   energy += 2.0/(N-1.0)*fac2*(*this)(l,l+L,l,l+L);
+   energy += 4.0/(N-1.0)*(T(k,k)+T(l,l))*(*this)(k,l,k,l);
+
+   energy += 2*(cos2sin2*(V(k,k,k,k)+V(l,l,l,l)-2*(V(k,l,k,l)+V(k,k,l,l)))+(cos4+sin4)*V(k,k,l,l)+2*(cos3sin-cossin3)*(V(k,l,k,k)-V(k,l,l,l)))*(*this)(k,k+L,l,l+L);
+
+   energy += (cos4*V(k,k,k,k)+sin4*V(l,l,l,l)+cos2sin2*(4*V(k,k,l,l)+2*V(k,l,k,l))-4*cossin3*V(k,l,l,l)-4*cos3sin*V(k,l,k,k))*(*this)(k,k+L,k,k+L);
+
+   energy += (sin4*V(k,k,k,k)+cos4*V(l,l,l,l)+cos2sin2*(4*V(k,k,l,l)+2*V(k,l,k,l))+4*cossin3*V(k,l,k,k)+4*cos3sin*V(k,l,l,l))*(*this)(l,l+L,l,l+L);
+
+   energy += 2*(cos2sin2*(V(k,k,k,k)+V(l,l,l,l)-6*V(k,k,l,l)+2*V(k,l,k,l))+(cos4+sin4)*(2*V(k,l,k,l)-V(k,k,l,l))+2*(cos3sin-cossin3)*(V(k,l,k,k)-V(k,l,l,l)))*(*this)(k,l,k,l);
+
+   return energy;
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/
