@@ -1294,6 +1294,8 @@ std::pair<double,bool> TPM::find_min_angle_doci(const TPM &ham, int k, int l, do
  */
 double TPM::calc_rotate_slow(int k, int l, double theta, std::function<double(int,int)> &T, std::function<double(int,int,int,int)> &V) const
 {
+   assert(k!=l);
+
    double energy = 0;
 
    Matrix rot(L);
@@ -1340,66 +1342,233 @@ double TPM::calc_rotate_slow(int k, int l, double theta, std::function<double(in
  */
 double TPM::calc_rotate(int k, int l, double theta, std::function<double(int,int)> &T, std::function<double(int,int,int,int)> &V) const
 {
-   double energy = 0;
+   assert(k!=l);
 
-   const double cos = std::cos(theta);
-   const double sin = std::sin(theta);
-   const double cos2 = cos*cos;
-   const double sin2 = sin*sin;
-   const double cos4 = cos2*cos2;
-   const double sin4 = sin2*sin2;
-   const double cossin = cos*sin;
-   const double cos2sin2 = cos2*sin2;
-   const double cos3sin = cos2*cossin;
-   const double cossin3 = cossin*sin2;
+   const TPM &rdm = *this;
 
-   const double fac1 = cos2*T(k,k)+sin2*T(l,l)-2*cossin*T(k,l);
-   const double fac2 = cos2*T(l,l)+sin2*T(k,k)+2*cossin*T(k,l);
+   double energy = 4/(N-1.0)*(T(k,k)+T(l,l)) * rdm(k,l,k,l);
+
+   double cos2 = 2.0/(N-1.0)*(T(k,k)*rdm(k,k+L,k,k+L)+T(l,l)*rdm(l,l+L,l,l+L));
+
+   double sin2 = 2.0/(N-1.0)*(T(l,l)*rdm(k,k+L,k,k+L)+T(k,k)*rdm(l,l+L,l,l+L));
+
+   // 2sincos actually
+   double sincos = 2.0/(N-1.0)*T(k,l)*(rdm(l,l+L,l,l+L)-rdm(k,k+L,k,k+L));
 
    for(int a=0;a<L;a++)
    {
       if(a==k || a==l)
          continue;
 
-      energy += 2.0/(N-1.0) * T(a,a) * (*this)(a,a+L,a,a+L);
+      energy += 2.0/(N-1.0) * T(a,a) * (rdm(a,a+L,a,a+L)+2*rdm(a,k,a,k)+2*rdm(a,l,a,l));
 
       for(int b=0;b<L;b++)
       {
          if(b==k || b==l)
             continue;
 
-         energy += 2.0/(N-1.0) * (T(a,a)+T(b,b)) * (*this)(a,b,a,b);
+         energy += 2.0/(N-1.0) * (T(a,a)+T(b,b)) * rdm(a,b,a,b);
 
-         energy += V(a,a,b,b) * (*this)(a,a+L,b,b+L);
+         energy += V(a,a,b,b) * rdm(a,a+L,b,b+L);
 
-         energy += (2*V(a,b,a,b)-V(a,b,b,a)) * (*this)(a,b,a,b);
+         energy += (2*V(a,b,a,b)-V(a,b,b,a)) * rdm(a,b,a,b);
       }
 
-      energy += 4.0/(N-1.0) * (T(a,a)+ fac1) * (*this)(a,k,a,k);
-      energy += 4.0/(N-1.0) * (T(a,a)+ fac2) * (*this)(a,l,a,l);
+      cos2 += 2*V(k,k,a,a)*rdm(k,k+L,a,a+L)+2*V(l,l,a,a)*rdm(l,l+L,a,a+L)+2*(2*V(k,a,k,a)-V(k,a,a,k)+2.0/(N-1.0)*T(k,k))*rdm(k,a,k,a)+2*(2*V(l,a,l,a)-V(l,a,a,l)+2.0/(N-1.0)*T(l,l))*rdm(l,a,l,a);
 
-      energy += 2*(cos2*V(k,k,a,a)-2*cossin*V(k,l,a,a)+sin2*V(l,l,a,a))*(*this)(k,k+L,a,a+L);
+      sin2 += 2*V(l,l,a,a)*rdm(k,k+L,a,a+L)+2*V(k,k,a,a)*rdm(l,l+L,a,a+L)+2*(2*V(k,a,k,a)-V(k,a,a,k)+2.0/(N-1.0)*T(k,k))*rdm(l,a,l,a)+2*(2*V(l,a,l,a)-V(l,a,a,l)+2.0/(N-1.0)*T(l,l))*rdm(k,a,k,a);
 
-      energy += 2*(cos2*V(l,l,a,a)+2*cossin*V(k,l,a,a)+sin2*V(k,k,a,a))*(*this)(l,l+L,a,a+L);
-
-      energy += 2*(cos2*(2*V(k,a,k,a)-V(k,a,a,k))-2*cossin*(2*V(k,a,l,a)-V(k,a,a,l))+sin2*(2*V(l,a,l,a)-V(l,a,a,l)))*(*this)(k,a,k,a);
-
-      energy += 2*(cos2*(2*V(l,a,l,a)-V(l,a,a,l))+2*cossin*(2*V(l,a,k,a)-V(k,a,a,l))+sin2*(2*V(k,a,k,a)-V(k,a,a,k)))*(*this)(l,a,l,a);
+      sincos += 2*V(k,l,a,a)*(rdm(l,l+L,a,a+L)-rdm(k,k+L,a,a+L))+2*(2*V(k,a,l,a)-V(k,a,a,l)+2.0/(N-1.0)*T(k,l))*(rdm(l,a,l,a)-rdm(k,a,k,a));
    }
 
-   energy += 2.0/(N-1.0)*fac1*(*this)(k,k+L,k,k+L);
-   energy += 2.0/(N-1.0)*fac2*(*this)(l,l+L,l,l+L);
-   energy += 4.0/(N-1.0)*(T(k,k)+T(l,l))*(*this)(k,l,k,l);
+   const double cos4 = V(k,k,k,k)*rdm(k,k+L,k,k+L)+V(l,l,l,l)*rdm(l,l+L,l,l+L)+2*V(k,k,l,l)*rdm(k,k+L,l,l+L)+2*(2*V(k,l,k,l)-V(k,k,l,l))*rdm(k,l,k,l);
 
-   energy += 2*(cos2sin2*(V(k,k,k,k)+V(l,l,l,l)-2*(V(k,l,k,l)+V(k,k,l,l)))+(cos4+sin4)*V(k,k,l,l)+2*(cos3sin-cossin3)*(V(k,l,k,k)-V(k,l,l,l)))*(*this)(k,k+L,l,l+L);
+   const double sin4 = V(k,k,k,k)*rdm(l,l+L,l,l+L)+V(l,l,l,l)*rdm(k,k+L,k,k+L)+2*V(k,k,l,l)*rdm(k,k+L,l,l+L)+2*(2*V(k,l,k,l)-V(k,k,l,l))*rdm(k,l,k,l);
 
-   energy += (cos4*V(k,k,k,k)+sin4*V(l,l,l,l)+cos2sin2*(4*V(k,k,l,l)+2*V(k,l,k,l))-4*cossin3*V(k,l,l,l)-4*cos3sin*V(k,l,k,k))*(*this)(k,k+L,k,k+L);
+   // 2 x
+   const double cos2sin2 = (2*V(k,k,l,l)+V(k,l,k,l))*(rdm(k,k+L,k,k+L)+rdm(l,l+L,l,l+L))+((V(k,k,k,k)+V(l,l,l,l)-2*(V(k,l,k,l)+V(k,k,l,l))))*rdm(k,k+L,l,l+L)+(V(k,k,k,k)+V(l,l,l,l)-6*V(k,k,l,l)+2*V(k,l,k,l))*rdm(k,l,k,l);
 
-   energy += (sin4*V(k,k,k,k)+cos4*V(l,l,l,l)+cos2sin2*(4*V(k,k,l,l)+2*V(k,l,k,l))+4*cossin3*V(k,l,k,k)+4*cos3sin*V(k,l,l,l))*(*this)(l,l+L,l,l+L);
+   // 4 x
+   const double sin3cos = V(k,l,k,k)*rdm(l,l+L,l,l+L)-V(k,l,l,l)*rdm(k,k+L,k,k+L)-(V(k,l,k,k)-V(k,l,l,l))*(rdm(k,k+L,l,l+L)+rdm(k,l,k,l));
 
-   energy += 2*(cos2sin2*(V(k,k,k,k)+V(l,l,l,l)-6*V(k,k,l,l)+2*V(k,l,k,l))+(cos4+sin4)*(2*V(k,l,k,l)-V(k,k,l,l))+2*(cos3sin-cossin3)*(V(k,l,k,k)-V(k,l,l,l)))*(*this)(k,l,k,l);
+   // 4 x
+   const double cos3sin = V(k,l,l,l)*rdm(l,l+L,l,l+L)-V(k,l,k,k)*rdm(k,k+L,k,k+L)+(V(k,l,k,k)-V(k,l,l,l))*(rdm(k,k+L,l,l+L)+rdm(k,l,k,l));
+
+   const double cos = std::cos(theta);
+   const double sin = std::sin(theta);
+
+   energy += cos*cos*cos*cos*cos4;
+
+   energy += sin*sin*sin*sin*sin4;
+
+   energy += cos*cos*cos2;
+
+   energy += sin*sin*sin2;
+
+   energy += 2*sin*cos*sincos;
+
+   energy += 2*cos*cos*sin*sin*cos2sin2;
+
+   energy += 4*cos*sin*sin*sin*sin3cos;
+
+   energy += 4*cos*cos*cos*sin*cos3sin;
+
+
+
+
+//   const double cos = std::cos(theta);
+//   const double sin = std::sin(theta);
+//   const double cos2 = cos*cos;
+//   const double sin2 = sin*sin;
+//   const double cos4 = cos2*cos2;
+//   const double sin4 = sin2*sin2;
+//   const double cossin = cos*sin;
+//   const double cos2sin2 = cos2*sin2;
+//   const double cos3sin = cos2*cossin;
+//   const double cossin3 = cossin*sin2;
+//
+//   const double fac1 = cos2*T(k,k)+sin2*T(l,l)-2*cossin*T(k,l);
+//   const double fac2 = cos2*T(l,l)+sin2*T(k,k)+2*cossin*T(k,l);
+//
+//   for(int a=0;a<L;a++)
+//   {
+//      if(a==k || a==l)
+//         continue;
+//
+//      energy += 2.0/(N-1.0) * T(a,a) * (*this)(a,a+L,a,a+L);
+//
+//      for(int b=0;b<L;b++)
+//      {
+//         if(b==k || b==l)
+//            continue;
+//
+//         energy += 2.0/(N-1.0) * (T(a,a)+T(b,b)) * (*this)(a,b,a,b);
+//
+//         energy += V(a,a,b,b) * (*this)(a,a+L,b,b+L);
+//
+//         energy += (2*V(a,b,a,b)-V(a,b,b,a)) * (*this)(a,b,a,b);
+//      }
+//
+//      energy += 4.0/(N-1.0) * (T(a,a)+ fac1) * (*this)(a,k,a,k);
+//      energy += 4.0/(N-1.0) * (T(a,a)+ fac2) * (*this)(a,l,a,l);
+//
+//      energy += 2*(cos2*V(k,k,a,a)-2*cossin*V(k,l,a,a)+sin2*V(l,l,a,a))*(*this)(k,k+L,a,a+L);
+//
+//      energy += 2*(cos2*V(l,l,a,a)+2*cossin*V(k,l,a,a)+sin2*V(k,k,a,a))*(*this)(l,l+L,a,a+L);
+//
+//      energy += 2*(cos2*(2*V(k,a,k,a)-V(k,a,a,k))-2*cossin*(2*V(k,a,l,a)-V(k,a,a,l))+sin2*(2*V(l,a,l,a)-V(l,a,a,l)))*(*this)(k,a,k,a);
+//
+//      energy += 2*(cos2*(2*V(l,a,l,a)-V(l,a,a,l))+2*cossin*(2*V(l,a,k,a)-V(k,a,a,l))+sin2*(2*V(k,a,k,a)-V(k,a,a,k)))*(*this)(l,a,l,a);
+//   }
+//
+//   energy += 2.0/(N-1.0)*fac1*(*this)(k,k+L,k,k+L);
+//   energy += 2.0/(N-1.0)*fac2*(*this)(l,l+L,l,l+L);
+//   energy += 4.0/(N-1.0)*(T(k,k)+T(l,l))*(*this)(k,l,k,l);
+//
+//   energy += 2*(cos2sin2*(V(k,k,k,k)+V(l,l,l,l)-2*(V(k,l,k,l)+V(k,k,l,l)))+(cos4+sin4)*V(k,k,l,l)+2*(cos3sin-cossin3)*(V(k,l,k,k)-V(k,l,l,l)))*(*this)(k,k+L,l,l+L);
+//
+//   energy += (cos4*V(k,k,k,k)+sin4*V(l,l,l,l)+cos2sin2*(4*V(k,k,l,l)+2*V(k,l,k,l))-4*cossin3*V(k,l,l,l)-4*cos3sin*V(k,l,k,k))*(*this)(k,k+L,k,k+L);
+//
+//   energy += (sin4*V(k,k,k,k)+cos4*V(l,l,l,l)+cos2sin2*(4*V(k,k,l,l)+2*V(k,l,k,l))+4*cossin3*V(k,l,k,k)+4*cos3sin*V(k,l,l,l))*(*this)(l,l+L,l,l+L);
+//
+//   energy += 2*(cos2sin2*(V(k,k,k,k)+V(l,l,l,l)-6*V(k,k,l,l)+2*V(k,l,k,l))+(cos4+sin4)*(2*V(k,l,k,l)-V(k,k,l,l))+2*(cos3sin-cossin3)*(V(k,l,k,k)-V(k,l,l,l)))*(*this)(k,l,k,l);
 
    return energy;
+}
+
+/**
+ * Find the minimum with Newton-Raphson for the angle of a jacobi rotation between
+ * orbitals k and l in the DOCI space.
+ * @param k the first orbital
+ * @param l the second orbital
+ * @param start_angle the starting point for the Newton-Raphson (defaults to zero)
+ * @param T function that returns the one-particle matrix elements
+ * @param V function that returns the two-particle matrix elements
+ * @return pair of the angle with the lowest energy and boolean, true => minimum, false => maximum
+ */
+std::pair<double,bool> TPM::find_min_angle(int k, int l, double start_angle, std::function<double(int,int)> &T, std::function<double(int,int,int,int)> &V) const
+{
+   assert(k!=l);
+
+   double theta = start_angle;
+
+   const TPM &rdm = *this;
+
+   double cos2 = 2.0/(N-1.0)*(T(k,k)*rdm(k,k+L,k,k+L)+T(l,l)*rdm(l,l+L,l,l+L));
+
+   double sin2 = 2.0/(N-1.0)*(T(l,l)*rdm(k,k+L,k,k+L)+T(k,k)*rdm(l,l+L,l,l+L));
+
+   // 2sincos actually
+   double sincos = 2.0/(N-1.0)*T(k,l)*(rdm(l,l+L,l,l+L)-rdm(k,k+L,k,k+L));
+
+   for(int a=0;a<L;a++)
+   {
+      if(a==k || a==l)
+         continue;
+
+      cos2 += 2*V(k,k,a,a)*rdm(k,k+L,a,a+L)+2*V(l,l,a,a)*rdm(l,l+L,a,a+L)+2*(2*V(k,a,k,a)-V(k,a,a,k)+2.0/(N-1.0)*T(k,k))*rdm(k,a,k,a)+2*(2*V(l,a,l,a)-V(l,a,a,l)+2.0/(N-1.0)*T(l,l))*rdm(l,a,l,a);
+
+      sin2 += 2*V(l,l,a,a)*rdm(k,k+L,a,a+L)+2*V(k,k,a,a)*rdm(l,l+L,a,a+L)+2*(2*V(k,a,k,a)-V(k,a,a,k)+2.0/(N-1.0)*T(k,k))*rdm(l,a,l,a)+2*(2*V(l,a,l,a)-V(l,a,a,l)+2.0/(N-1.0)*T(l,l))*rdm(k,a,k,a);
+
+      sincos += 2*V(k,l,a,a)*(rdm(l,l+L,a,a+L)-rdm(k,k+L,a,a+L))+2*(2*V(k,a,l,a)-V(k,a,a,l)+2.0/(N-1.0)*T(k,l))*(rdm(l,a,l,a)-rdm(k,a,k,a));
+   }
+
+   const double cos4 = V(k,k,k,k)*rdm(k,k+L,k,k+L)+V(l,l,l,l)*rdm(l,l+L,l,l+L)+2*V(k,k,l,l)*rdm(k,k+L,l,l+L)+2*(2*V(k,l,k,l)-V(k,k,l,l))*rdm(k,l,k,l);
+
+   const double sin4 = V(k,k,k,k)*rdm(l,l+L,l,l+L)+V(l,l,l,l)*rdm(k,k+L,k,k+L)+2*V(k,k,l,l)*rdm(k,k+L,l,l+L)+2*(2*V(k,l,k,l)-V(k,k,l,l))*rdm(k,l,k,l);
+
+   // 2 x
+   const double cos2sin2 = (2*V(k,k,l,l)+V(k,l,k,l))*(rdm(k,k+L,k,k+L)+rdm(l,l+L,l,l+L))+((V(k,k,k,k)+V(l,l,l,l)-2*(V(k,l,k,l)+V(k,k,l,l))))*rdm(k,k+L,l,l+L)+(V(k,k,k,k)+V(l,l,l,l)-6*V(k,k,l,l)+2*V(k,l,k,l))*rdm(k,l,k,l);
+
+   // 4 x
+   const double sin3cos = V(k,l,k,k)*rdm(l,l+L,l,l+L)-V(k,l,l,l)*rdm(k,k+L,k,k+L)-(V(k,l,k,k)-V(k,l,l,l))*(rdm(k,k+L,l,l+L)+rdm(k,l,k,l));
+
+   // 4 x
+   const double cos3sin = V(k,l,l,l)*rdm(l,l+L,l,l+L)-V(k,l,k,k)*rdm(k,k+L,k,k+L)+(V(k,l,k,k)-V(k,l,l,l))*(rdm(k,k+L,l,l+L)+rdm(k,l,k,l));
+
+   // A*cos(t)^4+B*sin(t)^4+C*cos(t)^2+D*sin(t)^2+2*E*cos(t)*sin(t)+2*F*cos(t)^2*sin(t)^2+4*G*sin(t)*cos(t)^3+4*H*sin(t)^3*cos(t)
+
+   // (16*G-16*H)*cos(t)^4+(-4*A-4*B+8*F)*sin(t)*cos(t)^3+(4*E-12*G+20*H)*cos(t)^2+(4*B-2*C+2*D-4*F)*sin(t)*cos(t)-2*E-4*H
+   auto gradient = [&] (double theta) -> double { 
+      double cos = std::cos(theta);
+      double sin = std::sin(theta);
+
+      double res = 16*(cos3sin-sin3cos)*cos*cos*cos*cos - 4*(cos4+sin4-2*cos2sin2)*sin*cos*cos*cos + 4*(sincos-3*cos3sin+5*sin3cos)*cos*cos + 2*(2*sin4-cos2+sin2-2*cos2sin2)*sin*cos-2*sincos-4*sin3cos;
+
+      return res;
+   };
+
+   // (-16*A-16*B+32*F)*cos(t)^4+(-64*G+64*H)*sin(t)*cos(t)^3+(12*A+20*B-4*C+4*D-32*F)*cos(t)^2+(-8*E+24*G-40*H)*sin(t)*cos(t)-4*B+2*C-2*D+4*F
+   auto hessian = [&] (double theta) -> double { 
+      double cos = std::cos(theta);
+      double sin = std::sin(theta);
+
+      double res = -16*(cos4+sin4-2*cos2sin2)*cos*cos*cos*cos+64*(sin3cos-cos3sin)*sin*cos*cos*cos+4*(3*cos4+5*sin4-cos2+sin2-8*cos2sin2)*cos*cos-8*(sincos-3*cos3sin+5*sin3cos)*sin*cos+2*(cos2-2*sin4-sin2+2*cos2sin2);
+      
+      return res;
+   };
+
+//   int Na = 5000;
+//   for(int i=0;i<Na;i++)
+//   {
+//      double t = 2.0 * M_PI / (1.0*Na) * i;
+//      std::cout << t << "\t" << calc_rotate(k,l,t,T,V)  << "\t" << gradient(t) << "\t" << hessian(t) << std::endl;
+//   }
+
+   const int max_iters = 20;
+   const double convergence = 1e-12;
+
+   for(int iter=0;iter<max_iters;iter++)
+   {
+      double dx = gradient(theta)/hessian(theta);
+
+      theta -= dx;
+
+      if(fabs(dx) < convergence)
+         break;
+   }
+
+   return std::make_pair(theta, hessian(theta)>0);
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/

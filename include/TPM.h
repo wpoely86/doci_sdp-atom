@@ -108,6 +108,8 @@ class TPM: public Container
 
       double calc_rotate_slow(int k, int l, double theta, std::function<double(int,int)> &T, std::function<double(int,int,int,int)> &V) const;
 
+      std::pair<double,bool> find_min_angle(int k, int l, double start_angle, std::function<double(int,int)> &T, std::function<double(int,int,int,int)> &V) const;
+
    private:
 
       void constr_lists(int L);
