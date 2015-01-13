@@ -96,7 +96,7 @@ class TPM: public Container
 
       void pairing(double);
 
-      void rotate(int, int, double);
+      void rotate_doci(int, int, double);
 
       double calc_rotate_doci(const TPM &, int, int, double) const;
 
@@ -109,6 +109,8 @@ class TPM: public Container
       double calc_rotate_slow(int k, int l, double theta, std::function<double(int,int)> &T, std::function<double(int,int,int,int)> &V) const;
 
       std::pair<double,bool> find_min_angle(int k, int l, double start_angle, std::function<double(int,int)> &T, std::function<double(int,int,int,int)> &V) const;
+
+      void rotate(int, int, double, std::function<double(int,int)> &, std::function<double(int,int,int,int)> &);
 
    private:
 

@@ -1067,12 +1067,12 @@ void TPM::pairing(double g)
 
 /**
  * Rotate this TPM object with a jacobi rotation between orbitals
- * k and l over an angle of angle
+ * k and l over an angle of angle in the DOCI space
  * @param k the first orbital
  * @param l the second orbital
  * @param angle the angle to rotate over
  */
-void TPM::rotate(int k, int l, double angle)
+void TPM::rotate_doci(int k, int l, double angle)
 {
    TPM new_rdm(*this);
 
@@ -1569,6 +1569,66 @@ std::pair<double,bool> TPM::find_min_angle(int k, int l, double start_angle, std
    }
 
    return std::make_pair(theta, hessian(theta)>0);
+}
+
+/**
+ * Rotate this TPM object with a jacobi rotation between orbitals
+ * k and l over an angle of angle in the full space
+ * @param k the first orbital
+ * @param l the second orbital
+ * @param angle the angle to rotate over
+ * @param T function that returns the one-particle matrix elements
+ * @param V function that returns the two-particle matrix elements
+ */
+void TPM::rotate(int k, int l, double angle, std::function<double(int,int)> &T, std::function<double(int,int,int,int)> &V)
+{
+   assert(k!=l);
+
+   auto& rdmB = getMatrix(0);
+   auto& rdmV = getVector(0);
+
+   const double cos = std::cos(angle);
+   const double sin = std::sin(angle);
+   const double cos2 = cos*cos;
+   const double sin2 = sin*sin;
+   const double cos4 = cos2*cos2;
+   const double sin4 = sin2*sin2;
+   const double cossin = cos*sin;
+   const double cos2sin2 = cos2*sin2;
+   const double cos3sin = cos2*cossin;
+   const double cossin3 = cossin*sin2;
+
+   for(int p=0;p<L;p++)
+   {
+      if(p == k || p ==l)
+         continue;
+
+      rdmB(k,p) = rdmB(p,k) = cos2*V(k,k,p,p)-2*cossin*V(k,l,p,p)+sin2*V(l,l,p,p);
+      rdmB(l,p) = rdmB(p,l) = cos2*V(l,l,p,p)+2*cossin*V(k,l,p,p)+sin2*V(k,k,p,p);
+
+      int idx = (*s2t)(k,p) - L;
+
+      // k p ; k p
+      rdmV[idx] = 1.0/(N-1.0) * (T(p,p) + cos2*T(k,k)-2*cossin*T(k,l)+sin2*T(l,l)); 
+      rdmV[idx] += cos2*(V(k,p,k,p)-0.5*V(k,p,p,k))-2*cossin*(V(k,p,l,p)-0.5*V(k,p,p,l))+sin2*(V(l,p,l,p)-0.5*V(l,p,p,l));
+
+      idx = (*s2t)(l,p) - L;
+
+      // l p ; l p
+      rdmV[idx] = 1.0/(N-1.0) * (T(p,p) + cos2*T(l,l)+2*cossin*T(k,l)+sin2*T(k,k)); 
+      rdmV[idx] += cos2*(V(l,p,l,p)-0.5*V(l,p,p,l))+2*cossin*(V(l,p,k,p)-0.5*V(k,p,p,l))+sin2*(V(k,p,k,p)-0.5*V(k,p,p,k));
+   }
+
+   rdmB(k,k) = 2.0/(N-1.0) * (cos2*T(k,k)-2*cossin*T(k,l)+sin2*T(l,l));
+   rdmB(l,l) = 2.0/(N-1.0) * (cos2*T(l,l)+2*cossin*T(k,l)+sin2*T(k,k));
+
+   rdmB(k,k) += cos4*V(k,k,k,k)+sin4*V(l,l,l,l)+cos2sin2*(4*V(k,k,l,l)+2*V(k,l,k,l))-4*cossin3*V(k,l,l,l)-4*cos3sin*V(k,l,k,k);
+   rdmB(l,l) += sin4*V(k,k,k,k)+cos4*V(l,l,l,l)+cos2sin2*(4*V(k,k,l,l)+2*V(k,l,k,l))+4*cossin3*V(k,l,k,k)+4*cos3sin*V(k,l,l,l);
+
+   rdmB(k,l) = rdmB(l,k) = cos2sin2*(V(k,k,k,k)+V(l,l,l,l)-2*(V(k,l,k,l)+V(k,k,l,l)))+(cos4+sin4)*V(k,k,l,l)+2*(cos3sin-cossin3)*(V(k,l,k,k)-V(k,l,l,l));
+
+   int idx = (*s2t)(k,l) - L;
+   rdmV[idx] = 1.0/(N-1.0)*(T(k,k)+T(l,l)) + cos2sin2*(0.5*(V(k,k,k,k)+V(l,l,l,l))-3*V(k,k,l,l)+V(k,l,k,l))+(cos4+sin4)*(V(k,l,k,l)-0.5*V(k,k,l,l))+(cos3sin-cossin3)*(V(k,l,k,k)-V(k,l,l,l));
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/
