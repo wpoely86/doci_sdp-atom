@@ -1197,7 +1197,7 @@ double TPM::calc_rotate_slow_doci(const TPM &ham, int k, int l, double theta) co
          for(int c=0;c<2*L;c++)
             for(int d=0;d<2*L;d++)
             {
-               if(fabs(ham(a,b,c,d)) < 1e-12)
+               if(fabs((*this)(a,b,c,d)) < 1e-14)
                   continue;
 
                for(int a2=0;a2<2*L;a2++)
@@ -1205,7 +1205,7 @@ double TPM::calc_rotate_slow_doci(const TPM &ham, int k, int l, double theta) co
                      for(int c2=0;c2<2*L;c2++)
                         for(int d2=0;d2<2*L;d2++)
                         {
-                           if(fabs(rot(a,a2) * rot(b,b2) * rot(c,c2)* rot(d,d2)* (*this)(a2,b2,c2,d2)) < 1e-12)
+                           if(fabs(ham(a2,b2,c2,d2)) < 1e-14)
                               continue;
 
                            energy += 0.25 * ham(a,b,c,d) * rot(a,a2) * rot(b,b2) * \
