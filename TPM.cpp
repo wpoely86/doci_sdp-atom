@@ -1573,7 +1573,7 @@ std::pair<double,bool> TPM::find_min_angle(int k, int l, double start_angle, std
 
 /**
  * Rotate this TPM object with a jacobi rotation between orbitals
- * k and l over an angle of angle in the full space
+ * k and l over angle in the full space.
  * @param k the first orbital
  * @param l the second orbital
  * @param angle the angle to rotate over
@@ -1603,7 +1603,9 @@ void TPM::rotate(int k, int l, double angle, std::function<double(int,int)> &T, 
       if(p == k || p ==l)
          continue;
 
+      // k \bar k ; p \bar p
       rdmB(k,p) = rdmB(p,k) = cos2*V(k,k,p,p)-2*cossin*V(k,l,p,p)+sin2*V(l,l,p,p);
+      // l \bar l ; p \bar p
       rdmB(l,p) = rdmB(p,l) = cos2*V(l,l,p,p)+2*cossin*V(k,l,p,p)+sin2*V(k,k,p,p);
 
       int idx = (*s2t)(k,p) - L;
@@ -1619,14 +1621,18 @@ void TPM::rotate(int k, int l, double angle, std::function<double(int,int)> &T, 
       rdmV[idx] += cos2*(V(l,p,l,p)-0.5*V(l,p,p,l))+2*cossin*(V(l,p,k,p)-0.5*V(k,p,p,l))+sin2*(V(k,p,k,p)-0.5*V(k,p,p,k));
    }
 
+   // k \bar k ; k \bar k
    rdmB(k,k) = 2.0/(N-1.0) * (cos2*T(k,k)-2*cossin*T(k,l)+sin2*T(l,l));
-   rdmB(l,l) = 2.0/(N-1.0) * (cos2*T(l,l)+2*cossin*T(k,l)+sin2*T(k,k));
-
    rdmB(k,k) += cos4*V(k,k,k,k)+sin4*V(l,l,l,l)+cos2sin2*(4*V(k,k,l,l)+2*V(k,l,k,l))-4*cossin3*V(k,l,l,l)-4*cos3sin*V(k,l,k,k);
+
+   // l \bar l ; l \bar l
+   rdmB(l,l) = 2.0/(N-1.0) * (cos2*T(l,l)+2*cossin*T(k,l)+sin2*T(k,k));
    rdmB(l,l) += sin4*V(k,k,k,k)+cos4*V(l,l,l,l)+cos2sin2*(4*V(k,k,l,l)+2*V(k,l,k,l))+4*cossin3*V(k,l,k,k)+4*cos3sin*V(k,l,l,l);
 
+   // k \bar k ; l \bar l
    rdmB(k,l) = rdmB(l,k) = cos2sin2*(V(k,k,k,k)+V(l,l,l,l)-2*(V(k,l,k,l)+V(k,k,l,l)))+(cos4+sin4)*V(k,k,l,l)+2*(cos3sin-cossin3)*(V(k,l,k,k)-V(k,l,l,l));
 
+   // k l ; k l
    int idx = (*s2t)(k,l) - L;
    rdmV[idx] = 1.0/(N-1.0)*(T(k,k)+T(l,l)) + cos2sin2*(0.5*(V(k,k,k,k)+V(l,l,l,l))-3*V(k,k,l,l)+V(k,l,k,l))+(cos4+sin4)*(V(k,l,k,l)-0.5*V(k,k,l,l))+(cos3sin-cossin3)*(V(k,l,k,k)-V(k,l,l,l));
 }
