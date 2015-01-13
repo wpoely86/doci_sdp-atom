@@ -24,7 +24,7 @@ class OrbitalTransform
         void buildOneBodyMatrixElements();
         void set_unitary(UnitaryMatrix& unit);
         CheMPS2::Hamiltonian& get_ham() { return (*_hamorig); }
-        CheMPS2::Hamiltonian& get_ham() const { return (*_hamorig); }
+        const CheMPS2::Hamiltonian& get_ham() const { return (*_hamorig); }
 
         double TmatRotated(const int index1, const int index2) const;
         double get_norb(int irrep) const;
