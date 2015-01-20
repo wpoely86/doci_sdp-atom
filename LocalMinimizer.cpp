@@ -148,6 +148,8 @@ void simanneal::LocalMinimizer::UsePotentialReduction()
 
 std::vector< std::tuple<int,int,double,double> > simanneal::LocalMinimizer::scan_orbitals()
 {
+   auto start = std::chrono::high_resolution_clock::now();
+
    const auto& ham2 = *ham;
    std::function<double(int,int)> getT = [&ham2] (int a, int b) -> double { return ham2.getTmat(a,b); };
    std::function<double(int,int,int,int)> getV = [&ham2]  (int a, int b, int c, int d) -> double { return ham2.getVmat(a,b,c,d); };
@@ -170,10 +172,18 @@ std::vector< std::tuple<int,int,double,double> > simanneal::LocalMinimizer::scan
                // we're still stuck in a maximum, skip this!
                continue;
 
+            // skip angles larger than Pi/2
+            if(fabs(found.first)>M_PI/2.0)
+               continue;
+
             double new_en = method->getRDM().calc_rotate(k_in,l_in,found.first,getT,getV);
 
             pos_rotations.push_back(std::make_tuple(k_in,l_in,found.first,new_en));
          }
+
+   auto end = std::chrono::high_resolution_clock::now();
+
+   std::cout << "Orbital scanning took: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << std::endl;
 
    return pos_rotations;
 }
@@ -187,6 +197,12 @@ void simanneal::LocalMinimizer::Minimize()
 
    energy = method->getRDM().ddot(method->getHam());
 
+   auto start = std::chrono::high_resolution_clock::now();
+
+   std::pair<int,int> prev_pair(0,0);
+
+   int iters = 0;
+
    while(!converged)
    {
       auto list_rots = scan_orbitals();
@@ -198,21 +214,54 @@ void simanneal::LocalMinimizer::Minimize()
             });
 
       for(auto& elem: list_rots)
-         std::cout << std::get<0>(elem) << "\t" << std::get<1>(elem) << "\t" << std::get<3>(elem) << std::endl;
+         std::cout << std::get<0>(elem) << "\t" << std::get<1>(elem) << "\t" << std::get<3>(elem)+ham->getEconst() << std::endl;
 
-      const auto& new_rot = list_rots[0];
+      std::pair<int,int> tmp = std::make_pair(std::get<0>(list_rots[0]), std::get<1>(list_rots[0]));
+      int idx = 0;
 
-      orbtrans->get_unitary().jacobi_rotation(ham->getOrbitalIrrep(std::get<0>(new_rot)), std::get<0>(new_rot), std::get<1>(new_rot), std::get<2>(new_rot));
+      // don't do the same pair twice in a row
+      if(tmp==prev_pair)
+         idx++;
 
-      auto new_energy = calc_new_energy();
+      const auto& new_rot = list_rots[idx];
+      prev_pair = tmp;
 
-      std::cout << "Rotation between " << std::get<0>(new_rot) << "  " << std::get<1>(new_rot) << " over " << std::get<2>(new_rot) << " E_rot = " << std::get<3>(new_rot) << "  E = " << new_energy << std::endl;
+      assert(ham->getOrbitalIrrep(std::get<0>(new_rot)) == ham->getOrbitalIrrep(std::get<1>(new_rot)));
+      orbtrans->DoJacobiRotation(*ham, std::get<0>(new_rot), std::get<1>(new_rot), std::get<2>(new_rot));
+//      orbtrans->get_unitary().jacobi_rotation(ham->getOrbitalIrrep(std::get<0>(new_rot)), std::get<0>(new_rot), std::get<1>(new_rot), std::get<2>(new_rot));
+
+//      auto new_energy = calc_new_energy();
+      auto new_energy = calc_new_energy(*ham);
+
+      std::cout << iters << "\tRotation between " << std::get<0>(new_rot) << "  " << std::get<1>(new_rot) << " over " << std::get<2>(new_rot) << " E_rot = " << std::get<3>(new_rot)+ham->getEconst() << "  E = " << new_energy+ham->getEconst() << "\t" << fabs(energy-new_energy) << std::endl;
 
       if(fabs(energy-new_energy)<1e-6)
          converged = true;
 
       energy = new_energy;
+
+      std::stringstream h5_name;
+      h5_name << getenv("SAVE_H5_PATH") << "/unitary-" << iters << ".h5";
+      orbtrans->get_unitary().saveU(h5_name.str());
+
+      h5_name.str("");
+      h5_name << getenv("SAVE_H5_PATH") << "/Kham-" << iters << ".h5";
+      method->getHam().WriteToFile(h5_name.str());
+
+      h5_name.str("");
+      h5_name << getenv("SAVE_H5_PATH") << "/ham-" << iters << ".h5";
+      ham->save2(h5_name.str());
+
+      iters++;
    }
+
+   auto end = std::chrono::high_resolution_clock::now();
+
+   std::cout << "Minimization took: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << std::endl;
+
+   std::stringstream h5_name;
+   h5_name << getenv("SAVE_H5_PATH") << "/optimale-uni.h5";
+   get_Optimal_Unitary().saveU(h5_name.str());
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/
