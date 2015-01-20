@@ -114,6 +114,8 @@ void SPM::bar3(double scal, const TPM &tpm)
    }
 }
 
+
+namespace doci2DM {
 std::ostream &operator<<(std::ostream &output,SPM &spm)
 {
    output << "SPM (2x): " << std::endl;
@@ -122,6 +124,7 @@ std::ostream &operator<<(std::ostream &output,SPM &spm)
       output << i << "\t|\t" << i << "  " << i << "\t\t" << spm(0,i) << std::endl;
 
    return output;
+}
 }
 
 void SPM::bar(double scal, const PHM &phm)
