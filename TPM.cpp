@@ -1558,6 +1558,12 @@ std::pair<double,bool> TPM::find_min_angle(int k, int l, double start_angle, std
    const int max_iters = 20;
    const double convergence = 1e-12;
 
+   double change = gradient(theta)*theta+hessian(theta)*theta*theta/2.0;
+
+   // if it goes uphill, try flipping sign and try again
+   if(change>0)
+      theta *= -1;
+
    for(int iter=0;iter<max_iters;iter++)
    {
       double dx = gradient(theta)/hessian(theta);
@@ -1567,6 +1573,9 @@ std::pair<double,bool> TPM::find_min_angle(int k, int l, double start_angle, std
       if(fabs(dx) < convergence)
          break;
    }
+
+   if(hessian(theta)<0)
+      std::cout << "Found max!" << std::endl;
 
    return std::make_pair(theta, hessian(theta)>0);
 }
