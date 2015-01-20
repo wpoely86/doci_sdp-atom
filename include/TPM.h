@@ -126,10 +126,10 @@ class TPM: public Container
       int n;
 
       //! table translating single particles indices to two particle indices
-      static std::unique_ptr<helpers::matrix> s2t;
+      static std::unique_ptr<helpers::tmatrix<unsigned int>> s2t;
 
       //! table translating two particles indices to single particle indices
-      static std::unique_ptr<helpers::matrix> t2s;
+      static std::unique_ptr<helpers::tmatrix<unsigned int>> t2s;
 };
 
 }

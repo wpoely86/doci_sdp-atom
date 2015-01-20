@@ -11,7 +11,7 @@ namespace doci2DM
 
 class TPM;
 
-class PHM: public BlockMatrix
+class PHM: public BlockSymMatrix
 {
    friend std::ostream &operator<<(std::ostream &output,PHM &phm);
 
@@ -29,9 +29,9 @@ class PHM: public BlockMatrix
 
       PHM& operator=(PHM &&) = default;
 
-      using BlockMatrix::operator=;
+      using BlockSymMatrix::operator=;
 
-      using BlockMatrix::operator();
+      using BlockSymMatrix::operator();
 
       double operator()(int a, int b, int c, int d) const;
 
@@ -41,17 +41,17 @@ class PHM: public BlockMatrix
 
       void G(const TPM &);
 
-      Matrix Gimg(const TPM &) const;
+      SymMatrix Gimg(const TPM &) const;
 
-      Matrix Gbuild() const;
+      SymMatrix Gbuild() const;
 
-      void sep_pm(BlockMatrix &, BlockMatrix &);
+      void sep_pm(BlockSymMatrix &, BlockSymMatrix &);
 
       void sqrt(int);
 
       void invert();
 
-      void L_map(const BlockMatrix &, const BlockMatrix &);
+      void L_map(const BlockSymMatrix &, const BlockSymMatrix &);
 
    private:
 
@@ -62,16 +62,16 @@ class PHM: public BlockMatrix
       int N;
 
       //! table translating single particles indices to two particle indices
-      static std::unique_ptr<helpers::matrix> s2ph;
+      static std::unique_ptr<helpers::tmatrix<unsigned int>> s2ph;
 
       //! table translating two particles indices to single particle indices
-      static std::unique_ptr<helpers::matrix> ph2s;
+      static std::unique_ptr<helpers::tmatrix<unsigned int>> ph2s;
 
       //! table translating single particles indices to the correct 2x2 block
-      static std::unique_ptr<helpers::matrix> s2b;
+      static std::unique_ptr<helpers::tmatrix<unsigned int>> s2b;
 
       //! table translating the block index to the single particle indices
-      static std::unique_ptr<helpers::matrix> b2s;
+      static std::unique_ptr<helpers::tmatrix<unsigned int>> b2s;
 };
 
 }

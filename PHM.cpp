@@ -5,10 +5,10 @@
 using namespace doci2DM;
 
 // default empty
-std::unique_ptr<helpers::matrix> PHM::s2ph = nullptr;
-std::unique_ptr<helpers::matrix> PHM::ph2s = nullptr;
-std::unique_ptr<helpers::matrix> PHM::s2b = nullptr;
-std::unique_ptr<helpers::matrix> PHM::b2s = nullptr;
+std::unique_ptr<helpers::tmatrix<unsigned int>> PHM::s2ph = nullptr;
+std::unique_ptr<helpers::tmatrix<unsigned int>> PHM::ph2s = nullptr;
+std::unique_ptr<helpers::tmatrix<unsigned int>> PHM::s2b = nullptr;
+std::unique_ptr<helpers::tmatrix<unsigned int>> PHM::b2s = nullptr;
 
 /**
  * @param L the number of levels
@@ -35,10 +35,10 @@ void PHM::constr_lists(int L)
    int M = 2*L;
    int n_ph = M*M;
 
-   s2ph.reset(new helpers::matrix(M,M));
+   s2ph.reset(new helpers::tmatrix<unsigned int>(M,M));
    (*s2ph) = -1; // if you use something you shouldn't, this will case havoc
 
-   ph2s.reset(new helpers::matrix(n_ph,2));
+   ph2s.reset(new helpers::tmatrix<unsigned int>(n_ph,2));
    (*ph2s) = -1; // if you use something you shouldn't, this will case havoc
 
    int tel = 0;
@@ -73,10 +73,10 @@ void PHM::constr_lists(int L)
       }
 
    // these convert between the 2x2 block index and the sp index for that block
-   s2b.reset(new helpers::matrix(L,L));
+   s2b.reset(new helpers::tmatrix<unsigned int>(L,L));
    (*s2b) = -1; // if you use something you shouldn't, this will case havoc
 
-   b2s.reset(new helpers::matrix((L*(L-1))/2+1,2));
+   b2s.reset(new helpers::tmatrix<unsigned int>((L*(L-1))/2+1,2));
    (*b2s) = -1; // if you use something you shouldn't, this will case havoc
 
    // sp index to block index

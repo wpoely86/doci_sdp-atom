@@ -8,8 +8,8 @@
 using namespace doci2DM;
 
 // default empty
-std::unique_ptr<helpers::matrix> TPM::s2t = nullptr;
-std::unique_ptr<helpers::matrix> TPM::t2s = nullptr;
+std::unique_ptr<helpers::tmatrix<unsigned int>> TPM::s2t = nullptr;
+std::unique_ptr<helpers::tmatrix<unsigned int>> TPM::t2s = nullptr;
 
 /**
  * Create a object in the Two Particle space
@@ -36,10 +36,10 @@ void TPM::constr_lists(int L)
    int M = 2*L;
    int n_tp = M*(M-1)/2;
 
-   s2t.reset(new helpers::matrix(M,M));
+   s2t.reset(new helpers::tmatrix<unsigned int>(M,M));
    (*s2t) = -1; // if you use something you shouldn't, this will case havoc
 
-   t2s.reset(new helpers::matrix(n_tp,2));
+   t2s.reset(new helpers::tmatrix<unsigned int>(n_tp,2));
    (*t2s) = -1; // if you use something you shouldn't, this will case havoc
 
    int tel = 0;
