@@ -32,6 +32,8 @@ class LocalMinimizer
 
       double calc_new_energy();
 
+      double calc_new_energy(const CheMPS2::Hamiltonian &);
+
       void calc_energy();
 
       simanneal::UnitaryMatrix& get_Optimal_Unitary();

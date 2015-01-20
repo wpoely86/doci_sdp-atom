@@ -82,6 +82,14 @@ double simanneal::LocalMinimizer::calc_new_energy()
    return method->getEnergy();
 }
 
+double simanneal::LocalMinimizer::calc_new_energy(const CheMPS2::Hamiltonian &new_ham)
+{
+   method->BuildHam(new_ham);
+   method->Run();
+
+   return method->getEnergy();
+}
+
 simanneal::UnitaryMatrix& simanneal::LocalMinimizer::get_Optimal_Unitary()
 {
    return orbtrans->get_unitary();
