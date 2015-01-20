@@ -130,6 +130,49 @@ class cmatrix
         int m;
 };
 
+template<typename T>
+class tmatrix
+{
+    public:
+        tmatrix();
+
+        tmatrix(int n_, int m_);
+
+        tmatrix(const tmatrix<T> &orig);
+
+        tmatrix(tmatrix<T> &&orig);
+
+        virtual ~tmatrix() { }
+
+        tmatrix<T>& operator=(const tmatrix<T> &orig);
+
+        tmatrix<T>& operator=(T val);
+
+        unsigned int getn() const;
+
+        unsigned int getm() const;
+
+        T operator()(int x,int y) const;
+
+        T& operator()(int x,int y);
+
+        T& operator[](int x);
+
+        T operator[](int x) const;
+
+        T* getpointer() const;
+
+        void Print() const;
+
+    private:
+        //!n by m array of double
+        std::unique_ptr<T []> mat;
+        //! number of rows
+        unsigned int n;
+        //! number of columns
+        unsigned int m;
+};
+
 }
 
 #endif /* HELPER_MATRIX_H */

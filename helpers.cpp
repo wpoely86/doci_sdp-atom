@@ -450,4 +450,142 @@ void cmatrix::Print() const
             std::cout << i << " " << j << "\t" << (*this)(i,j) << std::endl;
 }
 
+
+/**
+ * Empty tmatrix constructor. Don't use it
+ * unless you know what you're doing
+ */
+    template<typename T>
+tmatrix<T>::tmatrix()
+{
+    this->n = 0;
+    this->m = 0;
+}
+
+/**
+ * @param n_ number of rows
+ * @param m_ number of columns
+ */
+    template<typename T>
+tmatrix<T>::tmatrix(int n_, int m_)
+{
+    assert(n_>0 && m_>0);
+    this->n = n_;
+    this->m = m_;
+    mat.reset(new T [n*m]);
+}
+
+/**
+ * @param orig tmatrix to copy
+ */
+    template<typename T>
+tmatrix<T>::tmatrix(const tmatrix<T> &orig)
+{
+    n = orig.n;
+    m = orig.m;
+    mat.reset(new T [n*m]);
+    std::memcpy(mat.get(), orig.getpointer(), n*m*sizeof(T));
+}
+
+/**
+ * move constructor
+ * @param orig tmatrix to copy (descrutive)
+ */
+    template<typename T>
+tmatrix<T>::tmatrix(tmatrix<T> &&orig)
+{
+    n = orig.n;
+    m = orig.m;
+    mat = std::move(orig.mat);
+}
+
+    template<typename T>
+tmatrix<T>& tmatrix<T>::operator=(const tmatrix<T> &orig)
+{
+    n = orig.n;
+    m = orig.m;
+    mat.reset(new T [n*m]);
+    std::memcpy(mat.get(), orig.getpointer(), n*m*sizeof(T));
+    return *this;
+}
+
+/**
+ * Set all tmatrix elements equal to a value
+ * @param val the value to use
+ */
+    template<typename T>
+tmatrix<T>& tmatrix<T>::operator=(T val)
+{
+    for(int i=0;i<n*m;i++)
+        mat[i] = val;
+
+    return *this;
+}
+
+/**
+ * @return number of rows
+ */
+    template<typename T>
+unsigned int tmatrix<T>::getn() const
+{
+    return n;
+}
+
+/**
+ * @return number of columns
+ */
+    template<typename T>
+unsigned int tmatrix<T>::getm() const
+{
+    return m;
+}
+
+    template<typename T>
+T tmatrix<T>::operator()(int x,int y) const
+{
+    assert(x<n && y<m);
+    return mat[x+y*n];
+}
+
+    template<typename T>
+T& tmatrix<T>::operator()(int x,int y)
+{
+    assert(x<n && y<m);
+    return mat[x+y*n];
+}
+
+    template<typename T>
+T& tmatrix<T>::operator[](int x)
+{
+    assert(x<n*m);
+    return mat[x];
+}
+
+    template<typename T>
+T tmatrix<T>::operator[](int x) const
+{
+    assert(x<n*m);
+    return mat[x];
+}
+
+    template<typename T>
+T* tmatrix<T>::getpointer() const
+{
+    return mat.get();
+}
+
+    template<typename T>
+void tmatrix<T>::Print() const
+{
+    for(int i=0;i<n;i++)
+        for(int j=0;j<m;j++)
+            std::cout << i << " " << j << "\t" << (*this)(i,j) << std::endl;
+}
+
+namespace helpers
+{
+    template class tmatrix<int>;
+    template class tmatrix<unsigned int>;
+}
+
 /* vim: set ts=8 sw=4 tw=0 expandtab :*/
