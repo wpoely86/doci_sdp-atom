@@ -25,6 +25,7 @@ CPPSRC	=   Matrix.cpp\
 	    BoundaryPoint.cpp\
 	    PotentialReduction.cpp\
 	    SimulatedAnnealing.cpp\
+	    LocalMinimizer.cpp\
 #            DPM.cpp\
 #            PPHM.cpp\
 
@@ -51,7 +52,7 @@ endif
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
-CFLAGS	= $(INCLUDE) -std=c++11 -g -Wall -O2 -march=native -Wno-unused-variable -Wno-unknown-pragmas
+CFLAGS	= $(INCLUDE) -std=c++11 -g -Wall -O2 -march=native -Wno-unknown-pragmas
 LDFLAGS	= -g -Wall -O2
 
 
