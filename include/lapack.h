@@ -22,7 +22,8 @@ extern "C" {
    void dsyevd_( char* jobz, char* uplo, int* n, double* a, int* lda, double* w, double* work, int* lwork, int* iwork, int* liwork, int* info );
 
    void dgesvd_( char* jobu, char* jobvt, int* m, int* n, double* a, int* lda, double* s, double* u, int* ldu, double* vt, int* ldvt, double* work, int* lwork, int* info );
-
+   void dgetri_(int *n,double *A,int *lda,int *ipiv,double *work,int *lwork,int *info);
+   void dgetrf_(int *m,int *n,double *A,int *lda,int *ipiv,int *info);
 
 }
 
