@@ -173,10 +173,12 @@ std::vector< std::tuple<int,int,double,double> > simanneal::LocalMinimizer::scan
                continue;
 
             // skip angles larger than Pi/2
-            if(fabs(found.first)>M_PI/2.0)
+            if(fabs(found.first)>M_PI)
                continue;
 
             double new_en = method->getRDM().calc_rotate(k_in,l_in,found.first,getT,getV);
+
+            assert(found.second && "Shit, maximum!");
 
             pos_rotations.push_back(std::make_tuple(k_in,l_in,found.first,new_en));
          }
@@ -224,14 +226,14 @@ void simanneal::LocalMinimizer::Minimize()
          idx++;
 
       const auto& new_rot = list_rots[idx];
-      prev_pair = tmp;
+      prev_pair = std::make_pair(std::get<0>(new_rot), std::get<1>(new_rot));
 
       assert(ham->getOrbitalIrrep(std::get<0>(new_rot)) == ham->getOrbitalIrrep(std::get<1>(new_rot)));
+      // do Jacobi rotation twice: once for the Hamiltonian data and once for the Unitary Matrix
       orbtrans->DoJacobiRotation(*ham, std::get<0>(new_rot), std::get<1>(new_rot), std::get<2>(new_rot));
-//      orbtrans->get_unitary().jacobi_rotation(ham->getOrbitalIrrep(std::get<0>(new_rot)), std::get<0>(new_rot), std::get<1>(new_rot), std::get<2>(new_rot));
+      orbtrans->get_unitary().jacobi_rotation(ham->getOrbitalIrrep(std::get<0>(new_rot)), std::get<0>(new_rot), std::get<1>(new_rot), std::get<2>(new_rot));
 
-//      auto new_energy = calc_new_energy();
-      auto new_energy = calc_new_energy(*ham);
+      double new_energy = calc_new_energy(*ham);
 
       std::cout << iters << "\tRotation between " << std::get<0>(new_rot) << "  " << std::get<1>(new_rot) << " over " << std::get<2>(new_rot) << " E_rot = " << std::get<3>(new_rot)+ham->getEconst() << "  E = " << new_energy+ham->getEconst() << "\t" << fabs(energy-new_energy) << std::endl;
 
