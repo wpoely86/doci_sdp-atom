@@ -29,6 +29,8 @@ simanneal::LocalMinimizer::LocalMinimizer(const CheMPS2::Hamiltonian &mol)
    method.reset(new doci2DM::BoundaryPoint(*ham));
 
    energy = 0;
+
+   conv_crit = 1e-6;
 }
 
 simanneal::LocalMinimizer::LocalMinimizer(CheMPS2::Hamiltonian &&mol)
@@ -237,7 +239,7 @@ void simanneal::LocalMinimizer::Minimize()
 
       std::cout << iters << "\tRotation between " << std::get<0>(new_rot) << "  " << std::get<1>(new_rot) << " over " << std::get<2>(new_rot) << " E_rot = " << std::get<3>(new_rot)+ham->getEconst() << "  E = " << new_energy+ham->getEconst() << "\t" << fabs(energy-new_energy) << std::endl;
 
-      if(fabs(energy-new_energy)<1e-6)
+      if(fabs(energy-new_energy)<conv_crit)
          converged = true;
 
       energy = new_energy;
@@ -245,10 +247,6 @@ void simanneal::LocalMinimizer::Minimize()
       std::stringstream h5_name;
       h5_name << getenv("SAVE_H5_PATH") << "/unitary-" << iters << ".h5";
       orbtrans->get_unitary().saveU(h5_name.str());
-
-      h5_name.str("");
-      h5_name << getenv("SAVE_H5_PATH") << "/Kham-" << iters << ".h5";
-      method->getHam().WriteToFile(h5_name.str());
 
       h5_name.str("");
       h5_name << getenv("SAVE_H5_PATH") << "/ham-" << iters << ".h5";
@@ -264,6 +262,16 @@ void simanneal::LocalMinimizer::Minimize()
    std::stringstream h5_name;
    h5_name << getenv("SAVE_H5_PATH") << "/optimale-uni.h5";
    get_Optimal_Unitary().saveU(h5_name.str());
+}
+
+double simanneal::LocalMinimizer::get_conv_crit() const
+{
+   return conv_crit;
+}
+
+void simanneal::LocalMinimizer::set_conv_crit(double crit)
+{
+   conv_crit = crit;
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/

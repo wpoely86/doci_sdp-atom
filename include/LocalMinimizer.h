@@ -54,7 +54,14 @@ class LocalMinimizer
 
       std::vector< std::tuple<int,int,double,double> > scan_orbitals();
 
+      double get_conv_crit() const;
+
+      void set_conv_crit(double);
+
    private:
+
+      //! criteria for convergence of the minimizer
+      double conv_crit;
 
       double energy;
 
