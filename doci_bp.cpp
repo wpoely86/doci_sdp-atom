@@ -91,7 +91,7 @@ int main(int argc,char **argv)
       orbtrans.fillHamCI(ham);
    }
 
-   simanneal::OptIndex opt(ham);
+   const simanneal::OptIndex opt(ham);
 
    if(random)
    {

@@ -33,7 +33,7 @@ class UnitaryMatrix
       
         //! Constructor
         /** \param _hamindexIn */
-        UnitaryMatrix(OptIndex& index);
+        UnitaryMatrix(const OptIndex&);
 
      	//!Copy constructor
         UnitaryMatrix(const UnitaryMatrix & unit);

@@ -40,9 +40,9 @@ using std::endl;
 using CheMPS2::Orbopt_debugPrint;
 using namespace simanneal;
 
-UnitaryMatrix::UnitaryMatrix(OptIndex& index)
+UnitaryMatrix::UnitaryMatrix(const OptIndex& index_in)
 {
-    _index.reset(new OptIndex(index));
+    _index.reset(new OptIndex(index_in));
 
     //Allocate the unitary
     unitary.resize(_index->getNirreps());
@@ -553,7 +553,8 @@ void UnitaryMatrix::fill_random()
 {
     std::random_device rd;
     auto mt = std::mt19937_64(rd());
-    std::uniform_real_distribution<double> dist_angles(-M_PI, M_PI);
+    std::uniform_real_distribution<double> dist_angles(-1000, 1000);
+    //std::uniform_real_distribution<double> dist_angles(-M_PI, M_PI);
 
     srand(time(0));
 
