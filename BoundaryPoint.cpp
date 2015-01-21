@@ -401,4 +401,13 @@ doci2DM::TPM& BoundaryPoint::getHam() const
    return *ham;
 }
 
+/**
+ * Give the energy with the current rdm and ham
+ * @param the newly evaluated energy
+ */
+double BoundaryPoint::evalEnergy() const
+{
+   return ham->ddot(Z->getI()) + nuclrep;
+}
+
 /* vim: set ts=3 sw=3 expandtab :*/

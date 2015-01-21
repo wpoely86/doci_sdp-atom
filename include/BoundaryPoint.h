@@ -62,6 +62,8 @@ class BoundaryPoint: public Method
 
       void set_use_prev_result(bool);
 
+      double evalEnergy() const;
+
    private:
 
       std::unique_ptr<TPM> ham;

@@ -50,6 +50,8 @@ class PotentialReduction: public Method
 
       Lineq& getLineq() const;
 
+      double evalEnergy() const;
+
    private:
 
       std::unique_ptr<TPM> ham;
