@@ -80,6 +80,10 @@ namespace CheMPS2{
 
          Hamiltonian(Hamiltonian &&) = default;
 
+         Hamiltonian& operator=(const Hamiltonian &);
+
+         Hamiltonian& operator=(Hamiltonian &&) = default;
+
          //! Destructor
          virtual ~Hamiltonian() = default;
          
