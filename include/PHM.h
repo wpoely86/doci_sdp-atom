@@ -11,7 +11,7 @@ namespace doci2DM
 
 class TPM;
 
-class PHM: public BlockSymMatrix
+class PHM: public BlockMatrix
 {
    friend std::ostream &operator<<(std::ostream &output,PHM &phm);
 
@@ -29,9 +29,9 @@ class PHM: public BlockSymMatrix
 
       PHM& operator=(PHM &&) = default;
 
-      using BlockSymMatrix::operator=;
+      using BlockMatrix::operator=;
 
-      using BlockSymMatrix::operator();
+      using BlockMatrix::operator();
 
       double operator()(int a, int b, int c, int d) const;
 
@@ -41,17 +41,17 @@ class PHM: public BlockSymMatrix
 
       void G(const TPM &);
 
-      SymMatrix Gimg(const TPM &) const;
+      Matrix Gimg(const TPM &) const;
 
-      SymMatrix Gbuild() const;
+      Matrix Gbuild() const;
 
-      void sep_pm(BlockSymMatrix &, BlockSymMatrix &);
+      void sep_pm(BlockMatrix &, BlockMatrix &);
 
       void sqrt(int);
 
       void invert();
 
-      void L_map(const BlockSymMatrix &, const BlockSymMatrix &);
+      void L_map(const BlockMatrix &, const BlockMatrix &);
 
    private:
 
