@@ -23,10 +23,12 @@ int main(int argc,char **argv)
    std::string integralsfile = "mo-integrals.h5";
    bool bp = false;
    bool pr = false;
+   std::string startinput;
 
    struct option long_options[] =
    {
       {"integrals",  required_argument, 0, 'i'},
+      {"start",  required_argument, 0, 's'},
       {"boundary-point",  no_argument, 0, 'b'},
       {"potential-reduction",  no_argument, 0, 'p'},
       {"help",  no_argument, 0, 'h'},
@@ -35,7 +37,7 @@ int main(int argc,char **argv)
 
    int i,j;
 
-   while( (j = getopt_long (argc, argv, "hi:bp", long_options, &i)) != -1)
+   while( (j = getopt_long (argc, argv, "hi:bps:", long_options, &i)) != -1)
       switch(j)
       {
          case 'h':
@@ -45,12 +47,16 @@ int main(int argc,char **argv)
                "    -i, --integrals=integrals-file  Set the input integrals file\n"
                "    -b, --boundary-point            Use the boundary point method as solver (default)\n"
                "    -p, --potential-reduction       Use the potential reduction method as solver\n"
+               "    -s, --start                     Use this a start point for the Simulated Annealing\n"
                "    -h, --help                      Display this help\n"
                "\n";
             return 0;
             break;
          case 'i':
             integralsfile = optarg;
+            break;
+         case 's':
+            startinput = optarg;
             break;
          case 'b':
             bp = true;
@@ -100,14 +106,19 @@ int main(int argc,char **argv)
 //   opt.calc_new_energy();
 
    if(bp)
+   {
       try {
          opt.getMethod_BP().set_use_prev_result(true);
       } catch (const std::bad_cast err)
       {
          std::cerr << "Shit just hit the fan!\t" << err.what() << std::endl;
       }
+   }
 
-   opt.calc_energy();
+   if(! startinput.empty())
+      opt.getMethod().getRDM().ReadFromFile(startinput.c_str());
+   else
+      opt.calc_energy();
 
    opt.optimize_mpi();
 
