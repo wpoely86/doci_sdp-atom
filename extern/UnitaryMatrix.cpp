@@ -116,20 +116,18 @@ void UnitaryMatrix::jacobi_rotation(int irrep , int i , int j , double angle)
     //Simple implementation of jacobi rotation. 
     i -= _index->getNstart(irrep);
     j -= _index->getNstart(irrep);
-    int linsize = _index->getNORB(irrep);
-    double  work[2*linsize];
+    const int linsize = _index->getNORB(irrep);
 
-    //cout << i << j<< linsize << cos(angle) << sin(angle);
-    for(int l = 0 ; l < linsize ; l++)
-    {
-        work[l] = unitary[irrep][l+i*linsize]*cos(angle) + unitary[irrep][l+j*linsize] * sin(angle);
-        work[l+linsize] = unitary[irrep][l+j*linsize]*cos(angle) + unitary[irrep][l+i*linsize] * sin(angle)*-1.;
-    }
+    const double cos = std::cos(angle);
+    const double sin = std::sin(angle);
 
-    for(int l = 0 ; l < _index->getNORB(irrep) ; l++)
+    for(int l=0;l<linsize;l++)
     {
-        unitary[irrep][l+i*linsize] = work[l];
-        unitary[irrep][l+j*linsize] = work[l+linsize];
+        const double tmpi = unitary[irrep][i+l*linsize];
+        const double tmpj = unitary[irrep][j+l*linsize];
+
+        unitary[irrep][i+l*linsize] = cos*tmpi-sin*tmpj;
+        unitary[irrep][j+l*linsize] = cos*tmpj+sin*tmpi;
     }
 }
 
