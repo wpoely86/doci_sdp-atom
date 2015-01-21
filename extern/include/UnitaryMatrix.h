@@ -107,6 +107,12 @@ class UnitaryMatrix
 
         int get_Nirrep() const;
 
+        void updateUnitary(double *, double *, const UnitaryMatrix &, bool);
+
+        void fill_random();
+
+        void make_skew_symmetric();
+
     private:
       
         //Externally created and destroyed index handler

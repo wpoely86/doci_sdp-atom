@@ -265,6 +265,18 @@ void OrbitalTransform::update_unitary(double * change)
 }
 
 /**
+ * Update the unitary matrix with exp(X). In X you should store
+ * an anti-symmetric real matrix.
+ * @param X the anti-symmetric real matrix
+ * @param replace replace or multiply? By default do exp(X)*U
+ */
+void OrbitalTransform::update_unitary(const UnitaryMatrix &X, bool replace)
+{
+    _unitary->updateUnitary(mem1.get(),mem2.get(),X,replace);
+//    _unitary->CheckDeviationFromUnitary(mem1.get());
+}
+
+/**
  * Update ham_rot in place with a jacobi rotation between orbital k and l over
  * an angle of theta. k and l should be in the same irrep.
  * @param k the first orbital
