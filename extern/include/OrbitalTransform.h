@@ -35,7 +35,7 @@ class OrbitalTransform
         UnitaryMatrix& get_unitary() { return (*_unitary); }
         UnitaryMatrix& get_unitary() const { return (*_unitary); }
 
-        CheMPS2::Hamiltonian& DoJacobiRotation(int k, int l, double theta);
+        void DoJacobiRotation(CheMPS2::Hamiltonian &, int k, int l, double theta);
 
     private:
         void rotate_old_to_new(std::unique_ptr<double []> * matrix);

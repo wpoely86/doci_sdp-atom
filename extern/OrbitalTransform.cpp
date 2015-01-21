@@ -35,7 +35,6 @@ using namespace simanneal;
 OrbitalTransform::OrbitalTransform(const Hamiltonian& HamIn):
     index(HamIn)
 {
-    OptIndex index(HamIn);
     numberOfIrreps = index.getNirreps();
     int L = HamIn.getL();
     SymmInfo.setGroup(HamIn.getNGroup());
@@ -273,14 +272,11 @@ void OrbitalTransform::update_unitary(double * change)
  * @param theta the angle to rotation over
  * @return an rotated Hamiltonian
  */
-CheMPS2::Hamiltonian& OrbitalTransform::DoJacobiRotation(int k, int l, double theta)
+void OrbitalTransform::DoJacobiRotation(CheMPS2::Hamiltonian &ham_rot, int k, int l, double theta)
 {
-    if(!ham_rot)
-        ham_rot.reset(new CheMPS2::Hamiltonian(*_hamorig));
+    assert(ham_rot.getOrbitalIrrep(k) == ham_rot.getOrbitalIrrep(l));
 
-    assert(ham_rot->getOrbitalIrrep(k) == ham_rot->getOrbitalIrrep(l));
-
-    const int irrep = ham_rot->getOrbitalIrrep(k);
+    const int irrep = ham_rot.getOrbitalIrrep(k);
     const int linsize = index.getNORB(irrep);
     const int shift = index.getNstart(irrep);
     // the relative index in the irrep
@@ -293,33 +289,33 @@ CheMPS2::Hamiltonian& OrbitalTransform::DoJacobiRotation(int k, int l, double th
     // the one particle integrals
 
     // first copy element that we are gonna overwrite
-    const double tmpkk = ham_rot->getTmat(k,k);
-    const double tmpll = ham_rot->getTmat(l,l);
-    const double tmpkl = ham_rot->getTmat(k,l);
+    const double tmpkk = ham_rot.getTmat(k,k);
+    const double tmpll = ham_rot.getTmat(l,l);
+    const double tmpkl = ham_rot.getTmat(k,l);
 
     double tmp;
     tmp = cos*cos*tmpkk+sin*sin*tmpll-2*cos*sin*tmpkl;
-    ham_rot->setTmat(k,k,tmp);
+    ham_rot.setTmat(k,k,tmp);
 
     tmp = cos*cos*tmpll+sin*sin*tmpkk+2*cos*sin*tmpkl;
-    ham_rot->setTmat(l,l,tmp);
+    ham_rot.setTmat(l,l,tmp);
 
     tmp = tmpkl*(cos*cos-sin*sin)+cos*sin*(tmpkk-tmpll);
-    ham_rot->setTmat(k,l,tmp);
+    ham_rot.setTmat(k,l,tmp);
 
     for(int a=shift;a<linsize+shift;a++)
     {
         if(a == k || a == l)
             continue;
 
-        const double tmpk = ham_rot->getTmat(k,a); 
-        const double tmpl = ham_rot->getTmat(l,a); 
+        const double tmpk = ham_rot.getTmat(k,a); 
+        const double tmpl = ham_rot.getTmat(l,a); 
 
         tmp = cos * tmpk - sin * tmpl;
-        ham_rot->setTmat(a,k,tmp);
+        ham_rot.setTmat(a,k,tmp);
 
         tmp = cos * tmpl + sin * tmpk;
-        ham_rot->setTmat(a,l,tmp);
+        ham_rot.setTmat(a,l,tmp);
     }
 
 
@@ -349,7 +345,7 @@ CheMPS2::Hamiltonian& OrbitalTransform::DoJacobiRotation(int k, int l, double th
                                 for (int cnt3=0; cnt3<linsize3; cnt3++)
                                     for (int cnt4=0; cnt4<linsize4; cnt4++)
                                         mem1[cnt1 + linsize1 * ( cnt2 + linsize2 * (cnt3 + linsize3 * cnt4) ) ]
-                                            = ham_rot->getVmat(index.getNstart(irrep1) + cnt1,index.getNstart(irrep2) + cnt2, index.getNstart(irrep3) + cnt3, index.getNstart(irrep4) + cnt4 );
+                                            = ham_rot.getVmat(index.getNstart(irrep1) + cnt1,index.getNstart(irrep2) + cnt2, index.getNstart(irrep3) + cnt3, index.getNstart(irrep4) + cnt4 );
 
                         int rightdim = linsize2 * linsize3 * linsize4;
                         // (ijkl) -> (ajkl)
@@ -362,7 +358,6 @@ CheMPS2::Hamiltonian& OrbitalTransform::DoJacobiRotation(int k, int l, double th
                                 mem1[d*linsize1+k2] = cos*tmpk-sin*tmpl;
                                 mem1[d*linsize1+l2] = cos*tmpl+sin*tmpk;
                             }
-
 
                         int leftdim = linsize1 * linsize2 * linsize3;
                         // (ajkl) -> (ajkd)
@@ -409,14 +404,12 @@ CheMPS2::Hamiltonian& OrbitalTransform::DoJacobiRotation(int k, int l, double th
                             for (int cnt2=0; cnt2<linsize2; cnt2++)
                                 for (int cnt3=0; cnt3<linsize3; cnt3++)
                                     for (int cnt4=0; cnt4<linsize4; cnt4++)
-                                        ham_rot->setVmat(index.getNstart(irrep1) + cnt1,index.getNstart(irrep2) + cnt2, index.getNstart(irrep3) + cnt3,index.getNstart(irrep4) + cnt4, mem1[cnt1 + linsize1 * ( cnt2 + linsize2 * (cnt3 + linsize3 * cnt4) ) ] );
+                                        ham_rot.setVmat(index.getNstart(irrep1) + cnt1,index.getNstart(irrep2) + cnt2, index.getNstart(irrep3) + cnt3,index.getNstart(irrep4) + cnt4, mem1[cnt1 + linsize1 * ( cnt2 + linsize2 * (cnt3 + linsize3 * cnt4) ) ] );
 
                     } //end if the problem has orbitals from all 4 selected irreps
                 } // end if irrep 4 >= irrep2
             }// end run irrep3
         } // end run irrep2
-
-    return *ham_rot;
 }
 
 /* vim: set ts=4 sw=4 expandtab :*/
