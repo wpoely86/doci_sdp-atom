@@ -39,6 +39,8 @@ BoundaryPoint::BoundaryPoint(const CheMPS2::Hamiltonian &hamin)
    avg_iters = 100000000; // first step we don't really limited anything
    iters = 0;
    runs = 0;
+
+   returnhigh = false;
 }
 
 BoundaryPoint::BoundaryPoint(const TPM &hamin)
@@ -73,6 +75,8 @@ BoundaryPoint::BoundaryPoint(const TPM &hamin)
    avg_iters = 100000000; // first step we don't really limited anything
    iters = 0;
    runs = 0;
+
+   returnhigh = false;
 }
 
 BoundaryPoint::BoundaryPoint(const BoundaryPoint &orig)
@@ -104,6 +108,8 @@ BoundaryPoint::BoundaryPoint(const BoundaryPoint &orig)
    avg_iters = orig.avg_iters;
    iters = orig.iters;
    runs = orig.runs;
+
+   returnhigh = orig.returnhigh;
 }
 
 BoundaryPoint& BoundaryPoint::operator=(const BoundaryPoint &orig)
@@ -135,6 +141,8 @@ BoundaryPoint& BoundaryPoint::operator=(const BoundaryPoint &orig)
    avg_iters = orig.avg_iters;
    iters = orig.iters;
    runs = orig.runs;
+
+   returnhigh = orig.returnhigh;
 
    return *this;
 }
@@ -287,28 +295,35 @@ unsigned int BoundaryPoint::Run()
 
       convergence = Z->getI().ddot(ham_copy) + X->ddot(u_0);
 
+      energy = ham->ddot(Z->getI());
+
       if(do_output && iter_primal%500 == 0)
-         out << P_conv << "\t" << D_conv << "\t" << sigma << "\t" << convergence << "\t" << Z->getI().ddot(*ham) + nuclrep << "\t" << Z->getI().S_2() << std::endl;
+         out << P_conv << "\t" << D_conv << "\t" << sigma << "\t" << convergence << "\t" << energy + nuclrep << "\t" << Z->getI().S_2() << std::endl;
 
       if(D_conv < P_conv)
          sigma *= 1.01;
       else
          sigma /= 1.01;
 
-      if(iter_primal>avg_iters*5)
+      if(iter_primal>avg_iters*10)
+      {
+         std::cout << "Bailing out: too many iterations! " << std::endl;
+         if(returnhigh)
+            energy = 1e90; // something big so we're sure the step will be rejected
          break;
+      }
    }
 
    auto end = std::chrono::high_resolution_clock::now();
 
-   if(iter_primal>avg_iters*5)
-      energy = 1e24; // something big so we're sure the step will be rejected
-   else
+
+   if(iter_primal<=avg_iters*10)
    {
-      energy = ham->ddot(Z->getI());
       runs++;
       iters += iter_primal;
       avg_iters = iters/runs;
+      if(avg_iters<5000)
+         avg_iters = 5000;
    }
 
    out << std::endl;
@@ -408,6 +423,11 @@ doci2DM::TPM& BoundaryPoint::getHam() const
 double BoundaryPoint::evalEnergy() const
 {
    return ham->ddot(Z->getI()) + nuclrep;
+}
+
+void BoundaryPoint::ReturnHighWhenBailingOut(bool set)
+{
+   returnhigh = set;
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/

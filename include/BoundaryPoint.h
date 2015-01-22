@@ -64,6 +64,8 @@ class BoundaryPoint: public Method
 
       double evalEnergy() const;
 
+      void ReturnHighWhenBailingOut(bool);
+
    private:
 
       std::unique_ptr<TPM> ham;
@@ -90,6 +92,9 @@ class BoundaryPoint: public Method
       unsigned int runs;
 
       bool useprevresult;
+
+      //! when true, return very high value for the energy if the calculation takes too many iterations
+      bool returnhigh;
 };
 
 }
