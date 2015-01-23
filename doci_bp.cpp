@@ -115,7 +115,8 @@ int main(int argc,char **argv)
 
    BoundaryPoint method(ham);
 
-   method.set_tol_PD(1e-6);
+   method.set_tol_PD(1e-7);
+   auto &rdm = method.getRDM();
 
    if(!rdmfile.empty())
    {
@@ -123,15 +124,16 @@ int main(int argc,char **argv)
       method.getRDM().ReadFromFile(rdmfile);
    } else
    method.Run();
-   auto &rdm = method.getRDM();
 
    if(localmini)
    {
       LocalMinimizer minimize(ham);
 
-      minimize.getMethod().getRDM() = rdm;
+      minimize.getMethod_BP() = method;
 
-      minimize.getMethod_BP().set_tol_PD(1e-6);
+      minimize.getMethod_BP().set_use_prev_result(true);
+      minimize.getMethod_BP().set_tol_PD(1e-7);
+      minimize.set_conv_crit(1e-5);
 
       minimize.Minimize();
 
