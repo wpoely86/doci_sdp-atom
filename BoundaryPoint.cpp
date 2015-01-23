@@ -36,7 +36,7 @@ BoundaryPoint::BoundaryPoint(const CheMPS2::Hamiltonian &hamin)
 
    max_iter = 5;
 
-   avg_iters = 100000000; // first step we don't really limited anything
+   avg_iters = 1000000; // first step we don't really limited anything
    iters = 0;
    runs = 0;
 
@@ -72,7 +72,7 @@ BoundaryPoint::BoundaryPoint(const TPM &hamin)
 
    max_iter = 5;
 
-   avg_iters = 100000000; // first step we don't really limited anything
+   avg_iters = 1000000; // first step we don't really limited anything
    iters = 0;
    runs = 0;
 
