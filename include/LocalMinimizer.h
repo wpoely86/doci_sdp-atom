@@ -58,12 +58,17 @@ class LocalMinimizer
 
       void set_conv_crit(double);
 
+      void set_conv_steps(int);
+
    private:
 
       //! criteria for convergence of the minimizer
       double conv_crit;
 
       double energy;
+
+      //! number of steps in convergence area
+      int conv_steps;
 
       std::unique_ptr<doci2DM::Method> method;
 

@@ -31,6 +31,7 @@ simanneal::LocalMinimizer::LocalMinimizer(const CheMPS2::Hamiltonian &mol)
    energy = 0;
 
    conv_crit = 1e-6;
+   conv_steps = 100;
 }
 
 simanneal::LocalMinimizer::LocalMinimizer(CheMPS2::Hamiltonian &&mol)
@@ -46,6 +47,9 @@ simanneal::LocalMinimizer::LocalMinimizer(CheMPS2::Hamiltonian &&mol)
    method.reset(new doci2DM::BoundaryPoint(*ham));
 
    energy = 0;
+
+   conv_crit = 1e-6;
+   conv_steps = 100;
 }
 
 simanneal::LocalMinimizer::~LocalMinimizer() = default;
@@ -197,7 +201,7 @@ std::vector< std::tuple<int,int,double,double> > simanneal::LocalMinimizer::scan
  */
 void simanneal::LocalMinimizer::Minimize()
 {
-   bool converged = false;
+   int converged = 0;
 
    energy = method->getRDM().ddot(method->getHam());
 
@@ -207,7 +211,7 @@ void simanneal::LocalMinimizer::Minimize()
 
    int iters = 0;
 
-   while(!converged)
+   while(converged<conv_steps)
    {
       auto list_rots = scan_orbitals();
 
@@ -237,10 +241,13 @@ void simanneal::LocalMinimizer::Minimize()
 
       double new_energy = calc_new_energy(*ham);
 
-      std::cout << iters << "\tRotation between " << std::get<0>(new_rot) << "  " << std::get<1>(new_rot) << " over " << std::get<2>(new_rot) << " E_rot = " << std::get<3>(new_rot)+ham->getEconst() << "  E = " << new_energy+ham->getEconst() << "\t" << fabs(energy-new_energy) << std::endl;
-
       if(fabs(energy-new_energy)<conv_crit)
-         converged = true;
+         converged++;
+      else 
+         converged = 0;
+
+      std::cout << iters << " (" << converged << ")\tRotation between " << std::get<0>(new_rot) << "  " << std::get<1>(new_rot) << " over " << std::get<2>(new_rot) << " E_rot = " << std::get<3>(new_rot)+ham->getEconst() << "  E = " << new_energy+ham->getEconst() << "\t" << fabs(energy-new_energy) << std::endl;
+
 
       energy = new_energy;
 
@@ -272,6 +279,11 @@ double simanneal::LocalMinimizer::get_conv_crit() const
 void simanneal::LocalMinimizer::set_conv_crit(double crit)
 {
    conv_crit = crit;
+}
+
+void simanneal::LocalMinimizer::set_conv_steps(int steps)
+{
+   conv_steps = steps;
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/
