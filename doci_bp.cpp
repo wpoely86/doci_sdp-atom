@@ -22,6 +22,7 @@ int main(int argc,char **argv)
 
    std::string integralsfile = "mo-integrals.h5";
    std::string unitary;
+   std::string rdmfile;
    bool random = false;
    bool localmini = false;
 
@@ -29,6 +30,7 @@ int main(int argc,char **argv)
    {
       {"integrals",  required_argument, 0, 'i'},
       {"unitary",  required_argument, 0, 'u'},
+      {"rdm",  required_argument, 0, 'd'},
       {"random",  no_argument, 0, 'r'},
       {"local-minimizer",  no_argument, 0, 'l'},
       {"help",  no_argument, 0, 'h'},
@@ -37,7 +39,7 @@ int main(int argc,char **argv)
 
    int i,j;
 
-   while( (j = getopt_long (argc, argv, "rlhi:u:", long_options, &i)) != -1)
+   while( (j = getopt_long (argc, argv, "d:rlhi:u:", long_options, &i)) != -1)
       switch(j)
       {
          case 'h':
@@ -45,6 +47,7 @@ int main(int argc,char **argv)
             cout << "Usage: " << argv[0] << " [OPTIONS]\n"
                "\n"
                "    -i, --integrals=integrals-file  Set the input integrals file\n"
+               "    -d, --rdm=rdm-file              Use this rdm as starting point\n"
                "    -u, --unitary=unitary-file      Use the unitary matrix in this file\n"
                "    -r, --random                    Perform a random unitary transformation on the Hamiltonian\n"
                "    -l, --local-minimizer           Use the local minimizer\n"
@@ -57,6 +60,9 @@ int main(int argc,char **argv)
             break;
          case 'u':
             unitary = optarg;
+            break;
+         case 'd':
+            rdmfile = optarg;
             break;
          case 'r':
             random = true;
@@ -111,6 +117,11 @@ int main(int argc,char **argv)
 
    method.set_tol_PD(1e-6);
 
+   if(!rdmfile.empty())
+   {
+      cout << "Reading rdm: " << rdmfile << endl;
+      method.getRDM().ReadFromFile(rdmfile);
+   } else
    method.Run();
    auto &rdm = method.getRDM();
 
@@ -130,6 +141,10 @@ int main(int argc,char **argv)
       method.getHam() = minimize.getMethod().getHam();
       ham = minimize.getHam();
    }
+
+
+//   method.set_use_prev_result(true);
+   method.Run();
 
    cout << "The optimal energy is " << method.evalEnergy() << std::endl;
 
