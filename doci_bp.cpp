@@ -25,6 +25,8 @@ int main(int argc,char **argv)
    std::string rdmfile;
    bool random = false;
    bool localmini = false;
+   bool bp = false;
+   bool pr = false;
 
    struct option long_options[] =
    {
@@ -33,13 +35,15 @@ int main(int argc,char **argv)
       {"rdm",  required_argument, 0, 'd'},
       {"random",  no_argument, 0, 'r'},
       {"local-minimizer",  no_argument, 0, 'l'},
+      {"boundary-point",  no_argument, 0, 'b'},
+      {"potential-reduction",  no_argument, 0, 'p'},
       {"help",  no_argument, 0, 'h'},
       {0, 0, 0, 0}
    };
 
    int i,j;
 
-   while( (j = getopt_long (argc, argv, "d:rlhi:u:", long_options, &i)) != -1)
+   while( (j = getopt_long (argc, argv, "d:rlhi:u:pb", long_options, &i)) != -1)
       switch(j)
       {
          case 'h':
@@ -51,6 +55,8 @@ int main(int argc,char **argv)
                "    -u, --unitary=unitary-file      Use the unitary matrix in this file\n"
                "    -r, --random                    Perform a random unitary transformation on the Hamiltonian\n"
                "    -l, --local-minimizer           Use the local minimizer\n"
+               "    -b, --boundary-point            Use the boundary point method as solver (default)\n"
+               "    -p, --potential-reduction       Use the potential reduction method as solver\n"
                "    -h, --help                      Display this help\n"
                "\n";
             return 0;
@@ -70,7 +76,19 @@ int main(int argc,char **argv)
          case 'l':
             localmini = true;
             break;
+         case 'b':
+            bp = true;
+            break;
+         case 'p':
+            pr = true;
+            break;
       }
+
+   if(!bp && !pr)
+   {
+      std::cout << "Tell me what to do..." << std::endl;
+      return 1;
+   }
 
    cout << "Reading: " << integralsfile << endl;
 
@@ -113,6 +131,7 @@ int main(int argc,char **argv)
       orbtrans.fillHamCI(ham);
    }
 
+
    BoundaryPoint method(ham);
 
    method.set_tol_PD(1e-7);
@@ -123,16 +142,22 @@ int main(int argc,char **argv)
       cout << "Reading rdm: " << rdmfile << endl;
       method.getRDM().ReadFromFile(rdmfile);
    } else
-   method.Run();
+      method.Run();
 
    if(localmini)
    {
       LocalMinimizer minimize(ham);
 
-      minimize.getMethod_BP() = method;
+      if(bp)
+      {
+         minimize.UseBoundaryPoint();
+         minimize.getMethod_BP() = method;
+         minimize.getMethod_BP().set_use_prev_result(true);
+         minimize.getMethod_BP().set_tol_PD(1e-7);
+      }
+      else if(pr)
+         minimize.UsePotentialReduction();
 
-      minimize.getMethod_BP().set_use_prev_result(true);
-      minimize.getMethod_BP().set_tol_PD(1e-7);
       minimize.set_conv_crit(1e-5);
 
       minimize.Minimize();
@@ -146,6 +171,7 @@ int main(int argc,char **argv)
 
 
 //   method.set_use_prev_result(true);
+   method.BuildHam(ham);
    method.Run();
 
    cout << "The optimal energy is " << method.evalEnergy() << std::endl;
