@@ -602,7 +602,7 @@ void TPM::Q(double alpha, double beta, double gamma, const TPM &tpm, bool invers
    }
 }
 
-int TPM::solve(double t, const SUP &S, TPM &grad, const Lineq &lineq)
+int TPM::solve(double t, const SUP &S, TPM &grad, const Lineq &lineq, int max_iters)
 {
    int iter = 0;
 
@@ -642,7 +642,7 @@ int TPM::solve(double t, const SUP &S, TPM &grad, const Lineq &lineq)
 
       ++iter;
 
-      if(iter>10000)
+      if(iter>max_iters)
          break;
    }
 

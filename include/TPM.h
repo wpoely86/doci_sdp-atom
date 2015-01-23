@@ -70,7 +70,7 @@ class TPM: public Container
 
       void Q(double a, double b, double c, const TPM &, bool=false);
 
-      int solve(double t, const SUP &, TPM &, const Lineq &);
+      int solve(double t, const SUP &, TPM &, const Lineq &, int);
 
       void H(double t,const TPM &, const SUP &, const Lineq &);
 

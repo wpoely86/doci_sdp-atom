@@ -132,6 +132,8 @@ unsigned int PotentialReduction::Run()
 
    unsigned int tot_iter = 0;
 
+   int max_iters = 100000;
+
    double t = 1.0;
    int iter = 0;
 
@@ -181,7 +183,7 @@ unsigned int PotentialReduction::Run()
 
          //los het hessiaan stelsel op:
          if(do_output)
-            out << delta.solve(t,P,grad,*lineq) << std::endl;
+            out << delta.solve(t,P,grad,*lineq, max_iters) << std::endl;
 
          //line search
          double a = delta.line_search(t,P,*ham);
@@ -191,7 +193,7 @@ unsigned int PotentialReduction::Run()
 
          convergence = a*a*delta.ddot(delta);
 
-         if(tot_iter>10000)
+         if(tot_iter>max_iters)
          {
             break_iters++;
             break;
