@@ -222,7 +222,7 @@ void simanneal::LocalMinimizer::Minimize()
             });
 
       for(auto& elem: list_rots)
-         std::cout << std::get<0>(elem) << "\t" << std::get<1>(elem) << "\t" << std::get<3>(elem)+ham->getEconst() << std::endl;
+         std::cout << std::get<0>(elem) << "\t" << std::get<1>(elem) << "\t" << std::get<3>(elem)+ham->getEconst() << "\t" << std::get<2>(elem) << std::endl;
 
       std::pair<int,int> tmp = std::make_pair(std::get<0>(list_rots[0]), std::get<1>(list_rots[0]));
       int idx = 0;
