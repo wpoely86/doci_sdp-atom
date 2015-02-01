@@ -71,7 +71,7 @@ class TPM: public Container
 
       void Q(double a, double b, double c, const TPM &, bool=false);
 
-      int solve(double t, const SUP &, TPM &, const Lineq &, int);
+      int solve(double t, const SUP &, TPM &, const Lineq &);
 
       void H(double t,const TPM &, const SUP &, const Lineq &);
 
@@ -87,7 +87,7 @@ class TPM: public Container
 
       std::vector<TPM> singlet_constrains() const;
 
-      void S(const TPM &, bool=false);
+      void S(const TPM &);
 
       int InverseS(TPM &, const Lineq &);
 

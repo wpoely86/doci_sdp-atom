@@ -132,8 +132,6 @@ unsigned int PotentialReduction::Run()
 
    unsigned int tot_iter = 0;
 
-   int max_iters = 100000;
-
    double t = 1.0;
    int iter = 0;
 
@@ -159,7 +157,6 @@ unsigned int PotentialReduction::Run()
 
       double convergence = 1.0;
       iter++;
-      auto break_iters = 0u;
 
       //inner iteration: 
       //Newton's method for finding the minimum of the current potential
@@ -182,7 +179,7 @@ unsigned int PotentialReduction::Run()
          TPM delta(L,N);
 
          //los het hessiaan stelsel op:
-         auto cg_iters = delta.solve(t,P,grad,*lineq, max_iters);
+         auto cg_iters = delta.solve(t,P,grad,*lineq);
 
          //line search
          double a = delta.line_search(t,P,*ham);

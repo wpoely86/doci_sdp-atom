@@ -602,7 +602,7 @@ void TPM::Q(double alpha, double beta, double gamma, const TPM &tpm, bool invers
    }
 }
 
-int TPM::solve(double t, const SUP &S, TPM &grad, const Lineq &lineq, int max_iters)
+int TPM::solve(double t, const SUP &S, TPM &grad, const Lineq &lineq)
 {
    int iter = 0;
 
@@ -619,7 +619,7 @@ int TPM::solve(double t, const SUP &S, TPM &grad, const Lineq &lineq, int max_it
 
    TPM Hb(L,N);
 
-   while(rr > 1.0e-9)
+   while(rr > 1.0e-10)
    { 
       Hb.H(t,grad,S, lineq);
 
@@ -642,8 +642,9 @@ int TPM::solve(double t, const SUP &S, TPM &grad, const Lineq &lineq, int max_it
 
       ++iter;
 
-      if(iter>max_iters)
-         break;
+//      // something going wrong!
+//      if(iter>2*8*L*L*L)
+//         break;
    }
 
    return iter;
@@ -852,7 +853,7 @@ double TPM::getDiag(int a, int b) const
  * can be taken as well.
  * @param tpm_d the input TPM
  */
-void TPM::S(const TPM &tpm_d, bool inverse)
+void TPM::S(const TPM &tpm_d)
 {
    double a = 1.0;
    double b = 0.0;
@@ -867,30 +868,40 @@ void TPM::S(const TPM &tpm_d, bool inverse)
 
 #endif
 
+//#ifdef __G_CON
+//
+//   a += 4.0;
+//   c += (2.0*N - M - 2.0)/((N - 1.0)*(N - 1.0));
+//
+//#endif
+//
+//#ifdef __T1_CON
+//
+//   a += M - 4.0;
+//   b += (M*M*M - 6.0*M*M*N -3.0*M*M + 12.0*M*N*N + 12.0*M*N + 2.0*M - 18.0*N*N - 6.0*N*N*N)/( 3.0*N*N*(N - 1.0)*(N - 1.0) );
+//   c -= (M*M + 2.0*N*N - 4.0*M*N - M + 8.0*N - 4.0)/( 2.0*(N - 1.0)*(N - 1.0) );
+//
+//#endif
+//
+//#ifdef __T2_CON
+//   
+//   a += 5.0*M - 8.0;
+//   b += 2.0/(N - 1.0);
+//   c += (2.0*N*N + (M - 2.0)*(4.0*N - 3.0) - M*M)/(2.0*(N - 1.0)*(N - 1.0));
+//
+//#endif
+
+   this->Q(a,b,c,tpm_d);
+
 #ifdef __G_CON
+   PHM tmpG(L,N);
+   tmpG.G(tpm_d);
 
-   a += 4.0;
-   c += (2.0*N - M - 2.0)/((N - 1.0)*(N - 1.0));
+   TPM tmp(L,N);
+   tmp.G(tmpG);
 
+   (*this) += tmp;
 #endif
-
-#ifdef __T1_CON
-
-   a += M - 4.0;
-   b += (M*M*M - 6.0*M*M*N -3.0*M*M + 12.0*M*N*N + 12.0*M*N + 2.0*M - 18.0*N*N - 6.0*N*N*N)/( 3.0*N*N*(N - 1.0)*(N - 1.0) );
-   c -= (M*M + 2.0*N*N - 4.0*M*N - M + 8.0*N - 4.0)/( 2.0*(N - 1.0)*(N - 1.0) );
-
-#endif
-
-#ifdef __T2_CON
-   
-   a += 5.0*M - 8.0;
-   b += 2.0/(N - 1.0);
-   c += (2.0*N*N + (M - 2.0)*(4.0*N - 3.0) - M*M)/(2.0*(N - 1.0)*(N - 1.0));
-
-#endif
-
-   this->Q(a,b,c,tpm_d,inverse);
 }
 
 /**
