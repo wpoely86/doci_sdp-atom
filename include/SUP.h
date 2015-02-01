@@ -74,6 +74,8 @@ class SUP
 
       void init_S(const Lineq &);
 
+      void WriteToFile(std::string filename) const;
+
    private:
       //! number of particles
       int N;

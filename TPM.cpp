@@ -1656,4 +1656,81 @@ void TPM::rotate(int k, int l, double angle, std::function<double(int,int)> &T, 
    rdmV[idx] = 1.0/(N-1.0)*(T(k,k)+T(l,l)) + cos2sin2*(0.5*(V(k,k,k,k)+V(l,l,l,l))-3*V(k,k,l,l)+V(k,l,k,l))+(cos4+sin4)*(V(k,l,k,l)-0.5*V(k,k,l,l))+(cos3sin-cossin3)*(V(k,l,k,k)-V(k,l,l,l));
 }
 
+void TPM::WriteFullToFile(std::string filename) const
+{
+   hid_t       file_id, group_id;
+   herr_t      status;
+
+   file_id = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+
+   group_id = H5Gcreate(file_id, "/RDM", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+   WriteFullToFile(group_id);
+
+   status = H5Gclose(group_id);
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Fclose(file_id);
+   HDF5_STATUS_CHECK(status);
+}
+
+void TPM::WriteFullToFile(hid_t &group_id) const
+{
+   hid_t       dataset_id, attribute_id, dataspace_id;
+   herr_t      status;
+
+   int M = 2*L;
+
+   Matrix fullTPM(n);
+   fullTPM = 0;
+
+   for(int a=0;a<M;a++)
+      for(int b=0;b<M;b++)
+         for(int c=0;c<M;c++)
+            for(int d=0;d<M;d++)
+            {
+               int idx1 = (*s2t)(a,b);
+               int idx2 = (*s2t)(c,d);
+
+               if(idx1>=0 && idx2>=0)
+                  fullTPM(idx1, idx2) = (*this)(a,b,c,d);
+            }
+
+
+   hsize_t dimblock = n*n;
+
+   dataspace_id = H5Screate_simple(1, &dimblock, NULL);
+
+   dataset_id = H5Dcreate(group_id, "TPM", H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+   status = H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, fullTPM.gMatrix());
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Sclose(dataspace_id);
+   HDF5_STATUS_CHECK(status);
+
+   dataspace_id = H5Screate(H5S_SCALAR);
+
+   attribute_id = H5Acreate (dataset_id, "M", H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+   status = H5Awrite (attribute_id, H5T_NATIVE_INT, &M );
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Aclose(attribute_id);
+   HDF5_STATUS_CHECK(status);
+
+   attribute_id = H5Acreate (dataset_id, "N", H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+   status = H5Awrite (attribute_id, H5T_NATIVE_INT, &N );
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Aclose(attribute_id);
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Sclose(dataspace_id);
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Dclose(dataset_id);
+   HDF5_STATUS_CHECK(status);
+}
+
+
 /*  vim: set ts=3 sw=3 expandtab :*/

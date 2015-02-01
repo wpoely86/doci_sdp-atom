@@ -336,4 +336,45 @@ void SUP::init_S(const Lineq &lineq)
       this->daxpy(lineq.ge_ortho(i),lineq.gu_0(i));
 }
 
+void SUP::WriteToFile(std::string filename) const
+{
+   hid_t       file_id, main_group_id, group_id;
+   herr_t      status;
+
+   file_id = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+
+   main_group_id = H5Gcreate(file_id, "SUP", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+   group_id = H5Gcreate(main_group_id, "I", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+   I->WriteFullToFile(group_id);
+
+   status = H5Gclose(group_id);
+   HDF5_STATUS_CHECK(status);
+
+#ifdef __Q_CON
+   group_id = H5Gcreate(main_group_id, "Q", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+   Q->WriteFullToFile(group_id);
+
+   status = H5Gclose(group_id);
+   HDF5_STATUS_CHECK(status);
+#endif
+
+#ifdef __G_CON
+   group_id = H5Gcreate(main_group_id, "G", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+   G->WriteFullToFile(group_id);
+
+   status = H5Gclose(group_id);
+   HDF5_STATUS_CHECK(status);
+#endif
+
+   status = H5Gclose(main_group_id);
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Fclose(file_id);
+   HDF5_STATUS_CHECK(status);
+}
+
 /*  vim: set ts=3 sw=3 expandtab :*/

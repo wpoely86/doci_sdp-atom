@@ -5,6 +5,7 @@
 #include <memory>
 #include <string>
 #include <functional>
+#include <hdf5.h>
 
 #include "Container.h"
 #include "helpers.h"
@@ -111,6 +112,10 @@ class TPM: public Container
       std::pair<double,bool> find_min_angle(int k, int l, double start_angle, std::function<double(int,int)> &T, std::function<double(int,int,int,int)> &V) const;
 
       void rotate(int, int, double, std::function<double(int,int)> &, std::function<double(int,int,int,int)> &);
+
+      void WriteFullToFile(std::string filename) const;
+
+      void WriteFullToFile(hid_t& group) const;
 
    private:
 
