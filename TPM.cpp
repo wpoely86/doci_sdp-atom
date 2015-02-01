@@ -945,34 +945,44 @@ int TPM::InverseS(TPM &b, const Lineq &lineq)
    return cg_iter;
 }
 
+/**
+ * The down image of the DOCI-G image.
+ * Fills the current object with the G down image of phm
+ * @param phm the G matrix to use
+ */
 void TPM::G(const PHM &phm)
 {
-   SPM spm(L,N);
-   spm.bar(1.0/(N-1.0), phm);
+   std::vector<double> B11(L,0);
+   std::vector<double> B22(L,0);
 
-   for(int i=0;i<L;i++)
-   {
-      int a = (*t2s)(i,0);
-
-      for(int j=i;j<L;j++)
+   for(int a=0;a<L;a++)
+      for(int b=a+1;b<L;b++)
       {
-         int c = (*t2s)(j,0);
+         auto &block = phm.getBlock(a,b);
 
-         (*this)(0,i,j) = 2*(phm(a+L,c+L,c,a) - phm(a,c+L,c,a+L));
-
-         (*this)(0,j,i) = (*this)(0,i,j);
+         B11[a] += block(0,0);
+         B22[b] += block(1,1);
       }
 
-      (*this)(0,i,i) += 2 * spm(0,a);
+   for(int i=0;i<gdimVector(0);++i)
+   {
+      const int a = (*t2s)(L+i,0);
+      const int b = (*t2s)(L+i,1);
+
+      auto &block = phm.getBlock(a,b);
+
+      (*this)(0,i) = 0.25*(2.0/(N-1.0)*(phm[0](a,a)+phm[0](b,b)+B11[a]+B11[b]+B22[a]+B22[b]) - block(0,0) - block(1,1) + 2*phm[0](a,b));
    }
 
-   for(int i=0;i<gdimVector(0);i++)
+   for(int a=0;a<L;a++)
    {
-      int a = (*t2s)(L+i,0);
-      int b = (*t2s)(L+i,1);
+      for(int b=a+1;b<L;b++)
+      {
+         auto &block = phm.getBlock(a,b);
+         (*this)(0,a,b) = (*this)(0,b,a) = -block(0,1);
+      }
 
-      (*this)(0,i) = spm(0,a) + spm(0,b);
-      (*this)(0,i) += 2*phm(a,a,b,b) - phm(a,b,a,b) - phm(b,a,b,a);
+      (*this)(0,a,a) = 1.0/(N-1.0)*(B11[a]+B22[a]+phm[0](a,a));
    }
 }
 
