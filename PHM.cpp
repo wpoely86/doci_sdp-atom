@@ -5,10 +5,10 @@
 using namespace doci2DM;
 
 // default empty
-std::unique_ptr<helpers::tmatrix<unsigned int>> PHM::s2ph = nullptr;
-std::unique_ptr<helpers::tmatrix<unsigned int>> PHM::ph2s = nullptr;
-std::unique_ptr<helpers::tmatrix<unsigned int>> PHM::s2b = nullptr;
-std::unique_ptr<helpers::tmatrix<unsigned int>> PHM::b2s = nullptr;
+std::unique_ptr<helpers::tmatrix<int>> PHM::s2ph = nullptr;
+std::unique_ptr<helpers::tmatrix<int>> PHM::ph2s = nullptr;
+std::unique_ptr<helpers::tmatrix<int>> PHM::s2b = nullptr;
+std::unique_ptr<helpers::tmatrix<int>> PHM::b2s = nullptr;
 
 /**
  * @param L the number of levels
@@ -35,10 +35,10 @@ void PHM::constr_lists(int L)
    int M = 2*L;
    int n_ph = M*M;
 
-   s2ph.reset(new helpers::tmatrix<unsigned int>(M,M));
+   s2ph.reset(new helpers::tmatrix<int>(M,M));
    (*s2ph) = -1; // if you use something you shouldn't, this will case havoc
 
-   ph2s.reset(new helpers::tmatrix<unsigned int>(n_ph,2));
+   ph2s.reset(new helpers::tmatrix<int>(n_ph,2));
    (*ph2s) = -1; // if you use something you shouldn't, this will case havoc
 
    int tel = 0;
@@ -46,22 +46,22 @@ void PHM::constr_lists(int L)
    // a b
    for(int a=0;a<L;a++)
       for(int b=0;b<L;b++)
-         (*s2ph)(a,b) = (*s2ph)(b,a) = tel++;
+         (*s2ph)(a,b) = tel++;
 
    // \bar a \bar b
    for(int a=L;a<M;a++)
       for(int b=L;b<M;b++)
-         (*s2ph)(a,b) = (*s2ph)(b,a) = tel++;
+         (*s2ph)(a,b) = tel++;
 
    // a \bar b 
    for(int a=0;a<L;a++)
       for(int b=L;b<M;b++)
-         (*s2ph)(a,b) = (*s2ph)(b,a) = tel++;
+         (*s2ph)(a,b) = tel++;
 
    // \bar a b
    for(int a=L;a<M;a++)
       for(int b=0;b<L;b++)
-         (*s2ph)(a,b) = (*s2ph)(b,a) = tel++;
+         (*s2ph)(a,b) = tel++;
 
    assert(tel == n_ph);
 
@@ -73,10 +73,10 @@ void PHM::constr_lists(int L)
       }
 
    // these convert between the 2x2 block index and the sp index for that block
-   s2b.reset(new helpers::tmatrix<unsigned int>(L,L));
+   s2b.reset(new helpers::tmatrix<int>(L,L));
    (*s2b) = -1; // if you use something you shouldn't, this will case havoc
 
-   b2s.reset(new helpers::tmatrix<unsigned int>((L*(L-1))/2+1,2));
+   b2s.reset(new helpers::tmatrix<int>((L*(L-1))/2+1,2));
    (*b2s) = -1; // if you use something you shouldn't, this will case havoc
 
    // sp index to block index
@@ -168,6 +168,36 @@ int PHM::gN() const
 int PHM::gL() const
 {
    return L;
+}
+
+/**
+ * Get a 2x2 block of the G matrix, corresponding with
+ * indices a and b
+ * @param a the first sp index
+ * @param b the second sp index
+ * @return the 2x2 matrix
+ */
+const Matrix& PHM::getBlock(int a, int b) const
+{
+   const int idx = (*s2b)(a,b);
+   assert(idx>0);
+
+   return (*this)[idx];
+}
+
+/**
+ * Get a 2x2 block of the G matrix, corresponding with
+ * indices a and b
+ * @param a the first sp index
+ * @param b the second sp index
+ * @return the 2x2 matrix
+ */
+Matrix& PHM::getBlock(int a, int b)
+{
+   const int idx = (*s2b)(a,b);
+   assert(idx>0);
+
+   return (*this)[idx];
 }
 
 /**
@@ -326,6 +356,65 @@ void PHM::L_map(const BlockMatrix &map,const BlockMatrix &object)
 #pragma omp parallel for if(gnr()>100)
    for(int i=1;i<gnr();i++)
       (*this)[i].L_map_2x2(map[i], object[i]);
+}
+
+
+void PHM::WriteFullToFile(hid_t &group_id) const
+{
+   hid_t       dataset_id, attribute_id, dataspace_id;
+   herr_t      status;
+
+   int M = 2*L;
+
+   Matrix fullTPM(M*M);
+   fullTPM = 0;
+
+   for(int a=0;a<M;a++)
+      for(int b=0;b<M;b++)
+         for(int c=0;c<M;c++)
+            for(int d=0;d<M;d++)
+            {
+               int idx1 = (*s2ph)(a,b);
+               int idx2 = (*s2ph)(c,d);
+
+               if(idx1>=0 && idx2>=0)
+                  fullTPM(idx1, idx2) = (*this)(a,b,c,d);
+            }
+
+
+   hsize_t dimblock = M*M*M*M;
+
+   dataspace_id = H5Screate_simple(1, &dimblock, NULL);
+
+   dataset_id = H5Dcreate(group_id, "PHM", H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+   status = H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, fullTPM.gMatrix());
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Sclose(dataspace_id);
+   HDF5_STATUS_CHECK(status);
+
+   dataspace_id = H5Screate(H5S_SCALAR);
+
+   attribute_id = H5Acreate (dataset_id, "M", H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+   status = H5Awrite (attribute_id, H5T_NATIVE_INT, &M );
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Aclose(attribute_id);
+   HDF5_STATUS_CHECK(status);
+
+   attribute_id = H5Acreate (dataset_id, "N", H5T_STD_I64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT);
+   status = H5Awrite (attribute_id, H5T_NATIVE_INT, &N );
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Aclose(attribute_id);
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Sclose(dataspace_id);
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Dclose(dataset_id);
+   HDF5_STATUS_CHECK(status);
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/

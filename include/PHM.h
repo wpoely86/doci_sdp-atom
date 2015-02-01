@@ -2,6 +2,7 @@
 #define PHM_H
 
 #include<memory>
+#include<hdf5.h>
 
 #include "helpers.h"
 #include "BlockStructure.h"
@@ -35,6 +36,10 @@ class PHM: public BlockMatrix
 
       double operator()(int a, int b, int c, int d) const;
 
+      const Matrix& getBlock(int a, int b) const;
+
+      Matrix& getBlock(int a, int b);
+
       int gN() const;
 
       int gL() const;
@@ -53,6 +58,8 @@ class PHM: public BlockMatrix
 
       void L_map(const BlockMatrix &, const BlockMatrix &);
 
+      void WriteFullToFile(hid_t &group_id) const;
+
    private:
 
       void constr_lists(int L);
@@ -62,16 +69,16 @@ class PHM: public BlockMatrix
       int N;
 
       //! table translating single particles indices to two particle indices
-      static std::unique_ptr<helpers::tmatrix<unsigned int>> s2ph;
+      static std::unique_ptr<helpers::tmatrix<int>> s2ph;
 
       //! table translating two particles indices to single particle indices
-      static std::unique_ptr<helpers::tmatrix<unsigned int>> ph2s;
+      static std::unique_ptr<helpers::tmatrix<int>> ph2s;
 
       //! table translating single particles indices to the correct 2x2 block
-      static std::unique_ptr<helpers::tmatrix<unsigned int>> s2b;
+      static std::unique_ptr<helpers::tmatrix<int>> s2b;
 
       //! table translating the block index to the single particle indices
-      static std::unique_ptr<helpers::tmatrix<unsigned int>> b2s;
+      static std::unique_ptr<helpers::tmatrix<int>> b2s;
 };
 
 }
