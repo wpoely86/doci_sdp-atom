@@ -24,7 +24,7 @@ PotentialReduction::PotentialReduction(const CheMPS2::Hamiltonian &hamin)
    // some default values
    tolerance = 1.0e-5;
    target = 1e-12;
-   reductionfac = 1.0/2.0;
+   reductionfac = 1.0/1.5;
 }
 
 PotentialReduction::PotentialReduction(const TPM &hamin)
@@ -182,8 +182,7 @@ unsigned int PotentialReduction::Run()
          TPM delta(L,N);
 
          //los het hessiaan stelsel op:
-         if(do_output)
-            out << delta.solve(t,P,grad,*lineq, max_iters) << std::endl;
+         auto cg_iters = delta.solve(t,P,grad,*lineq, max_iters);
 
          //line search
          double a = delta.line_search(t,P,*ham);
@@ -193,11 +192,8 @@ unsigned int PotentialReduction::Run()
 
          convergence = a*a*delta.ddot(delta);
 
-         if(tot_iter>max_iters)
-         {
-            break_iters++;
-            break;
-         }
+         if(do_output)
+            out << cg_iters << "\t" << convergence << std::endl;
       }
 
       if(do_output)
@@ -221,9 +217,6 @@ unsigned int PotentialReduction::Run()
       double a = extrapol.line_search(t,*rdm,*ham);
 
       rdm->daxpy(a,extrapol);
-
-      if(break_iters > 100)
-         break;
    } 
 
    auto end = std::chrono::high_resolution_clock::now();
