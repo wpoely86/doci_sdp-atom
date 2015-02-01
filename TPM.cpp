@@ -437,15 +437,15 @@ void TPM::ReadFromFile(std::string filename)
  */
 double TPM::S_2() const
 {
-   double spin = 0.0;
+   double spin = 0;
 
    for(int i = 0;i<n;++i)
    {
       int a = (*t2s)(i,0);
       int b = (*t2s)(i,1);
 
-      int s_a = ( 1.0 - 2 * (a / L) )/2;
-      int s_b = ( 1.0 - 2 * (b / L) )/2;
+      const double s_a = ( 1.0 - 2 * (a / L) )/2.0;
+      const double s_b = ( 1.0 - 2 * (b / L) )/2.0;
 
       spin += ( (1 + s_a*s_a + s_b*s_b)/(N - 1.0) + 2*s_a*s_b ) * (*this)(a,b,a,b);
    }
