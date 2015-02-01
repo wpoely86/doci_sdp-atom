@@ -106,6 +106,8 @@ class BlockStructure
 
       void fill_Random();
 
+      void fill_Random(int);
+
       virtual void invert();
 
       virtual void sqrt(int);

@@ -252,6 +252,13 @@ void Container::fill_Random()
    vector->fill_Random();
 }
 
+void Container::fill_Random(int seed)
+{
+   matrix->fill_Random(seed);
+   vector->fill_Random(seed);
+}
+
+
 void Container::sqrt(int option)
 {
    matrix->sqrt(option);

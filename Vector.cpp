@@ -274,7 +274,16 @@ void Vector::dscal(double alpha)
  */
 void Vector::fill_Random()
 {
-   srand(time(NULL));
+   fill_Random(time(NULL));
+}
+
+/**
+ * Fill the vector with random numbers.
+ * @param seed the seed to use
+ */
+void Vector::fill_Random(int seed)
+{
+   srand(seed);
 
    for(int i = 0;i < n;++i)
       vector[i] = (double) rand()/RAND_MAX;

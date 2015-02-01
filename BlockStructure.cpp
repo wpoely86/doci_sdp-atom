@@ -312,6 +312,17 @@ void BlockStructure<BlockType>::fill_Random()
 }
 
 /**
+ * Fill the matrix with random numbers.
+ * @param seed the seed to use
+ */
+   template<class BlockType>
+void BlockStructure<BlockType>::fill_Random(int seed)
+{
+   for(int i = 0;i < blocks.size();++i)
+      blocks[i]->fill_Random(seed);
+}
+
+/**
  * Take the square root out of the positive semidefinite blocks, destroys original blocks, square root will be put in (*this)
  * @param option = 1, positive square root, = -1, negative square root.
  */
