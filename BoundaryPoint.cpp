@@ -29,7 +29,7 @@ BoundaryPoint::BoundaryPoint(const CheMPS2::Hamiltonian &hamin)
    // some default values
    sigma = 1.0;
 
-   tol_PD = 3.0e-6;
+   tol_PD = 1.0e-6;
    tol_en = 1.0e-3;
 
    mazzy = 1.0;
@@ -228,7 +228,7 @@ unsigned int BoundaryPoint::Run()
 
    auto start = std::chrono::high_resolution_clock::now();
 
-   while(P_conv > tol_PD || D_conv > tol_PD) // || fabs(convergence) > tol_en)
+   while(P_conv > tol_PD || D_conv > tol_PD || fabs(convergence) > tol_en)
    {
       ++iter_primal;
 
