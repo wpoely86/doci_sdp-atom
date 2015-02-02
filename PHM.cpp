@@ -358,6 +358,52 @@ void PHM::L_map(const BlockMatrix &map,const BlockMatrix &object)
       (*this)[i].L_map_2x2(map[i], object[i]);
 }
 
+void PHM::WriteToFile(hid_t &group_id) const
+{
+   hid_t       dataset_id, dataspace_id;
+   herr_t      status;
+
+   // first the LxL block
+   hsize_t dimblock = (*this)[0].gn() * (*this)[0].gn();
+
+   dataspace_id = H5Screate_simple(1, &dimblock, NULL);
+
+   dataset_id = H5Dcreate(group_id, "Block", H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+   double *data = const_cast<Matrix &>((*this)[0]).gMatrix();
+
+   status = H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Dclose(dataset_id);
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Sclose(dataspace_id);
+   HDF5_STATUS_CHECK(status);
+
+   // first the 2x2 block
+   dimblock = 4;
+   dataspace_id = H5Screate_simple(1, &dimblock, NULL);
+
+   for(int i=1;i<gnr();i++)
+   {
+      std::string blockname = "2x2_" + std::to_string(i);
+
+      dataset_id = H5Dcreate(group_id, blockname.c_str(), H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+      data = const_cast<Matrix &>((*this)[i]).gMatrix();
+
+      status = H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, data);
+      HDF5_STATUS_CHECK(status);
+
+      status = H5Dclose(dataset_id);
+      HDF5_STATUS_CHECK(status);
+   }
+
+   status = H5Sclose(dataspace_id);
+   HDF5_STATUS_CHECK(status);
+}
+
 
 void PHM::WriteFullToFile(hid_t &group_id) const
 {

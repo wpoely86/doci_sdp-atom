@@ -51,6 +51,8 @@ class TPM: public Container
 
       void ham(std::function<double(int,int)> &T, std::function<double(int,int,int,int)> &V);
 
+      void WriteToFile(hid_t &group_id) const;
+
       void WriteToFile(std::string filename) const;
 
       void ReadFromFile(std::string filename);

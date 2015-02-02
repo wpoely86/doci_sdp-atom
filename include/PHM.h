@@ -58,6 +58,8 @@ class PHM: public BlockMatrix
 
       void L_map(const BlockMatrix &, const BlockMatrix &);
 
+      void WriteToFile(hid_t &group_id) const;
+
       void WriteFullToFile(hid_t &group_id) const;
 
    private:

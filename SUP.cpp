@@ -347,7 +347,7 @@ void SUP::WriteToFile(std::string filename) const
 
    group_id = H5Gcreate(main_group_id, "I", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
-   I->WriteFullToFile(group_id);
+   I->WriteToFile(group_id);
 
    status = H5Gclose(group_id);
    HDF5_STATUS_CHECK(status);
@@ -355,7 +355,7 @@ void SUP::WriteToFile(std::string filename) const
 #ifdef __Q_CON
    group_id = H5Gcreate(main_group_id, "Q", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
-   Q->WriteFullToFile(group_id);
+   Q->WriteToFile(group_id);
 
    status = H5Gclose(group_id);
    HDF5_STATUS_CHECK(status);
@@ -364,7 +364,7 @@ void SUP::WriteToFile(std::string filename) const
 #ifdef __G_CON
    group_id = H5Gcreate(main_group_id, "G", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
-   G->WriteFullToFile(group_id);
+   G->WriteToFile(group_id);
 
    status = H5Gclose(group_id);
    HDF5_STATUS_CHECK(status);

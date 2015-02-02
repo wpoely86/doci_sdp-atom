@@ -270,18 +270,11 @@ void TPM::HF_molecule(std::string filename)
    ham(getT,getV);
 }
 
-
-void TPM::WriteToFile(std::string filename) const
+void TPM::WriteToFile(hid_t &group_id) const
 {
-   hid_t       file_id, group_id, dataset_id, attribute_id, dataspace_id;
+   hid_t       dataset_id, attribute_id, dataspace_id;
    hsize_t     dims;
    herr_t      status;
-
-   file_id = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
-
-   group_id = H5Gcreate(file_id, "/RDM", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-
-
 
    hsize_t dimblock = getMatrix(0).gn() * getMatrix(0).gn();
 
@@ -385,6 +378,18 @@ void TPM::WriteToFile(std::string filename) const
 
    status = H5Sclose(dataspace_id);
    HDF5_STATUS_CHECK(status);
+}
+
+void TPM::WriteToFile(std::string filename) const
+{
+   hid_t       file_id, group_id;
+   herr_t      status;
+
+   file_id = H5Fcreate(filename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+
+   group_id = H5Gcreate(file_id, "/RDM", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+   WriteToFile(group_id);
 
    status = H5Gclose(group_id);
    HDF5_STATUS_CHECK(status);
