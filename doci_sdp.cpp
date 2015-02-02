@@ -115,7 +115,7 @@ int main(int argc, char **argv)
 
       minimize.UsePotentialReduction();
 
-      minimize.set_conv_crit(1e-5);
+      minimize.set_conv_crit(1e-6);
 
       minimize.Minimize();
 

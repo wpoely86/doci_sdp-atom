@@ -135,7 +135,7 @@ int main(int argc,char **argv)
       minimize.getMethod_BP().set_use_prev_result(true);
       minimize.getMethod_BP().set_tol_PD(1e-7);
 
-      minimize.set_conv_crit(1e-5);
+      minimize.set_conv_crit(1e-6);
 
       minimize.Minimize();
 
@@ -146,7 +146,6 @@ int main(int argc,char **argv)
 
       method.set_use_prev_result(false);
       method.Reset_avg_iters();
-      method.BuildHam(ham);
       method.Run();
 
       cout << "The optimal energy is " << method.evalEnergy() << std::endl;
