@@ -193,6 +193,8 @@ std::vector< std::tuple<int,int,double,double> > simanneal::LocalMinimizer::scan
 
    std::cout << "Orbital scanning took: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << std::endl;
 
+   assert(pos_rotations.size()>0);
+
    return pos_rotations;
 }
 
@@ -202,6 +204,9 @@ std::vector< std::tuple<int,int,double,double> > simanneal::LocalMinimizer::scan
 void simanneal::LocalMinimizer::Minimize()
 {
    int converged = 0;
+
+   // first run
+   method->Run();
 
    energy = method->getRDM().ddot(method->getHam());
 
@@ -258,6 +263,22 @@ void simanneal::LocalMinimizer::Minimize()
       h5_name.str("");
       h5_name << getenv("SAVE_H5_PATH") << "/ham-" << iters << ".h5";
       ham->save2(h5_name.str());
+
+      h5_name.str("");
+      h5_name << getenv("SAVE_H5_PATH") << "/rdm-" << iters << ".h5";
+      method->getRDM().WriteToFile(h5_name.str());
+
+      doci2DM::BoundaryPoint *obj_bp = dynamic_cast<doci2DM::BoundaryPoint *> (method.get());
+      if(obj_bp)
+      {
+         h5_name.str("");
+         h5_name << getenv("SAVE_H5_PATH") << "/X-" << iters << ".h5";
+         obj_bp->getX().WriteToFile(h5_name.str());
+
+         h5_name.str("");
+         h5_name << getenv("SAVE_H5_PATH") << "/Z-" << iters << ".h5";
+         obj_bp->getZ().WriteToFile(h5_name.str());
+      }
 
       iters++;
    }
