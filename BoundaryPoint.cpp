@@ -401,6 +401,11 @@ doci2DM::TPM& BoundaryPoint::getRDM() const
 }
 
 
+/**
+ * Should we use the previous point as a 
+ * starting point for a new calculation?
+ * @param new_val when true, use previous point as starting point
+ */
 void BoundaryPoint::set_use_prev_result(bool new_val)
 {
    useprevresult = new_val;
@@ -425,9 +430,24 @@ double BoundaryPoint::evalEnergy() const
    return ham->ddot(Z->getI()) + nuclrep;
 }
 
+/**
+ * Should be stop the main loop when the number of
+ * iterations is too high? Set to true to do this.
+ * Default to false
+ * @param set when true, stop main loop when too many iterations
+ */
 void BoundaryPoint::ReturnHighWhenBailingOut(bool set)
 {
    returnhigh = set;
+}
+
+/**
+ * Reset the avg_iters to high number,
+ * so the calculation does not really have a limit
+ */
+void BoundaryPoint::Reset_avg_iters()
+{
+   avg_iters = 1000000; 
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/

@@ -66,6 +66,8 @@ class BoundaryPoint: public Method
 
       void ReturnHighWhenBailingOut(bool);
 
+      void Reset_avg_iters();
+
    private:
 
       std::unique_ptr<TPM> ham;

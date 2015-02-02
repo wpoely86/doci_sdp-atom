@@ -147,6 +147,7 @@ int main(int argc,char **argv)
 
 
    method.set_use_prev_result(false);
+   method.Reset_avg_iters();
    method.BuildHam(ham);
    method.Run();
 
