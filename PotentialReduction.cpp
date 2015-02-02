@@ -160,6 +160,7 @@ unsigned int PotentialReduction::Run()
          out << iter << "\t" << t << "\t" << rdm->getMatrices().trace() << "\t" << rdm->getVectors().trace() << "\t" << rdm->ddot(*ham)*norm_ham + nuclrep << "\t" << rdm->S_2() << std::endl;
 
       double convergence = 1.0;
+      int cg_iters = 0;
       iter++;
 
       //inner iteration: 
@@ -183,7 +184,7 @@ unsigned int PotentialReduction::Run()
          TPM delta(L,N);
 
          //los het hessiaan stelsel op:
-         auto cg_iters = delta.solve(t,P,grad,*lineq);
+         cg_iters = delta.solve(t,P,grad,*lineq);
 
          //line search
          double a = delta.line_search(t,P,*ham);
@@ -195,10 +196,19 @@ unsigned int PotentialReduction::Run()
 
          if(do_output)
             out << cg_iters << "\t" << convergence << std::endl;
+
+         if(cg_iters == -1)
+            break;
       }
 
       if(do_output)
          out << std::endl;
+
+      if(cg_iters == -1)
+      {
+         *rdm = backup_rdm;
+         break;
+      }
 
       t *= reductionfac;
 
