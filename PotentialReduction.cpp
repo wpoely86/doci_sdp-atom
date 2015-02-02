@@ -23,7 +23,7 @@ PotentialReduction::PotentialReduction(const CheMPS2::Hamiltonian &hamin)
 
    // some default values
    tolerance = 1.0e-5;
-   target = 1e-12;
+   target = 1e-11;
    reductionfac = 1.0/1.1;
 }
 
@@ -199,6 +199,7 @@ unsigned int PotentialReduction::Run()
 
       if(do_output)
          out << std::endl;
+
       t *= reductionfac;
 
       //what is the tolerance for the newton method?
@@ -227,6 +228,7 @@ unsigned int PotentialReduction::Run()
    out << std::endl;
    out << "Energy: " << getFullEnergy() << std::endl;
    out << "Trace: " << rdm->trace() << std::endl;
+   out << "pd gap: " << t*rdm->gn() << std::endl;
    out << "S^2: " << rdm->S_2() << std::endl;
    out << "Runtime: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << std::endl;
 
