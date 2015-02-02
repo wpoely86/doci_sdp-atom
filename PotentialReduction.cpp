@@ -24,7 +24,7 @@ PotentialReduction::PotentialReduction(const CheMPS2::Hamiltonian &hamin)
    // some default values
    tolerance = 1.0e-5;
    target = 1e-12;
-   reductionfac = 1.0/1.5;
+   reductionfac = 1.0/1.1;
 }
 
 PotentialReduction::PotentialReduction(const TPM &hamin)
@@ -44,7 +44,7 @@ PotentialReduction::PotentialReduction(const TPM &hamin)
    // some default values
    tolerance = 1.0e-5;
    target = 1e-12;
-   reductionfac = 1.0/2.0;
+   reductionfac = 1.0/1.1;
 }
 
 PotentialReduction::PotentialReduction(const PotentialReduction &orig)
@@ -120,6 +120,9 @@ void PotentialReduction::BuildHam(const CheMPS2::Hamiltonian &hamin)
 void PotentialReduction::BuildHam(const TPM &hamin)
 {
    (*ham) = hamin;
+
+   norm_ham = std::sqrt(ham->ddot(*ham));
+   (*ham) /= norm_ham;
 }
 
 /**
@@ -146,6 +149,7 @@ unsigned int PotentialReduction::Run()
     }
    std::ostream &out = *fp;
    out.precision(10);
+   out.unsetf(std::ios_base::floatfield);
 
    auto start = std::chrono::high_resolution_clock::now();
 
