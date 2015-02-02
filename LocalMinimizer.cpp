@@ -278,6 +278,14 @@ void simanneal::LocalMinimizer::Minimize()
          h5_name.str("");
          h5_name << getenv("SAVE_H5_PATH") << "/Z-" << iters << ".h5";
          obj_bp->getZ().WriteToFile(h5_name.str());
+
+         // if energy goes up instead of down or we have done 20 iters
+         // then restart again from scratch
+         if( ((std::get<3>(new_rot) - energy) < 0) || iters%20==0)
+         {
+            obj_bp->getX() = 0;
+            obj_bp->getZ() = 0;
+         }
       }
 
       iters++;

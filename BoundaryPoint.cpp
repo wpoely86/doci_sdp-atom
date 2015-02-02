@@ -4,6 +4,8 @@
 #include "BoundaryPoint.h"
 #include "Hamiltonian.h"
 
+#define BP_AVG_ITERS_START 500000
+
 using CheMPS2::Hamiltonian;
 using doci2DM::BoundaryPoint;
 
@@ -36,7 +38,7 @@ BoundaryPoint::BoundaryPoint(const CheMPS2::Hamiltonian &hamin)
 
    max_iter = 5;
 
-   avg_iters = 1000000; // first step we don't really limited anything
+   avg_iters = BP_AVG_ITERS_START; // first step we don't really limited anything
    iters = 0;
    runs = 0;
 
@@ -400,7 +402,6 @@ doci2DM::TPM& BoundaryPoint::getRDM() const
    return Z->getI();
 }
 
-
 /**
  * Should we use the previous point as a 
  * starting point for a new calculation?
@@ -447,7 +448,7 @@ void BoundaryPoint::ReturnHighWhenBailingOut(bool set)
  */
 void BoundaryPoint::Reset_avg_iters()
 {
-   avg_iters = 1000000; 
+   avg_iters = BP_AVG_ITERS_START;
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/
