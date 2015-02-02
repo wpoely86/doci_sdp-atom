@@ -143,15 +143,16 @@ int main(int argc,char **argv)
 
       method = minimize.getMethod_BP();
       ham = minimize.getHam();
+
+      method.set_use_prev_result(false);
+      method.Reset_avg_iters();
+      method.BuildHam(ham);
+      method.Run();
+
+      cout << "The optimal energy is " << method.evalEnergy() << std::endl;
    }
 
 
-   method.set_use_prev_result(false);
-   method.Reset_avg_iters();
-   method.BuildHam(ham);
-   method.Run();
-
-   cout << "The optimal energy is " << method.evalEnergy() << std::endl;
 
 /* //   for(int k_in=0;k_in<L;k_in++)
  * //      for(int l_in=k_in+1;l_in<L;l_in++)
