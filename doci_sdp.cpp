@@ -1,8 +1,12 @@
 #include <iostream>
 #include <getopt.h>
+#include <cassert>
 
 #include "include.h"
 #include "PotentialReducation.h"
+#include "LocalMinimizer.h"
+
+// from CheMPS2
 #include "Hamiltonian.h"
 
 int main(int argc, char **argv)
@@ -10,21 +14,28 @@ int main(int argc, char **argv)
    using std::cout;
    using std::endl;
    using namespace doci2DM;
+   using simanneal::LocalMinimizer;
 
    cout.precision(10);
 
    std::string integralsfile = "mo-integrals.h5";
+   std::string unitary;
+   bool random = false;
+   bool localmini = false;
 
    struct option long_options[] =
    {
       {"integrals",  required_argument, 0, 'i'},
+      {"unitary",  required_argument, 0, 'u'},
+      {"random",  no_argument, 0, 'r'},
+      {"local-minimizer",  no_argument, 0, 'l'},
       {"help",  no_argument, 0, 'h'},
       {0, 0, 0, 0}
    };
 
    int i,j;
 
-   while( (j = getopt_long (argc, argv, "hi:", long_options, &i)) != -1)
+   while( (j = getopt_long (argc, argv, "d:rlhi:u:", long_options, &i)) != -1)
       switch(j)
       {
          case 'h':
@@ -32,6 +43,9 @@ int main(int argc, char **argv)
             cout << "Usage: " << argv[0] << " [OPTIONS]\n"
                "\n"
                "    -i, --integrals=integrals-file  Set the input integrals file\n"
+               "    -u, --unitary=unitary-file      Use the unitary matrix in this file\n"
+               "    -r, --random                    Perform a random unitary transformation on the Hamiltonian\n"
+               "    -l, --local-minimizer           Use the local minimizer\n"
                "    -h, --help                      Display this help\n"
                "\n";
             return 0;
@@ -39,41 +53,89 @@ int main(int argc, char **argv)
          case 'i':
             integralsfile = optarg;
             break;
+         case 'u':
+            unitary = optarg;
+            break;
+         case 'r':
+            random = true;
+            break;
+         case 'l':
+            localmini = true;
+            break;
       }
 
    cout << "Reading: " << integralsfile << endl;
 
+   // make sure we have a save path, even if it's not specify already
+   // This will not overwrite an already set SAVE_H5_PATH
+   setenv("SAVE_H5_PATH", "./", 0);
+
+   cout << "Using save path: " << getenv("SAVE_H5_PATH") << endl;
+
    auto ham = CheMPS2::Hamiltonian::CreateFromH5(integralsfile);
-   PotentialReduction method(ham);
 
    const auto L = ham.getL(); //nr of particles
    const auto N = ham.getNe(); //nr of particles
 
    cout << "Starting with L=" << L << " N=" << N << endl;
 
-//   Matrix rdmfull(rdm.gn());
-//   rdmfull = 0;
-//
-//   for(int i=0;i<L;i++)
-//      for(int j=0;j<L;j++)
-//         rdmfull(i,j) = rdm.getMatrix(0)(i,j);
-//
-//   int tmp_dim = rdm.getVector(0).gn();
-//   for(int a=0;a<4;a++)
-//      for(int i=0;i<tmp_dim;i++)
-//         rdmfull(L+a*tmp_dim+i,L+a*tmp_dim+i) = rdm.getVector(0)[i];
-//   rdmfull.SaveRawToFile("rdm-OK-full-P.h5");
+   if(! unitary.empty())
+   {
+      cout << "Reading transform: " << unitary << endl;
 
-   method.Run();
+      simanneal::OrbitalTransform orbtrans(ham);
 
-   std::stringstream h5_name;
+      orbtrans.get_unitary().loadU(unitary);
+      orbtrans.fillHamCI(ham);
+   }
 
-   if(getenv("SAVE_H5_FILE"))
-      h5_name << getenv("SAVE_H5_FILE");
-   else
-      h5_name << "rdm.h5";
+   const simanneal::OptIndex opt(ham);
 
-   method.getRDM().WriteToFile(h5_name.str().c_str());
+   if(random)
+   {
+      simanneal::UnitaryMatrix X(opt);
+      X.fill_random();
+      X.make_skew_symmetric();
+      X.print_unitary();
+      simanneal::OrbitalTransform orbtrans(ham);
+      orbtrans.update_unitary(X, false);
+      std::string filename = getenv("SAVE_H5_PATH");
+      filename += "/random-start-unitary.h5";
+      orbtrans.get_unitary().saveU(filename);
+      orbtrans.fillHamCI(ham);
+   }
+
+   PotentialReduction method(ham);
+
+   auto &rdm = method.getRDM();
+
+   if(localmini)
+   {
+      LocalMinimizer minimize(ham);
+
+      minimize.UsePotentialReduction();
+
+      minimize.set_conv_crit(1e-5);
+
+      minimize.Minimize();
+
+      cout << "Bottom is " << minimize.get_energy() << endl;
+
+      method = minimize.getMethod_PR();
+      ham = minimize.getHam();
+   } else
+      method.Run();
+
+
+   std::string h5_name = getenv("SAVE_H5_PATH");
+   h5_name += "/optimal-rdm.h5";
+
+   rdm.WriteToFile(h5_name);
+
+   h5_name = getenv("SAVE_H5_PATH");
+   h5_name += "/optimal-ham.h5";
+
+   ham.save2(h5_name);
 
    return 0;
 }
