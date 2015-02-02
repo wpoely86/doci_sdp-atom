@@ -648,9 +648,9 @@ int TPM::solve(double t, const SUP &S, TPM &grad, const Lineq &lineq)
       ++iter;
 
       // something going wrong!
-      if(iter>2*L*L*L)
+      if(iter>8*L*L*L)
       {
-         std::cout << "Too many cg iterations" << std::endl;
+         std::cout << "Too many cg iterations: " << iter << std::endl;
          iter = -1;
          break;
       }
@@ -1033,7 +1033,7 @@ void TPM::pairing(double g)
 
    // picket fence sp levels
    for(int i=0;i<L;i++)
-      Elevels[i] = -1.0/L*(L-i);
+      Elevels[i] = i+1;
 
    std::vector<double> x(L);
 
@@ -1051,8 +1051,9 @@ void TPM::pairing(double g)
 
    bright = 1.0/std::sqrt(bright);
 
-   for(auto &elem: x)
-      elem *= bright;
+//   for(auto &elem: x)
+//      elem *= bright;
+//   g *= 2;
 
    // make our life easier
    auto calc_elem = [this,&g,&Elevels,&x] (int i, int j) {
@@ -1073,10 +1074,10 @@ void TPM::pairing(double g)
          result += (Elevels[a_] + Elevels[b_])*1.0/(N-1.0);
 
          if(a_ == b_)
-            result -= 2 * g * x[a_] * x[a_];
+            result -= g * x[a_] * x[a_];
       }
       else if(a_ == b_ && c_ == d_)
-         result -= 2 * g * x[a_] * x[c_];
+         result -= g * x[a_] * x[c_];
 
       return result;
    };
