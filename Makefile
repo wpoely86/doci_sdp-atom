@@ -52,7 +52,7 @@ endif
 # -----------------------------------------------------------------------------
 #   Compiler & Linker flags
 # -----------------------------------------------------------------------------
-CFLAGS	= $(INCLUDE) -std=c++11 -g -Wall -O2 -march=native -Wno-unknown-pragmas
+CFLAGS	= $(INCLUDE) -std=c++11 -g -Wall -O2 -march=native -Wno-unknown-pragmas -Wno-sign-compare
 LDFLAGS	= -g -Wall -O2
 
 
