@@ -222,6 +222,9 @@ unsigned int BoundaryPoint::Run()
 
    unsigned int tot_iter = 0;
 
+   unsigned int go_up = 0;
+   double P_conv_prev = 10; // something big so compare will be false first time
+
    std::ostream* fp = &std::cout;
    std::ofstream fout;
    if(!outfile.empty())
@@ -306,32 +309,39 @@ unsigned int BoundaryPoint::Run()
       energy = ham->ddot(Z->getI());
 
       if(do_output && iter_primal%500 == 0)
-         out << P_conv << "\t" << D_conv << "\t" << sigma << "\t" << convergence << "\t" << energy + nuclrep << "\t" << Z->getI().S_2() << std::endl;
+      {
+         if(P_conv_prev < P_conv)
+            go_up++;
+
+         P_conv_prev = P_conv;
+
+         out << std::setw(16) << P_conv << "\t" << std::setw(16) << D_conv << "\t" << std::setw(16) << sigma << "\t" << std::setw(16) << convergence << "\t" << std::setw(16) << energy + nuclrep << "\t" << std::setw(16) << Z->getI().S_2() << "\t" << go_up << std::endl;
+
+         if(iter_primal>avg_iters*10 || stopping || go_up > 20)
+         {
+            std::cout << "Bailing out: too many iterations! " << std::endl;
+            if(returnhigh)
+               energy = 1e90; // something big so we're sure the step will be rejected
+            break;
+         }
+      }
 
       if(D_conv < P_conv)
          sigma *= 1.01;
       else
          sigma /= 1.01;
-
-      if(iter_primal>avg_iters*10 || stopping)
-      {
-         std::cout << "Bailing out: too many iterations! " << std::endl;
-         if(returnhigh)
-            energy = 1e90; // something big so we're sure the step will be rejected
-         break;
-      }
    }
 
    auto end = std::chrono::high_resolution_clock::now();
 
 
-   if(iter_primal<=avg_iters*10 && !stopping)
+   if((iter_primal<=avg_iters*10 || go_up<=20) && !stopping)
    {
       runs++;
       iters += iter_primal;
       avg_iters = iters/runs;
-      if(avg_iters<5000)
-         avg_iters = 5000;
+      if(avg_iters<10000)
+         avg_iters = 10000; // never go below 1e4 iterations
    }
 
    out << std::endl;
