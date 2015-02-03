@@ -24,7 +24,7 @@ PotentialReduction::PotentialReduction(const CheMPS2::Hamiltonian &hamin)
    // some default values
    tolerance = 1.0e-5;
    target = 1e-11;
-   reductionfac = 1.0/1.1;
+   reductionfac = 1.0/1.01;
 }
 
 PotentialReduction::PotentialReduction(const TPM &hamin)

@@ -648,7 +648,7 @@ int TPM::solve(double t, const SUP &S, TPM &grad, const Lineq &lineq)
       ++iter;
 
       // something going wrong!
-      if(iter>8*L*L*L)
+      if(iter>L*L*L*L)
       {
          std::cout << "Too many cg iterations: " << iter << std::endl;
          iter = -1;
