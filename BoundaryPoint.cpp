@@ -21,7 +21,6 @@ BoundaryPoint::BoundaryPoint(const CheMPS2::Hamiltonian &hamin)
    Z.reset(new SUP(L,N));
 
    useprevresult = false;
-   fromzero_once = false;
    (*X) = 0.0;
    (*Z) = 0.0;
 
@@ -58,7 +57,6 @@ BoundaryPoint::BoundaryPoint(const TPM &hamin)
    Z.reset(new SUP(L,N));
 
    useprevresult = false;
-   fromzero_once = false;
    (*X) = 0.0;
    (*Z) = 0.0;
 
@@ -97,7 +95,6 @@ BoundaryPoint::BoundaryPoint(const BoundaryPoint &orig)
    lineq.reset(new Lineq(*orig.lineq));
 
    useprevresult = orig.useprevresult;
-   fromzero_once = orig.fromzero_once;
 
    sigma = orig.sigma;;
 
@@ -131,7 +128,6 @@ BoundaryPoint& BoundaryPoint::operator=(const BoundaryPoint &orig)
    (*lineq) = *orig.lineq;
 
    useprevresult = orig.useprevresult;
-   fromzero_once = orig.fromzero_once;
 
    sigma = orig.sigma;;
 
@@ -196,11 +192,10 @@ unsigned int BoundaryPoint::Run()
    //only traceless hamiltonian needed in program.
    ham_copy.Proj_E(*lineq);
 
-   if(!useprevresult || fromzero_once)
+   if(!useprevresult)
    {
       (*X) = 0;
       (*Z) = 0;
-      fromzero_once = false;
    }
 
    //Lagrange multiplier
@@ -454,15 +449,6 @@ void BoundaryPoint::ReturnHighWhenBailingOut(bool set)
 void BoundaryPoint::Reset_avg_iters()
 {
    avg_iters = BP_AVG_ITERS_START;
-}
-
-/**
- * Restart from scratch once!
- * @param set set to true to restart once
- */
-void BoundaryPoint::start_from_scratch_once(bool set)
-{
-   fromzero_once = set;
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/

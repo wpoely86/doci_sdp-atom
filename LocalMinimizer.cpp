@@ -281,8 +281,13 @@ void simanneal::LocalMinimizer::Minimize()
 
          // if energy goes up instead of down or we have done 20 iters
          // then restart again from scratch
-         if( ((std::get<3>(new_rot) - energy) < 0) || iters%20==0)
-            obj_bp->start_from_scratch_once();
+         if( ((std::get<3>(new_rot) - energy) < -5e-7) || iters%25==0)
+         {
+            std::cout << "Restarting from zero" << std::endl;
+            obj_bp->getX() = 0;
+            obj_bp->getZ() = 0;
+            obj_bp->Run();
+         }
       }
 
       iters++;

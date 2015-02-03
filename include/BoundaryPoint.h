@@ -68,8 +68,6 @@ class BoundaryPoint: public Method
 
       void Reset_avg_iters();
 
-      void start_from_scratch_once(bool=true);
-
    private:
 
       std::unique_ptr<TPM> ham;
@@ -96,8 +94,6 @@ class BoundaryPoint: public Method
       unsigned int runs;
 
       bool useprevresult;
-
-      bool fromzero_once;
 
       //! when true, return very high value for the energy if the calculation takes too many iterations
       bool returnhigh;
