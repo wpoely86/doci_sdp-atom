@@ -1,4 +1,5 @@
 #include <fstream>
+#include <iomanip>
 #include <chrono>
 #include <functional>
 #include <signal.h>
@@ -230,7 +231,8 @@ unsigned int BoundaryPoint::Run()
    }
    std::ostream &out = *fp;
    out.precision(10);
-   out.unsetf(std::ios_base::floatfield);
+   out.setf(std::ios::scientific | std::ios::fixed, std::ios_base::floatfield);
+
 
    auto start = std::chrono::high_resolution_clock::now();
 
