@@ -1,21 +1,26 @@
 #include <iostream>
 #include <fstream>
 #include <getopt.h>
+#include <signal.h>
 
 #include "include.h"
 #include "BoundaryPoint.h"
+#include "LocalMinimizer.h"
+
 // from CheMPS2
 #include "Hamiltonian.h"
-#include "SimulatedAnnealing.h"
 #include "OptIndex.h"
-#include "LocalMinimizer.h"
+
+// if set, the signal has been given to stop the calculation and write current step to file
+sig_atomic_t stopping = 0;
+
+void stopcalcsignal(int sig);
 
 int main(int argc,char **argv)
 {
    using std::cout;
    using std::endl;
    using namespace doci2DM;
-   using simanneal::SimulatedAnnealing;
    using simanneal::LocalMinimizer;
 
    cout.precision(10);
@@ -119,6 +124,17 @@ int main(int argc,char **argv)
    method.set_tol_PD(1e-7);
    auto &rdm = method.getRDM();
 
+   // set up everything to handle SIGALRM
+   struct sigaction act;
+   act.sa_flags = 0;
+   act.sa_handler = &stopcalcsignal;
+
+   sigset_t blockset;
+   sigemptyset(&blockset); // we don't block anything in the handler
+   act.sa_mask = blockset;
+
+   sigaction(SIGALRM, &act, 0);
+
    if(!rdmfile.empty())
    {
       cout << "Reading rdm: " << rdmfile << endl;
@@ -215,6 +231,11 @@ int main(int argc,char **argv)
    ham.save2(h5_name);
 
    return 0;
+}
+
+void stopcalcsignal(int sig)
+{
+   stopping=1;
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/

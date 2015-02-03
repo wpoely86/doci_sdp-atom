@@ -214,7 +214,7 @@ void simanneal::LocalMinimizer::Minimize()
 
    std::pair<int,int> prev_pair(0,0);
 
-   int iters = 0;
+   int iters = 1;
 
    while(converged<conv_steps)
    {
@@ -271,6 +271,16 @@ void simanneal::LocalMinimizer::Minimize()
       doci2DM::BoundaryPoint *obj_bp = dynamic_cast<doci2DM::BoundaryPoint *> (method.get());
       if(obj_bp)
       {
+         // if energy goes up instead of down or we have done 20 iters
+         // then restart again from scratch
+         if( ((std::get<3>(new_rot) - energy) < -1e-6) || iters%25==0)
+         {
+            std::cout << "Restarting from zero" << std::endl;
+            obj_bp->getX() = 0;
+            obj_bp->getZ() = 0;
+            obj_bp->Run();
+         }
+
          h5_name.str("");
          h5_name << getenv("SAVE_H5_PATH") << "/X-" << iters << ".h5";
          obj_bp->getX().WriteToFile(h5_name.str());
@@ -278,16 +288,6 @@ void simanneal::LocalMinimizer::Minimize()
          h5_name.str("");
          h5_name << getenv("SAVE_H5_PATH") << "/Z-" << iters << ".h5";
          obj_bp->getZ().WriteToFile(h5_name.str());
-
-         // if energy goes up instead of down or we have done 20 iters
-         // then restart again from scratch
-         if( ((std::get<3>(new_rot) - energy) < -5e-7) || iters%25==0)
-         {
-            std::cout << "Restarting from zero" << std::endl;
-            obj_bp->getX() = 0;
-            obj_bp->getZ() = 0;
-            obj_bp->Run();
-         }
       }
 
       iters++;

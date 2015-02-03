@@ -1,6 +1,7 @@
 #include <iostream>
 #include <getopt.h>
 #include <cassert>
+#include <signal.h>
 
 #include "include.h"
 #include "PotentialReducation.h"
@@ -8,6 +9,12 @@
 
 // from CheMPS2
 #include "Hamiltonian.h"
+
+// if set, the signal has been given to stop the calculation and write current step to file
+sig_atomic_t stopping = 0;
+
+void stopcalcsignal(int sig);
+
 
 int main(int argc, char **argv)
 {
@@ -109,6 +116,17 @@ int main(int argc, char **argv)
 
    auto &rdm = method.getRDM();
 
+   // set up everything to handle SIGALRM
+   struct sigaction act;
+   act.sa_flags = 0;
+   act.sa_handler = &stopcalcsignal;
+
+   sigset_t blockset;
+   sigemptyset(&blockset); // we don't block anything in the handler
+   act.sa_mask = blockset;
+
+   sigaction(SIGALRM, &act, 0);
+
    if(localmini)
    {
       LocalMinimizer minimize(ham);
@@ -138,6 +156,11 @@ int main(int argc, char **argv)
    ham.save2(h5_name);
 
    return 0;
+}
+
+void stopcalcsignal(int sig)
+{
+   stopping=1;
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/

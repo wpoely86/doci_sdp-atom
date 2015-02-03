@@ -1,10 +1,14 @@
 #include <fstream>
 #include <chrono>
 #include <functional>
+#include <signal.h>
 #include "BoundaryPoint.h"
 #include "Hamiltonian.h"
 
 #define BP_AVG_ITERS_START 500000
+
+// if set, the signal has been given to stop the calculation and write current step to file
+extern sig_atomic_t stopping;
 
 using CheMPS2::Hamiltonian;
 using doci2DM::BoundaryPoint;
@@ -307,7 +311,7 @@ unsigned int BoundaryPoint::Run()
       else
          sigma /= 1.01;
 
-      if(iter_primal>avg_iters*10)
+      if(iter_primal>avg_iters*10 || stopping)
       {
          std::cout << "Bailing out: too many iterations! " << std::endl;
          if(returnhigh)
@@ -319,7 +323,7 @@ unsigned int BoundaryPoint::Run()
    auto end = std::chrono::high_resolution_clock::now();
 
 
-   if(iter_primal<=avg_iters*10)
+   if(iter_primal<=avg_iters*10 && !stopping)
    {
       runs++;
       iters += iter_primal;

@@ -2,8 +2,12 @@
 #include <sstream>
 #include <assert.h>
 #include <hdf5.h>
+#include <signal.h>
 
 #include "include.h"
+
+// if set, the signal has been given to stop the calculation and write current step to file
+extern sig_atomic_t stopping;
 
 using namespace doci2DM;
 
@@ -648,9 +652,9 @@ int TPM::solve(double t, const SUP &S, TPM &grad, const Lineq &lineq)
       ++iter;
 
       // something going wrong!
-      if(iter>L*L*L*L)
+      if(iter>L*L*L*L || stopping)
       {
-         std::cout << "Too many cg iterations: " << iter << std::endl;
+         std::cout << "Too many cg iterations: " << iter << "\t" << rr << std::endl;
          iter = -1;
          break;
       }

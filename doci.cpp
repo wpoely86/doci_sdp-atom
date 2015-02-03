@@ -2,6 +2,7 @@
 #include <chrono>
 #include <getopt.h>
 #include <mpi.h>
+#include <signal.h>
 
 #include "include.h"
 #include "BoundaryPoint.h"
@@ -10,6 +11,8 @@
 #include "Hamiltonian.h"
 
 #include "SimulatedAnnealing.h"
+
+sig_atomic_t stopping = 0;
 
 int main(int argc,char **argv)
 {
