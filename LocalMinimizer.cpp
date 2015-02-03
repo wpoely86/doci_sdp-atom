@@ -204,6 +204,7 @@ std::vector< std::tuple<int,int,double,double> > simanneal::LocalMinimizer::scan
 void simanneal::LocalMinimizer::Minimize()
 {
    int converged = 0;
+   double new_energy;
 
    // first run
    method->Run();
@@ -215,6 +216,8 @@ void simanneal::LocalMinimizer::Minimize()
    std::pair<int,int> prev_pair(0,0);
 
    int iters = 1;
+
+   doci2DM::BoundaryPoint *obj_bp = dynamic_cast<doci2DM::BoundaryPoint *> (method.get());
 
    while(converged<conv_steps)
    {
@@ -244,17 +247,16 @@ void simanneal::LocalMinimizer::Minimize()
       orbtrans->DoJacobiRotation(*ham, std::get<0>(new_rot), std::get<1>(new_rot), std::get<2>(new_rot));
       orbtrans->get_unitary().jacobi_rotation(ham->getOrbitalIrrep(std::get<0>(new_rot)), std::get<0>(new_rot), std::get<1>(new_rot), std::get<2>(new_rot));
 
-      double new_energy = calc_new_energy(*ham);
 
-      if(fabs(energy-new_energy)<conv_crit)
-         converged++;
-      else 
-         converged = 0;
+      // start from zero every 25 iterations
+      if(obj_bp && iters%25==0)
+      {
+         std::cout << "Restarting from zero" << std::endl;
+         obj_bp->getX() = 0;
+         obj_bp->getZ() = 0;
+      }
 
-      std::cout << iters << " (" << converged << ")\tRotation between " << std::get<0>(new_rot) << "  " << std::get<1>(new_rot) << " over " << std::get<2>(new_rot) << " E_rot = " << std::get<3>(new_rot)+ham->getEconst() << "  E = " << new_energy+ham->getEconst() << "\t" << fabs(energy-new_energy) << std::endl;
-
-
-      energy = new_energy;
+      new_energy = calc_new_energy(*ham);
 
       std::stringstream h5_name;
       h5_name << getenv("SAVE_H5_PATH") << "/unitary-" << iters << ".h5";
@@ -268,19 +270,17 @@ void simanneal::LocalMinimizer::Minimize()
       h5_name << getenv("SAVE_H5_PATH") << "/rdm-" << iters << ".h5";
       method->getRDM().WriteToFile(h5_name.str());
 
-      doci2DM::BoundaryPoint *obj_bp = dynamic_cast<doci2DM::BoundaryPoint *> (method.get());
       if(obj_bp)
       {
-         // if energy goes up instead of down or we have done 20 iters
-         // then restart again from scratch
-         if( ((std::get<3>(new_rot) - energy) < -1e-6) || iters%25==0)
+         // if energy goes up instead of down, reset the start point
+         if((std::get<3>(new_rot) - new_energy) < -1e-6)
          {
-            std::cout << "Restarting from zero" << std::endl;
+            std::cout << "Restarting from zero because too much up" << std::endl;
             obj_bp->getX() = 0;
             obj_bp->getZ() = 0;
             obj_bp->Run();
-            std::cout << "After restarting found: " << obj_bp->getEnergy() << " vs " << energy << std::endl;
-            energy = obj_bp->getEnergy();
+            std::cout << "After restarting found: " << obj_bp->getEnergy() << " vs " << new_energy << std::endl;
+            new_energy = obj_bp->getEnergy();
          }
 
          h5_name.str("");
@@ -291,6 +291,16 @@ void simanneal::LocalMinimizer::Minimize()
          h5_name << getenv("SAVE_H5_PATH") << "/Z-" << iters << ".h5";
          obj_bp->getZ().WriteToFile(h5_name.str());
       }
+
+      if(fabs(energy-new_energy)<conv_crit)
+         converged++;
+      else 
+         converged = 0;
+
+      std::cout << iters << " (" << converged << ")\tRotation between " << std::get<0>(new_rot) << "  " << std::get<1>(new_rot) << " over " << std::get<2>(new_rot) << " E_rot = " << std::get<3>(new_rot)+ham->getEconst() << "  E = " << new_energy+ham->getEconst() << "\t" << fabs(energy-new_energy) << std::endl;
+
+
+      energy = new_energy;
 
       iters++;
    }
