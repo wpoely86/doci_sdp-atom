@@ -279,6 +279,8 @@ void simanneal::LocalMinimizer::Minimize()
             obj_bp->getX() = 0;
             obj_bp->getZ() = 0;
             obj_bp->Run();
+            std::cout << "After restarting found: " << obj_bp->getEnergy() << " vs " << energy << std::endl;
+            energy = obj_bp->getEnergy();
          }
 
          h5_name.str("");
