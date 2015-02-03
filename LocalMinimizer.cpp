@@ -273,13 +273,13 @@ void simanneal::LocalMinimizer::Minimize()
       if(obj_bp)
       {
          // if energy goes up instead of down, reset the start point
-         if((std::get<3>(new_rot) - new_energy) < -1e-6)
+         if((std::get<3>(new_rot) - new_energy) < -1e-5)
          {
-            std::cout << "Restarting from zero because too much up" << std::endl;
+            std::cout << "Restarting from zero because too much up: " << std::get<3>(new_rot) - new_energy << std::endl;
             obj_bp->getX() = 0;
             obj_bp->getZ() = 0;
             obj_bp->Run();
-            std::cout << "After restarting found: " << obj_bp->getEnergy() << " vs " << new_energy << std::endl;
+            std::cout << "After restarting found: " << obj_bp->getEnergy() << " vs " << new_energy << "\t" << fabs(obj_bp->getEnergy()-new_energy) << std::endl;
             new_energy = obj_bp->getEnergy();
          }
 
