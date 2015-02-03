@@ -158,7 +158,7 @@ unsigned int PotentialReduction::Run()
    while(t > target)
    {
       if(do_output)
-         out << iter << "\t" << t << "\t" << rdm->getMatrices().trace() << "\t" << rdm->getVectors().trace() << "\t" << rdm->ddot(*ham)*norm_ham + nuclrep << "\t" << rdm->S_2() << std::endl;
+         out << iter << "\t" << std::setw(16) << t << "\t" << std::setw(16) << rdm->getMatrices().trace() << "\t" << std::setw(16) << rdm->getVectors().trace() << "\t" << std::setw(16) << rdm->ddot(*ham)*norm_ham + nuclrep << "\t" << std::setw(16) << rdm->S_2() << std::endl;
 
       double convergence = 1.0;
       int cg_iters = 0;
