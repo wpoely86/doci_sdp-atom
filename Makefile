@@ -40,6 +40,8 @@ BRIGHT_ROOT= .
 INCLUDE = -Iinclude -Iextern/include
 
 LIBS= -llapack -lblas -lhdf5 -Lextern -lsimanneal
+# for the MKL:
+#LIBS= -lhdf5 -Lextern -lsimanneal -lmkl_core -lmkl_intel_lp64 -lmkl_sequential -lpthread
 
 ifeq ($(origin CC), default)
     CC = clang
