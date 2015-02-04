@@ -68,6 +68,14 @@ class BoundaryPoint: public Method
 
       void Reset_avg_iters();
 
+      double get_P_conv() const;
+
+      double get_D_conv() const;
+
+      double get_convergence() const;
+
+      bool FullyConverged() const;
+
    private:
 
       std::unique_ptr<TPM> ham;
@@ -97,6 +105,9 @@ class BoundaryPoint: public Method
 
       //! when true, return very high value for the energy if the calculation takes too many iterations
       bool returnhigh;
+
+      //! the 3 convergence criteria
+      double D_conv, P_conv, convergence;
 };
 
 }

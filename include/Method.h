@@ -39,6 +39,8 @@ class Method
 
       virtual void set_outfile(std::string filename) { outfile = filename; }
 
+      virtual bool FullyConverged() const = 0;
+
    protected:
 
       int L;

@@ -292,7 +292,7 @@ void simanneal::LocalMinimizer::Minimize()
          obj_bp->getZ().WriteToFile(h5_name.str());
       }
 
-      if(fabs(energy-new_energy)<conv_crit)
+      if(fabs(energy-new_energy)<conv_crit && method->FullyConverged())
          converged++;
       else 
          converged = 0;

@@ -26,6 +26,7 @@ PotentialReduction::PotentialReduction(const CheMPS2::Hamiltonian &hamin)
    tolerance = 1.0e-5;
    target = 1e-11;
    reductionfac = 1.0/1.01;
+   t = 1;
 }
 
 PotentialReduction::PotentialReduction(const TPM &hamin)
@@ -46,6 +47,7 @@ PotentialReduction::PotentialReduction(const TPM &hamin)
    tolerance = 1.0e-5;
    target = 1e-12;
    reductionfac = 1.0/1.1;
+   t = 1;
 }
 
 PotentialReduction::PotentialReduction(const PotentialReduction &orig)
@@ -65,6 +67,7 @@ PotentialReduction::PotentialReduction(const PotentialReduction &orig)
    target = orig.target;
    reductionfac = orig.reductionfac;
    energy = orig.energy;
+   t = orig.t;
 }
 
 PotentialReduction& PotentialReduction::operator=(const PotentialReduction &orig)
@@ -84,6 +87,7 @@ PotentialReduction& PotentialReduction::operator=(const PotentialReduction &orig
    target = orig.target;
    reductionfac = orig.reductionfac;
    energy = orig.energy;
+   t = orig.t;
 
    return *this;
 }
@@ -136,7 +140,7 @@ unsigned int PotentialReduction::Run()
 
    unsigned int tot_iter = 0;
 
-   double t = 1.0;
+   t = 1.0;
    int iter = 0;
 
    TPM backup_rdm(*rdm);
@@ -297,6 +301,15 @@ doci2DM::TPM& PotentialReduction::getHam() const
 double PotentialReduction::evalEnergy() const
 {
    return norm_ham*ham->ddot(*rdm) + nuclrep;
+}
+
+/**
+ * Check if last calculation was fully convergenced
+ * @return true if all convergence critera are met, false otherwise
+ */
+bool PotentialReduction::FullyConverged() const
+{
+   return !(t > target);
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/

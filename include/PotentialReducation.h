@@ -52,6 +52,8 @@ class PotentialReduction: public Method
 
       double evalEnergy() const;
 
+      bool FullyConverged() const;
+
    private:
 
       std::unique_ptr<TPM> ham;
@@ -69,6 +71,8 @@ class PotentialReduction: public Method
       double tolerance;
 
       double reductionfac;
+
+      double t;
 };
 
 }

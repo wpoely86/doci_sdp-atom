@@ -48,6 +48,10 @@ BoundaryPoint::BoundaryPoint(const CheMPS2::Hamiltonian &hamin)
    runs = 0;
 
    returnhigh = false;
+
+   D_conv = 1;
+   P_conv = 1;
+   convergence = 1;
 }
 
 BoundaryPoint::BoundaryPoint(const TPM &hamin)
@@ -84,6 +88,10 @@ BoundaryPoint::BoundaryPoint(const TPM &hamin)
    runs = 0;
 
    returnhigh = false;
+
+   D_conv = 1;
+   P_conv = 1;
+   convergence = 1;
 }
 
 BoundaryPoint::BoundaryPoint(const BoundaryPoint &orig)
@@ -117,6 +125,10 @@ BoundaryPoint::BoundaryPoint(const BoundaryPoint &orig)
    runs = orig.runs;
 
    returnhigh = orig.returnhigh;
+
+   D_conv = orig.D_conv;
+   P_conv = orig.P_conv;
+   convergence = orig.convergence;
 }
 
 BoundaryPoint& BoundaryPoint::operator=(const BoundaryPoint &orig)
@@ -150,6 +162,10 @@ BoundaryPoint& BoundaryPoint::operator=(const BoundaryPoint &orig)
    runs = orig.runs;
 
    returnhigh = orig.returnhigh;
+
+   D_conv = orig.D_conv;
+   P_conv = orig.P_conv;
+   convergence = orig.convergence;
 
    return *this;
 }
@@ -216,7 +232,9 @@ unsigned int BoundaryPoint::Run()
 
    u_0.init_S(*lineq);
 
-   double D_conv(1.0),P_conv(1.0),convergence(1.0);
+   D_conv = 1;
+   P_conv = 1;
+   convergence = 1;
 
    unsigned int iter_dual(0),iter_primal(0);
 
@@ -465,6 +483,30 @@ void BoundaryPoint::ReturnHighWhenBailingOut(bool set)
 void BoundaryPoint::Reset_avg_iters()
 {
    avg_iters = BP_AVG_ITERS_START;
+}
+
+double BoundaryPoint::get_P_conv() const
+{
+   return P_conv;
+}
+
+double BoundaryPoint::get_D_conv() const
+{
+   return D_conv;
+}
+
+double BoundaryPoint::get_convergence() const
+{
+   return convergence;
+}
+
+/**
+ * Check if last calculation was fully convergenced
+ * @return true if all convergence critera are met, false otherwise
+ */
+bool BoundaryPoint::FullyConverged() const
+{
+   return !(P_conv > tol_PD || D_conv > tol_PD || fabs(convergence) > tol_en);
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/
