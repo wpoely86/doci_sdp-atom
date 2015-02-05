@@ -292,10 +292,13 @@ void simanneal::LocalMinimizer::Minimize()
          obj_bp->getZ().WriteToFile(h5_name.str());
       }
 
-      if(fabs(energy-new_energy)<conv_crit && method->FullyConverged())
-         converged++;
-      else 
-         converged = 0;
+      if(method->FullyConverged())
+      {
+         if(fabs(energy-new_energy)<conv_crit)
+            converged++;
+         else 
+            converged = 0;
+      }
 
       std::cout << iters << " (" << converged << ")\tRotation between " << std::get<0>(new_rot) << "  " << std::get<1>(new_rot) << " over " << std::get<2>(new_rot) << " E_rot = " << std::get<3>(new_rot)+ham->getEconst() << "  E = " << new_energy+ham->getEconst() << "\t" << fabs(energy-new_energy) << std::endl;
 
