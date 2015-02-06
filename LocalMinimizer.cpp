@@ -209,7 +209,7 @@ void simanneal::LocalMinimizer::Minimize()
    // first run
    method->Run();
 
-   energy = method->getRDM().ddot(method->getHam());
+   energy = method->getEnergy();
 
    auto start = std::chrono::high_resolution_clock::now();
 
