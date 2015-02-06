@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 #include <tuple>
+#include <random>
 
 #include "Method.h"
 #include "Hamiltonian.h"
@@ -26,7 +27,7 @@ class LocalMinimizer
 
       virtual ~LocalMinimizer();
 
-      void Minimize();
+      void Minimize(bool dist_choice=false);
 
       double get_energy() const;
 
@@ -52,13 +53,15 @@ class LocalMinimizer
 
       doci2DM::BoundaryPoint& getMethod_BP() const;
 
-      std::vector< std::tuple<int,int,double,double> > scan_orbitals();
+      std::vector<std::tuple<int,int,double,double>> scan_orbitals();
 
       double get_conv_crit() const;
 
       void set_conv_crit(double);
 
       void set_conv_steps(int);
+
+      int choose_orbitalpair(std::vector<std::tuple<int,int,double,double>> &);
 
    private:
 
@@ -80,6 +83,9 @@ class LocalMinimizer
 
       //! the current unitary
       std::unique_ptr<simanneal::UnitaryMatrix> opt_unitary;
+
+      //! our pseudo-random generator
+      std::mt19937 mt;
 };
 
 }

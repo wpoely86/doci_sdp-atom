@@ -32,6 +32,9 @@ simanneal::LocalMinimizer::LocalMinimizer(const CheMPS2::Hamiltonian &mol)
 
    conv_crit = 1e-6;
    conv_steps = 100;
+
+   std::random_device rd;
+   mt = std::mt19937(rd());
 }
 
 simanneal::LocalMinimizer::LocalMinimizer(CheMPS2::Hamiltonian &&mol)
@@ -50,6 +53,9 @@ simanneal::LocalMinimizer::LocalMinimizer(CheMPS2::Hamiltonian &&mol)
 
    conv_crit = 1e-6;
    conv_steps = 100;
+
+   std::random_device rd;
+   mt = std::mt19937(rd());
 }
 
 simanneal::LocalMinimizer::~LocalMinimizer() = default;
@@ -200,8 +206,10 @@ std::vector< std::tuple<int,int,double,double> > simanneal::LocalMinimizer::scan
 
 /**
  * Do the local minimization
+ * @param dist_choice if set to true, we use choose_orbitals to choose
+ * which pair of orbitals to use (instead of the lowest one)
  */
-void simanneal::LocalMinimizer::Minimize()
+void simanneal::LocalMinimizer::Minimize(bool dist_choice)
 {
    int converged = 0;
    double new_energy;
@@ -232,15 +240,31 @@ void simanneal::LocalMinimizer::Minimize()
       for(auto& elem: list_rots)
          std::cout << std::get<0>(elem) << "\t" << std::get<1>(elem) << "\t" << std::get<3>(elem)+ham->getEconst() << "\t" << std::get<2>(elem) << std::endl;
 
-      std::pair<int,int> tmp = std::make_pair(std::get<0>(list_rots[0]), std::get<1>(list_rots[0]));
       int idx = 0;
 
+      if(dist_choice)
+         idx = choose_orbitalpair(list_rots);
+
+      std::pair<int,int> tmp = std::make_pair(std::get<0>(list_rots[idx]), std::get<1>(list_rots[idx]));
+
+
       // don't do the same pair twice in a row
-      if(tmp==prev_pair)
-         idx++;
+      while(tmp==prev_pair)
+      {
+         if(dist_choice)
+            idx = choose_orbitalpair(list_rots);
+         else
+            idx++;
+
+         tmp = std::make_pair(std::get<0>(list_rots[idx]), std::get<1>(list_rots[idx]));
+      }
+
 
       const auto& new_rot = list_rots[idx];
       prev_pair = std::make_pair(std::get<0>(new_rot), std::get<1>(new_rot));
+
+      if(dist_choice)
+         std::cout << iters << " (" << converged << ") Chosen: " << idx << std::endl;
 
       assert(ham->getOrbitalIrrep(std::get<0>(new_rot)) == ham->getOrbitalIrrep(std::get<1>(new_rot)));
       // do Jacobi rotation twice: once for the Hamiltonian data and once for the Unitary Matrix
@@ -330,6 +354,35 @@ void simanneal::LocalMinimizer::set_conv_crit(double crit)
 void simanneal::LocalMinimizer::set_conv_steps(int steps)
 {
    conv_steps = steps;
+}
+
+/**
+ * Choose a pair of orbitals to rotate over, according to the distribution of their relative
+ * energy change.
+ * @param orbs the list returned by scan_orbitals()
+ * @return the index of the pair of orbitals in orbs
+ */
+int simanneal::LocalMinimizer::choose_orbitalpair(std::vector<std::tuple<int,int,double,double>> &orbs)
+{
+   std::uniform_real_distribution<double> dist(0, 1);
+
+   const double choice = dist(mt);
+
+   double norm = 0;
+
+   for(auto &orb_pair: orbs)
+      norm += (energy - std::get<3>(orb_pair));
+
+   double cum = 0;
+   for(int i=0;i<orbs.size();i++)
+   {
+      cum += (energy - std::get<3>(orbs[i]))/norm;
+      if(choice < cum)
+         return i;
+   }
+
+   assert(0 && "Should never ever be reached!");
+   return -1;
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/
