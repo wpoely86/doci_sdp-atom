@@ -3,8 +3,11 @@
 
 #include <string>
 
+namespace CheMPS2 { class Hamiltonian; }
+
 namespace doci2DM
 {
+   class TPM;
 
 class Tools
 {
@@ -14,6 +17,8 @@ class Tools
       static int getNumberOfParticles(std::string filename);
 
       static double getNuclearRepulEnergy(std::string filename);
+
+      static void scan_all(const TPM &rdm, const CheMPS2::Hamiltonian &ham);
 };
 
 }

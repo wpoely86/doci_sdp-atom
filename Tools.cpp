@@ -1,5 +1,9 @@
+#include <fstream>
 #include <hdf5.h>
 #include "include.h"
+
+#include "PotentialReducation.h"
+#include "Hamiltonian.h"
 
 using namespace doci2DM;
 
@@ -73,6 +77,58 @@ double Tools::getNuclearRepulEnergy(std::string filename)
    HDF5_STATUS_CHECK(status);
 
    return nuclrep;
+}
+
+
+void Tools::scan_all(const TPM &rdm, const CheMPS2::Hamiltonian &ham)
+{
+   const int L = rdm.gL();
+
+   std::function<double(int,int)> getT = [&ham] (int a, int b) -> double { return ham.getTmat(a,b); };
+   std::function<double(int,int,int,int)> getV = [&ham]  (int a, int b, int c, int d) -> double { return ham.getVmat(a,b,c,d); };
+
+   PotentialReduction mymethod(ham);
+   
+   auto orig_ham = mymethod.getHam();
+
+   for(int k_in=0;k_in<L;k_in++)
+      for(int l_in=k_in+1;l_in<L;l_in++)
+         if(ham.getOrbitalIrrep(k_in) == ham.getOrbitalIrrep(l_in))
+         {
+            std::fstream fs;
+            std::string filename = "orbs-scan-" + std::to_string(k_in) + "-" + std::to_string(l_in) + ".txt";
+            fs.open(filename, std::fstream::out | std::fstream::trunc);
+
+            fs.precision(10);
+
+            fs << "# theta\trot\trot+v2dm" << std::endl;
+
+            auto found = rdm.find_min_angle(k_in,l_in,0.3,getT,getV);
+
+            std::cout << "Min:\t" << k_in << "\t" << l_in << "\t" << found.first << "\t" << found.second << std::endl;
+
+            std::cout << "######################" << std::endl;
+
+
+            int Na = 100;
+//#pragma omp parallel for
+            for(int a=0;a<=Na;a++)
+            {
+               double theta = 1.0*M_PI/(1.0*Na) * a;
+
+               mymethod.getHam() = orig_ham;
+               mymethod.getHam().rotate(k_in, l_in, theta, getT, getV);
+
+               double new_en = rdm.ddot(mymethod.getHam());
+
+               mymethod.Run();
+
+//#pragma omp critical
+               fs << theta << "\t" << new_en << "\t" << mymethod.getEnergy() << std::endl;
+            }
+
+            fs.close();
+         }
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/
