@@ -241,24 +241,28 @@ void simanneal::LocalMinimizer::Minimize(bool dist_choice)
          std::cout << std::get<0>(elem) << "\t" << std::get<1>(elem) << "\t" << std::get<3>(elem)+ham->getEconst() << "\t" << std::get<2>(elem) << std::endl;
 
       int idx = 0;
+      std::pair<int,int> tmp;
 
       if(dist_choice)
+      {
          idx = choose_orbitalpair(list_rots);
 
-      std::pair<int,int> tmp = std::make_pair(std::get<0>(list_rots[idx]), std::get<1>(list_rots[idx]));
+         tmp = std::make_pair(std::get<0>(list_rots[idx]), std::get<1>(list_rots[idx]));
 
-
-      // don't do the same pair twice in a row
-      while(tmp==prev_pair)
-      {
-         if(dist_choice)
+         if(tmp==prev_pair)
             idx = choose_orbitalpair(list_rots);
-         else
-            idx++;
 
          tmp = std::make_pair(std::get<0>(list_rots[idx]), std::get<1>(list_rots[idx]));
+
+         if(tmp==prev_pair)
+            idx = 0;
       }
 
+      tmp = std::make_pair(std::get<0>(list_rots[idx]), std::get<1>(list_rots[idx]));
+
+      // don't do the same pair twice in a row
+      if(tmp==prev_pair)
+         idx++;
 
       const auto& new_rot = list_rots[idx];
       prev_pair = std::make_pair(std::get<0>(new_rot), std::get<1>(new_rot));
