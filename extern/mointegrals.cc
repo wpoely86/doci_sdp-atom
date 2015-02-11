@@ -46,7 +46,7 @@ read_options(std::string name, Options &options)
         options.add_bool("DO_TEI", true);
         // save to a HDF5 file
         options.add_bool("SAVEHDF5", false);
-        options.add_str("HDF5_FILENAME", "integrals.h5");
+        options.add_str_i("HDF5_FILENAME", "integrals.h5");
     }
 
     return true;
