@@ -212,6 +212,8 @@ mointegrals(Options &options)
     Ham->setNe(nelectrons);
     
     Ham->setEconst(NuclRepulsion);
+    Ham->reset();
+
     double EnergyHF = NuclRepulsion;
     
     fprintf(outfile, "****  MO OEI \n");
