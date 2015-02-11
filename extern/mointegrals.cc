@@ -44,6 +44,9 @@ read_options(std::string name, Options &options)
         options.add_bool("PRINT_INTEGRALS", true);
         /*- Whether to compute two-electron integrals -*/
         options.add_bool("DO_TEI", true);
+        // save the unitary transformation from SO to MO integrals
+        options.add_bool("SAVE_MO", false);
+        options.add_str_i("U_MO_FILENAME", "unitary-mo.h5");
         // save to a HDF5 file
         options.add_bool("SAVEHDF5", false);
         options.add_str_i("HDF5_FILENAME", "integrals.h5");
@@ -62,8 +65,10 @@ mointegrals(Options &options)
      */
     bool print = options.get_bool("PRINT_INTEGRALS");
     bool doTei = options.get_bool("DO_TEI");
+    bool save_mo = options.get_bool("SAVE_MO");
     bool savehdf5 = options.get_bool("SAVEHDF5");
     std::string filename = options.get_str("HDF5_FILENAME");
+    std::string mofilename = options.get_str("U_MO_FILENAME");
     boost::algorithm::to_lower(filename);
    
     // Grab the global (default) PSIO object, for file I/O
@@ -129,6 +134,42 @@ mointegrals(Options &options)
        fprintf(outfile, "%2d ",socc[h]);
     }
     fprintf(outfile, "\n");
+
+
+    if(save_mo)
+    {
+        // contains the transformation from SO -> MO
+        SharedMatrix ca = Process::environment.wavefunction()->Ca();
+
+        hid_t file_id = H5Fcreate(mofilename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+        hid_t group_id = H5Gcreate(file_id, "/Data", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+        const Dimension &ca_dims = ca->rowspi();
+
+        for (int irrep=0; irrep< nirrep; irrep++)
+        {
+            int norb = ca_dims[irrep];
+
+            if(norb > 0)
+            {
+                std::stringstream irrepname;
+                irrepname << "irrep_" << irrep;
+
+                double *p_data = ca->pointer(irrep)[0];
+
+                hsize_t dimarray      = norb * norb;
+                hid_t dataspace_id    = H5Screate_simple(1, &dimarray, NULL);
+                hid_t dataset_id      = H5Dcreate(group_id, irrepname.str().c_str(), H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, p_data);
+
+                H5Dclose(dataset_id);
+                H5Sclose(dataspace_id);
+            }
+        }
+
+        H5Gclose(group_id);
+        H5Fclose(file_id);
+    }
 
     
     int nTriMo = nmo * (nmo + 1) / 2;
