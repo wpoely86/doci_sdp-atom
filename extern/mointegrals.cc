@@ -11,6 +11,9 @@
 #include <liboptions/liboptions.h>
 #include <libchkpt/chkpt.h>
 #include <hdf5.h>
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
+
 
 #include <stdlib.h>
 #include <iostream>
@@ -100,12 +103,19 @@ mointegrals(Options &options)
     int *docc     = Process::environment.wavefunction()->doccpi();
     int *socc     = Process::environment.wavefunction()->soccpi();
 
-    shared_ptr<Molecule> molecule = Process::environment.molecule();
+    boost::shared_ptr<Molecule> molecule = Process::environment.molecule();
     int nelectrons = 0;
     for(int i=0;i<molecule->natom();i++)
         nelectrons += molecule->true_atomic_number(i);
 
     nelectrons -= molecule->molecular_charge();
+
+
+    int nTriMo = nmo * (nmo + 1) / 2;
+    double *temp = new double[nTriMo];
+    Matrix moOei("MO OEI", nIrreps, orbspi, orbspi);
+    IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_OEI, temp, nTriMo, 0, 0, outfile);
+    moOei.set(temp);
 
     fprintf(outfile, "****  Molecular Integrals For CheMPS Start Here \n");
     
@@ -172,17 +182,11 @@ mointegrals(Options &options)
     }
 
     
-    int nTriMo = nmo * (nmo + 1) / 2;
-    double *temp = new double[nTriMo];
-    Matrix moOei("MO OEI", nIrreps, orbspi, orbspi);
-    IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_OEI, temp, nTriMo, 0, 0, outfile);
-    moOei.set(temp);
     
     int * orbitalIrreps = new int[nmo];
 
     int SyGroup = 0;
     bool stopFindGN = false;
-    std::string SymmLabel = Process::environment.molecule()->sym_label();
     do {
         if (SymmLabel.compare(CheMPS2::Irreps::getGroupName(SyGroup))==0) stopFindGN = true;
         else SyGroup += 1;
@@ -204,8 +208,9 @@ mointegrals(Options &options)
 
     CheMPS2::Hamiltonian * Ham = new CheMPS2::Hamiltonian(nmo,SyGroup,orbitalIrreps);
     delete [] orbitalIrreps;
+
+    Ham->setNe(nelectrons);
     
-    double NuclRepulsion =  Process::environment.molecule()->nuclear_repulsion_energy();
     Ham->setEconst(NuclRepulsion);
     double EnergyHF = NuclRepulsion;
     
@@ -313,29 +318,6 @@ mointegrals(Options &options)
 
     delete Ham;
     delete [] temp;
-
-    if(savehdf5)
-    {
-        hid_t file_id = H5Fopen(CheMPS2::HAMILTONIAN_ParentStorageName.c_str(), H5F_ACC_RDWR, H5P_DEFAULT);
-        HDF5_STATUS_CHECK(file_id);
-
-        hid_t group_id = H5Gopen(file_id, ""/Data"", H5P_DEFAULT);
-        HDF5_STATUS_CHECK(group_id);
-
-        hid_t dataspace_id = H5Screate(H5S_SCALAR);
-        hid_t dataset_id = H5Dcreate(group_id, "nelectrons", H5T_STD_I32LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
-        hid_t status = H5Dwrite(dataset_id, H5T_NATIVE_INT, H5S_ALL, H5S_ALL, H5P_DEFAULT, &nelectrons);
-        HDF5_STATUS_CHECK(status);
-
-        status = H5Dclose(dataset_id);
-        HDF5_STATUS_CHECK(status);
-
-        status = H5Gclose(group_id);
-        HDF5_STATUS_CHECK(status);
-
-        status = H5Fclose(file_id);
-        HDF5_STATUS_CHECK(status);
-    }
 
     return Success;
 }
