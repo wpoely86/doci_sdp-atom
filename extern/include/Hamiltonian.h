@@ -168,6 +168,9 @@ namespace CheMPS2{
          void debugcheck() const;
 
          static Hamiltonian CreateFromH5(const string filename);
+
+         //! set everything to zero
+         void reset();
       
       private:
       

@@ -665,3 +665,9 @@ CheMPS2::Hamiltonian CheMPS2::Hamiltonian::CreateFromH5(const string filename)
 
     return my_obj;
 }
+
+void CheMPS2::Hamiltonian::reset()
+{
+    Tmat->reset();
+    Vmat->reset();
+}
