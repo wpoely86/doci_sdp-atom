@@ -334,6 +334,12 @@ void simanneal::LocalMinimizer::Minimize(bool dist_choice)
       energy = new_energy;
 
       iters++;
+
+      if(iters>2000)
+      {
+         std::cout << "Done 2000 steps, quiting..." << std::endl;
+         break;
+      }
    }
 
    auto end = std::chrono::high_resolution_clock::now();
