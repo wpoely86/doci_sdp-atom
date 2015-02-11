@@ -231,6 +231,7 @@ sointegrals(Options &options)
     shared_ptr<CheMPS2::Hamiltonian> Ham(new CheMPS2::Hamiltonian(nmo, SyGroup, OrbIrreps.data()));
     Ham->setEconst(NuclRepulsion);
     Ham->setNe(nelectrons);
+    Ham->reset();
 
     fprintf(outfile, "*** OEI\n");
 
