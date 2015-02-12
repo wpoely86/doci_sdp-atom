@@ -139,12 +139,14 @@ int main(int argc,char **argv)
    {
       cout << "Reading rdm: " << rdmfile << endl;
       method.getRDM().ReadFromFile(rdmfile);
-   } else
-      method.Run();
+   }
 
    if(localmini)
    {
       LocalMinimizer minimize(ham);
+
+      if(! unitary.empty())
+         minimize.getOrbitalTf().get_unitary().loadU(unitary);
 
       minimize.UseBoundaryPoint();
       minimize.getMethod_BP() = method;
@@ -166,6 +168,8 @@ int main(int argc,char **argv)
 
       cout << "The optimal energy is " << method.evalEnergy() << std::endl;
    }
+   else 
+      method.Run();
 
 
 
@@ -239,4 +243,3 @@ void stopcalcsignal(int sig)
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/
-

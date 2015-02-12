@@ -131,6 +131,9 @@ int main(int argc, char **argv)
    {
       LocalMinimizer minimize(ham);
 
+      if(! unitary.empty())
+         minimize.getOrbitalTf().get_unitary().loadU(unitary);
+
       minimize.UsePotentialReduction();
 
       minimize.set_conv_crit(1e-6);
