@@ -29,12 +29,14 @@ int main(int argc, char **argv)
    std::string unitary;
    bool random = false;
    bool localmini = false;
+   bool scan = false;
 
    struct option long_options[] =
    {
       {"integrals",  required_argument, 0, 'i'},
       {"unitary",  required_argument, 0, 'u'},
       {"random",  no_argument, 0, 'r'},
+      {"scan",  no_argument, 0, 's'},
       {"local-minimizer",  no_argument, 0, 'l'},
       {"help",  no_argument, 0, 'h'},
       {0, 0, 0, 0}
@@ -42,7 +44,7 @@ int main(int argc, char **argv)
 
    int i,j;
 
-   while( (j = getopt_long (argc, argv, "d:rlhi:u:", long_options, &i)) != -1)
+   while( (j = getopt_long (argc, argv, "d:rlhi:u:s", long_options, &i)) != -1)
       switch(j)
       {
          case 'h':
@@ -69,6 +71,9 @@ int main(int argc, char **argv)
          case 'l':
             localmini = true;
             break;
+         case 's':
+            scan = true;
+            break;
       }
 
    cout << "Reading: " << integralsfile << endl;
@@ -86,7 +91,7 @@ int main(int argc, char **argv)
 
    cout << "Starting with L=" << L << " N=" << N << endl;
 
-   if(! unitary.empty())
+   if(!unitary.empty() && !localmini)
    {
       cout << "Reading transform: " << unitary << endl;
 
@@ -131,8 +136,11 @@ int main(int argc, char **argv)
    {
       LocalMinimizer minimize(ham);
 
-      if(! unitary.empty())
+      if(!unitary.empty())
+      {
+         cout << "Starting local minimizer from: " << unitary << endl;
          minimize.getOrbitalTf().get_unitary().loadU(unitary);
+      }
 
       minimize.UsePotentialReduction();
 
@@ -147,6 +155,8 @@ int main(int argc, char **argv)
    } else
       method.Run();
 
+   if(scan)
+      Tools::scan_all(method.getRDM(), ham);
 
    std::string h5_name = getenv("SAVE_H5_PATH");
    h5_name += "/optimal-rdm.h5";
