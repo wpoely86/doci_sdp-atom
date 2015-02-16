@@ -12,17 +12,11 @@
 #include "PotentialReducation.h"
 
 /**
- * You still need to set the max_angle, delta_angle, start_temp and
- * delta_temp after creating the object.
  * @param mol the molecular data to use
  */
 simanneal::LocalMinimizer::LocalMinimizer(const CheMPS2::Hamiltonian &mol)
 {
    ham.reset(new CheMPS2::Hamiltonian(mol));
-
-   OptIndex index(*ham);
-
-   opt_unitary.reset(new UnitaryMatrix(index));
 
    orbtrans.reset(new OrbitalTransform(*ham));
 
@@ -40,10 +34,6 @@ simanneal::LocalMinimizer::LocalMinimizer(const CheMPS2::Hamiltonian &mol)
 simanneal::LocalMinimizer::LocalMinimizer(CheMPS2::Hamiltonian &&mol)
 {
    ham.reset(new CheMPS2::Hamiltonian(mol));
-
-   OptIndex index(*ham);
-
-   opt_unitary.reset(new UnitaryMatrix(index));
 
    orbtrans.reset(new OrbitalTransform(*ham));
 
@@ -185,7 +175,7 @@ std::vector< std::tuple<int,int,double,double> > simanneal::LocalMinimizer::scan
                continue;
 
             // skip angles larger than Pi/2
-            if(fabs(found.first)>M_PI)
+            if(fabs(found.first)>M_PI/2.0)
                continue;
 
             double new_en = method->getRDM().calc_rotate(k_in,l_in,found.first,getT,getV);
@@ -215,9 +205,7 @@ void simanneal::LocalMinimizer::Minimize(bool dist_choice)
    double new_energy;
 
    // first run
-   method->Run();
-
-   energy = method->getEnergy();
+   energy = calc_new_energy();
 
    auto start = std::chrono::high_resolution_clock::now();
 
