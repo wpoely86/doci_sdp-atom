@@ -73,6 +73,7 @@ mointegrals(Options &options)
     std::string filename = options.get_str("HDF5_FILENAME");
     std::string mofilename = options.get_str("U_MO_FILENAME");
     boost::algorithm::to_lower(filename);
+    boost::algorithm::to_lower(mofilename);
    
     // Grab the global (default) PSIO object, for file I/O
     boost::shared_ptr<PSIO> psio(_default_psio_lib_);
@@ -150,6 +151,52 @@ mointegrals(Options &options)
     {
         // contains the transformation from SO -> MO
         SharedMatrix ca = Process::environment.wavefunction()->Ca();
+        ca->print();
+
+        SharedMatrix S = Process::environment.wavefunction()->S();
+        S->print();
+
+        boost::shared_ptr<MatrixFactory> factory = Process::environment.wavefunction()->matrix_factory();
+
+
+        // Construct Shalf
+        SharedMatrix eigvec= factory->create_shared_matrix("L");
+        SharedMatrix temp= factory->create_shared_matrix("Temp");
+        SharedMatrix temp2= factory->create_shared_matrix("Temp2");
+        SharedVector eigval(factory->create_vector());
+
+        S->diagonalize(eigvec, eigval);
+
+        // Convert the eigenvales to 1/sqrt(eigenvalues)
+        int *dimpi = eigval->dimpi();
+        double min_S = fabs(eigval->get(0,0));
+        for (int h=0; h<nIrreps; ++h)
+            for (int i=0; i<dimpi[h]; ++i)
+            {
+                if (min_S > eigval->get(h,i))
+                    min_S = eigval->get(h,i);
+                //double scale = 1.0 / sqrt(eigval->get(h, i));
+                double scale = sqrt(eigval->get(h, i));
+                eigval->set(h, i, scale);
+            }
+
+        fprintf(outfile, "Lowest eigenvalue of overlap S = %14.10E\n", min_S);
+
+        if(min_S < options.get_double("S_TOLERANCE") )
+            fprintf(outfile, "WARNING: Min value of overlap below treshold!!!!\n");
+
+
+        // Create a vector matrix from the converted eigenvalues
+        temp2->set_diagonal(eigval);
+
+        temp->gemm(false, true, 1.0, temp2, eigvec, 0.0);
+        S->gemm(false, false, 1.0, eigvec, temp, 0.0);
+
+        // order of multi. is changed to have the output compatible to UnitaryMatrix class.
+        // (columns/rows interchanged)
+        temp->gemm(false, false, 1.0, S, ca, 0.0);
+
+        fprintf(outfile, "temp:\n");
 
         hid_t file_id = H5Fcreate(mofilename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
         hid_t group_id = H5Gcreate(file_id, "/Data", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -165,7 +212,7 @@ mointegrals(Options &options)
                 std::stringstream irrepname;
                 irrepname << "irrep_" << irrep;
 
-                double *p_data = ca->pointer(irrep)[0];
+                double *p_data = temp->pointer(irrep)[0];
 
                 hsize_t dimarray      = norb * norb;
                 hid_t dataspace_id    = H5Screate_simple(1, &dimarray, NULL);
