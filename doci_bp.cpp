@@ -92,7 +92,7 @@ int main(int argc,char **argv)
 
    cout << "Starting with L=" << L << " N=" << N << endl;
 
-   if(! unitary.empty())
+   if(!unitary.empty() && !localmini)
    {
       cout << "Reading transform: " << unitary << endl;
 
@@ -145,8 +145,11 @@ int main(int argc,char **argv)
    {
       LocalMinimizer minimize(ham);
 
-      if(! unitary.empty())
+      if(!unitary.empty())
+      {
+         cout << "Starting local minimizer from: " << unitary << endl;
          minimize.getOrbitalTf().get_unitary().loadU(unitary);
+      }
 
       minimize.UseBoundaryPoint();
       minimize.getMethod_BP() = method;
