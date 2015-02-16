@@ -5,11 +5,17 @@
 #include <libmints/mints.h>
 #include <libmints/sointegral_twobody.h>
 #include <libpsio/psio.h>
+#include <boost/algorithm/string.hpp>
+#include <boost/lexical_cast.hpp>
+
+#include <memory>
 
 #include <hdf5.h>
 
 #include "Irreps.h"
+#include "Lapack.h"
 #include "Hamiltonian.h"
+#include "OptIndex.h"
 
 INIT_PLUGIN
 
@@ -74,6 +80,7 @@ sointegrals(Options &options)
     bool doTei = options.get_bool("DO_TEI");
     bool savehdf5 = options.get_bool("SAVEHDF5");
     std::string filename = options.get_str("HDF5_FILENAME");
+    boost::algorithm::to_lower(filename);
 
     if(options.get_str("S_ORTHOGONALIZATION") != "SYMMETRIC")
     {
@@ -172,13 +179,11 @@ sointegrals(Options &options)
     hMat->add(vMat);
 
     // Construct Shalf
-    /*
     SharedMatrix eigvec= factory->create_shared_matrix("L");
     SharedMatrix temp= factory->create_shared_matrix("Temp");
     SharedMatrix temp2= factory->create_shared_matrix("Temp2");
     SharedVector eigval(factory->create_vector());
 
-    //Used to do this 3 times, now only once
     sMat->diagonalize(eigvec, eigval);
 
     // Convert the eigenvales to 1/sqrt(eigenvalues)
@@ -202,17 +207,11 @@ sointegrals(Options &options)
     // Create a vector matrix from the converted eigenvalues
     temp2->set_diagonal(eigval);
 
-    SharedMatrix ca = Process::environment.wavefunction()->Ca();
-
-//    temp->gemm(true, false, 1.0, ca, hMat, 0.0);
-//    hMat->gemm(false, false, 1.0, temp, ca, 0.0);
-
     temp->gemm(false, true, 1.0, temp2, eigvec, 0.0);
     sMat->gemm(false, false, 1.0, eigvec, temp, 0.0);
 
     temp->gemm(false, true, 1.0, hMat, sMat, 0.0);
     hMat->gemm(false, false, 1.0, sMat, temp, 0.0);
-    */
 
     hMat->print();
 
@@ -280,8 +279,100 @@ sointegrals(Options &options)
         fprintf(outfile, "number of TEI: %d\n", printer.count);
     }
 
+
+    shared_ptr<CheMPS2::Hamiltonian> Ham2(new CheMPS2::Hamiltonian(*Ham));
+
+    simanneal::OptIndex index(*Ham2);
+    CheMPS2::Irreps SymmInfo;
+    SymmInfo.setGroup(Ham2->getNGroup());
+
+    //Create the memory for the orbital transformations.
+    unsigned long long maxlinsize = 0;
+    for (int irrep=0; irrep< index.getNirreps(); irrep++)
+    {
+        unsigned int linsize_irrep = index.getNORB(irrep);
+        if (linsize_irrep > maxlinsize)  
+            maxlinsize  = linsize_irrep;
+    }
+
+    //Determine the blocksize for the 2-body transformation
+    auto& maxBlockSize = maxlinsize;
+    //Allocate 2-body rotation memory: One array is approx (maxBlockSize/273.0)^4 * 42 GiB --> [maxBlockSize=100 --> 750 MB]
+    auto maxBSpower4 = maxBlockSize * maxBlockSize * maxBlockSize * maxBlockSize; //Note that 273**4 overfloats the 32 bit integer!!!
+    auto sizeWorkmem1 = std::max( std::max( maxBSpower4 , 3*maxlinsize*maxlinsize ) , 1uLL * nmo * nmo ); //For (2-body tfo , updateUnitary, calcNOON)
+    auto sizeWorkmem2 = std::max( std::max( maxBSpower4 , 2*maxlinsize*maxlinsize ) , nmo*(nmo + 1uLL) ); //For (2-body tfo, updateUnitary and rotate_to_active_space, rotate2DMand1DM)
+    std::unique_ptr<double []> mem1(new double[sizeWorkmem1]);
+    std::unique_ptr<double []> mem2(new double[sizeWorkmem2]);
+
+
+    //Two-body terms --> use eightfold permutation symmetry in the irreps :-)
+    for (int irrep1 = 0; irrep1<nirreps; irrep1++)
+        for (int irrep2 = irrep1; irrep2<nirreps; irrep2++)
+        {
+            const int productSymm = SymmInfo.directProd(irrep1,irrep2);
+            for (int irrep3 = irrep1; irrep3<nirreps; irrep3++)
+            {
+                const int irrep4 = SymmInfo.directProd(productSymm,irrep3);
+                // Generated all possible combinations of allowed irreps
+                if (irrep4>=irrep2)
+                {
+                    int linsize1 = index.getNORB(irrep1);
+                    int linsize2 =index.getNORB(irrep2);
+                    int linsize3 =index.getNORB(irrep3);
+                    int linsize4 =index.getNORB(irrep4);
+
+                    if ((linsize1>0) && (linsize2>0) && (linsize3>0) && (linsize4>0))
+                    {
+                        for (int cnt1=0; cnt1<linsize1; cnt1++)
+                            for (int cnt2=0; cnt2<linsize2; cnt2++)
+                                for (int cnt3=0; cnt3<linsize3; cnt3++)
+                                    for (int cnt4=0; cnt4<linsize4; cnt4++)
+                                        mem1[cnt1 + linsize1 * ( cnt2 + linsize2 * (cnt3 + linsize3 * cnt4) ) ]
+                                            = Ham->getVmat(index.getNstart(irrep1) + cnt1,index.getNstart(irrep2) + cnt2, index.getNstart(irrep3) + cnt3, index.getNstart(irrep4) + cnt4 );
+
+                        char trans = 'T';
+                        char notra = 'N';
+                        double alpha = 1.0;
+                        double beta  = 0.0; //SET !!!
+
+                        int rightdim = linsize2 * linsize3 * linsize4; //(ijkl) -> (ajkl)
+                        double * Umx = sMat->pointer(irrep1)[0];
+                            //_unitary->getBlock(irrep1);
+                        dgemm_(&notra, &notra, &linsize1, &rightdim, &linsize1, &alpha, Umx, &linsize1, mem1.get(), &linsize1, &beta, mem2.get(), &linsize1);
+
+                        int leftdim = linsize1 * linsize2 * linsize3; //(ajkl) -> (ajkd)
+                        Umx = sMat->pointer(irrep4)[0];
+                        dgemm_(&notra, &trans, &leftdim, &linsize4, &linsize4, &alpha, mem2.get(), &leftdim, Umx, &linsize4, &beta, mem1.get(), &leftdim);
+
+                        int jump1 = linsize1 * linsize2 * linsize3; //(ajkd) -> (ajcd)
+                        int jump2 = linsize1 * linsize2 * linsize3;
+                        leftdim   = linsize1 * linsize2;
+                        Umx = sMat->pointer(irrep3)[0];
+                        for (int bla=0; bla<linsize4; bla++)
+                            dgemm_(&notra, &trans, &leftdim, &linsize3, &linsize3, &alpha, mem1.get()+jump1*bla, &leftdim, Umx, &linsize3, &beta, mem2.get()+jump2*bla, &leftdim);
+
+                        jump2    = linsize1 * linsize2;
+                        jump1    = linsize1 * linsize2;
+                        rightdim = linsize3 * linsize4;
+                        Umx = sMat->pointer(irrep2)[0];
+                        for (int bla=0; bla<rightdim; bla++)
+                            dgemm_(&notra, &trans, &linsize1, &linsize2, &linsize2, &alpha, mem2.get()+jump2*bla, &linsize1, Umx, &linsize2, &beta, mem1.get()+jump1*bla, &linsize1);
+
+                        for (int cnt1=0; cnt1<linsize1; cnt1++)
+                            for (int cnt2=0; cnt2<linsize2; cnt2++)
+                                for (int cnt3=0; cnt3<linsize3; cnt3++)
+                                    for (int cnt4=0; cnt4<linsize4; cnt4++)
+                                        Ham2->setVmat(index.getNstart(irrep1) + cnt1,index.getNstart(irrep2) + cnt2, index.getNstart(irrep3) + cnt3,index.getNstart(irrep4) + cnt4, mem1[cnt1 + linsize1 * ( cnt2 + linsize2 * (cnt3 + linsize3 * cnt4) ) ] );
+
+                    } //end if the problem has orbitals from all 4 selected irreps
+                } // end if irrep 4 >= irrep2
+            }// end run irrep3
+        } // end run irrep2
+
+
+
     if(savehdf5)
-        Ham->save2(filename);
+        Ham2->save2(filename);
 
     return Success;
 }
