@@ -96,7 +96,8 @@ void Tools::scan_all(const TPM &rdm, const CheMPS2::Hamiltonian &ham)
          if(ham.getOrbitalIrrep(k_in) == ham.getOrbitalIrrep(l_in))
          {
             std::fstream fs;
-            std::string filename = "orbs-scan-" + std::to_string(k_in) + "-" + std::to_string(l_in) + ".txt";
+            std::string filename = getenv("SAVE_H5_PATH");
+            filename += "/orbs-scan-" + std::to_string(k_in) + "-" + std::to_string(l_in) + ".txt";
             fs.open(filename, std::fstream::out | std::fstream::trunc);
 
             fs.precision(10);
@@ -117,14 +118,15 @@ void Tools::scan_all(const TPM &rdm, const CheMPS2::Hamiltonian &ham)
                double theta = 1.0*M_PI/(1.0*Na) * a;
 
                mymethod.getHam() = orig_ham;
+               mymethod.getRDM() = rdm;
                mymethod.getHam().rotate(k_in, l_in, theta, getT, getV);
 
-               double new_en = rdm.ddot(mymethod.getHam());
+               double new_en = mymethod.evalEnergy();
 
                mymethod.Run();
 
 //#pragma omp critical
-               fs << theta << "\t" << new_en << "\t" << mymethod.getEnergy() << std::endl;
+               fs << theta << "\t" << new_en << "\t" << mymethod.evalEnergy() << std::endl;
             }
 
             fs.close();
