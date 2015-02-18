@@ -25,7 +25,7 @@ simanneal::LocalMinimizer::LocalMinimizer(const CheMPS2::Hamiltonian &mol)
    energy = 0;
 
    conv_crit = 1e-6;
-   conv_steps = 100;
+   conv_steps = 50;
 
    std::random_device rd;
    mt = std::mt19937(rd());
@@ -42,7 +42,7 @@ simanneal::LocalMinimizer::LocalMinimizer(CheMPS2::Hamiltonian &&mol)
    energy = 0;
 
    conv_crit = 1e-6;
-   conv_steps = 100;
+   conv_steps = 50;
 
    std::random_device rd;
    mt = std::mt19937(rd());
@@ -295,7 +295,7 @@ void simanneal::LocalMinimizer::Minimize(bool dist_choice)
             obj_bp->getX() = 0;
             obj_bp->getZ() = 0;
             obj_bp->Run();
-            std::cout << "After restarting found: " << obj_bp->getEnergy() << " vs " << new_energy << "\t" << fabs(obj_bp->getEnergy()-new_energy) << std::endl;
+            std::cout << "After restarting found: " << obj_bp->getEnergy() << " vs " << new_energy << "\t" << obj_bp->getEnergy()-new_energy << std::endl;
             new_energy = obj_bp->getEnergy();
          }
 
@@ -312,8 +312,6 @@ void simanneal::LocalMinimizer::Minimize(bool dist_choice)
       {
          if(fabs(energy-new_energy)<conv_crit)
             converged++;
-         else 
-            converged = 0;
       }
 
       std::cout << iters << " (" << converged << ")\tRotation between " << std::get<0>(new_rot) << "  " << std::get<1>(new_rot) << " over " << std::get<2>(new_rot) << " E_rot = " << std::get<3>(new_rot)+ham->getEconst() << "  E = " << new_energy+ham->getEconst() << "\t" << fabs(energy-new_energy) << std::endl;
@@ -323,9 +321,9 @@ void simanneal::LocalMinimizer::Minimize(bool dist_choice)
 
       iters++;
 
-      if(iters>2000)
+      if(iters>1000)
       {
-         std::cout << "Done 2000 steps, quiting..." << std::endl;
+         std::cout << "Done 1000 steps, quiting..." << std::endl;
          break;
       }
    }
