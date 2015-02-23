@@ -5,12 +5,16 @@
 #include <stdexcept>
 #include <algorithm>
 #include <hdf5.h>
+#include <signal.h>
 #include <cstring>
 
 #include "LocalMinimizer.h"
 #include "OptIndex.h"
 #include "BoundaryPoint.h"
 #include "PotentialReducation.h"
+
+// if set, the signal has been given to stop the minimalisation
+extern sig_atomic_t stopping_min;
 
 /**
  * @param mol the molecular data to use
@@ -371,6 +375,9 @@ void simanneal::LocalMinimizer::Minimize(bool dist_choice)
          std::cout << "Done 1000 steps, quiting..." << std::endl;
          break;
       }
+
+      if(stopping_min)
+         break;
    }
 
    auto end = std::chrono::high_resolution_clock::now();

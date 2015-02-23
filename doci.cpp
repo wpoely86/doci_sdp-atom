@@ -13,6 +13,7 @@
 #include "SimulatedAnnealing.h"
 
 sig_atomic_t stopping = 0;
+sig_atomic_t stopping_min = 0;
 
 int main(int argc,char **argv)
 {

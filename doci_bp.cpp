@@ -14,7 +14,11 @@
 // if set, the signal has been given to stop the calculation and write current step to file
 sig_atomic_t stopping = 0;
 
+sig_atomic_t stopping_min = 0;
+
 void stopcalcsignal(int sig);
+
+void stopminsignal(int sig);
 
 int main(int argc,char **argv)
 {
@@ -135,6 +139,10 @@ int main(int argc,char **argv)
 
    sigaction(SIGALRM, &act, 0);
 
+   act.sa_handler = &stopminsignal;
+
+   sigaction(SIGUSR1, &act, 0);
+
    if(!rdmfile.empty())
    {
       cout << "Reading rdm: " << rdmfile << endl;
@@ -155,6 +163,7 @@ int main(int argc,char **argv)
       minimize.getMethod_BP() = method;
       minimize.getMethod_BP().set_use_prev_result(true);
       minimize.getMethod_BP().set_tol_PD(1e-7);
+      minimize.set_conv_steps(10);
 
       minimize.set_conv_crit(1e-6);
 
@@ -243,6 +252,11 @@ int main(int argc,char **argv)
 void stopcalcsignal(int sig)
 {
    stopping=1;
+}
+
+void stopminsignal(int sig)
+{
+   stopping_min=1;
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/
