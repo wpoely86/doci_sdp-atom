@@ -86,6 +86,9 @@ class LocalMinimizer
 
       //! our pseudo-random generator
       std::mt19937 mt;
+
+      //! only rotation within these irreps (if not empty)
+      std::vector<int> allow_irreps;
 };
 
 }

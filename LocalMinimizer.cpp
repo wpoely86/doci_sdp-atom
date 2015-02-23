@@ -5,6 +5,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <hdf5.h>
+#include <cstring>
 
 #include "LocalMinimizer.h"
 #include "OptIndex.h"
@@ -29,6 +30,47 @@ simanneal::LocalMinimizer::LocalMinimizer(const CheMPS2::Hamiltonian &mol)
 
    std::random_device rd;
    mt = std::mt19937(rd());
+
+   // expect to be comma seperated list of allowed irreps
+   char *irreps_env = getenv("v2DM_DOCI_ALLOWED_IRREPS");
+   if(irreps_env && strlen(irreps_env) > 0)
+   {
+      std::string irreps_string = irreps_env;
+      const std::string delim = ",";
+      CheMPS2::Irreps syminfo(ham->getNGroup());
+
+      auto start = 0U;
+      auto end = irreps_string.find(delim);
+      try
+      { 
+         while (true)
+         {
+            auto elem = irreps_string.substr(start, end - start);
+            if(elem.empty())
+               break;
+
+            int cur_irrep = std::stoi(elem);
+
+            if(cur_irrep >= 0 && cur_irrep < syminfo.getNumberOfIrreps())
+               allow_irreps.push_back(cur_irrep);
+
+            start = end + delim.length();
+
+            if(end >= std::string::npos)
+               break;
+
+            end = irreps_string.find(delim, start);
+         }
+      } catch (std::exception& e) {
+         std::cout << "Invalid value in v2DM_DOCI_ALLOWED_IRREPS" << std::endl;
+      }
+
+      std::sort(allow_irreps.begin(), allow_irreps.end());
+      std::cout << "Allowed irreps: ";
+      for(auto &elem: allow_irreps)
+         std::cout << elem << " ";
+      std::cout << std::endl;
+   }
 }
 
 simanneal::LocalMinimizer::LocalMinimizer(CheMPS2::Hamiltonian &&mol)
@@ -164,6 +206,9 @@ std::vector< std::tuple<int,int,double,double> > simanneal::LocalMinimizer::scan
       for(int l_in=k_in+1;l_in<ham->getL();l_in++)
          if(ham->getOrbitalIrrep(k_in) == ham->getOrbitalIrrep(l_in))
          {
+            if(!allow_irreps.empty() && std::find(allow_irreps.begin(), allow_irreps.end(), ham->getOrbitalIrrep(k_in)) == allow_irreps.end() )
+               continue;
+
             auto found = method->getRDM().find_min_angle(k_in,l_in,0.3,getT,getV);
 
             if(!found.second)
