@@ -119,6 +119,8 @@ class TPM: public Container
 
       void WriteFullToFile(hid_t& group) const;
 
+      static TPM CreateFromFile(std::string filename);
+
    private:
 
       void constr_lists(int L);

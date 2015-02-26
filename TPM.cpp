@@ -1761,5 +1761,55 @@ void TPM::WriteFullToFile(hid_t &group_id) const
    HDF5_STATUS_CHECK(status);
 }
 
+/**
+ * Create a TPM object from a file. 
+ * You don't need to know L or N for this.
+ * You cannot read a file with different dimensions and the
+ * already created TPM's.
+ * @param filename the file to use
+ * @return a new TPM object with the contents of filename
+ */
+TPM TPM::CreateFromFile(std::string filename)
+{
+   int L, N;
+
+   hid_t       file_id, group_id, attribute_id;
+   herr_t      status;
+
+   file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+   HDF5_STATUS_CHECK(file_id);
+
+   group_id = H5Gopen(file_id, "/RDM", H5P_DEFAULT);
+   HDF5_STATUS_CHECK(group_id);
+
+   attribute_id = H5Aopen(group_id, "L", H5P_DEFAULT);
+   HDF5_STATUS_CHECK(attribute_id);
+
+   status = H5Aread(attribute_id, H5T_NATIVE_INT, &L);
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Aclose(attribute_id);
+   HDF5_STATUS_CHECK(status);
+
+   attribute_id = H5Aopen(group_id, "N", H5P_DEFAULT);
+   HDF5_STATUS_CHECK(attribute_id);
+
+   status = H5Aread(attribute_id, H5T_NATIVE_INT, &N);
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Aclose(attribute_id);
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Gclose(group_id);
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Fclose(file_id);
+   HDF5_STATUS_CHECK(status);
+
+   TPM rdm(L,N);
+   rdm.ReadFromFile(filename);
+
+   return rdm;
+}
 
 /*  vim: set ts=3 sw=3 expandtab :*/
