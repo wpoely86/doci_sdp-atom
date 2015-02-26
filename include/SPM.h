@@ -54,6 +54,8 @@ class SPM: public BlockVector
 
       void bar(double, const PHM &);
 
+      void PrintSorted() const;
+
    private:
 
       //! number of particles

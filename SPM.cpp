@@ -1,3 +1,4 @@
+#include <algorithm>
 #include "include.h"
 #include "lapack.h"
 
@@ -138,6 +139,24 @@ void SPM::bar(double scal, const PHM &phm)
 
       (*this)(0,i) *= scal;
    }
+}
+
+void SPM::PrintSorted() const
+{
+   std::vector<std::pair<int, double>> spm_elems;
+   spm_elems.reserve(L);
+
+   for(int i=0;i<L;i++)
+      spm_elems.push_back(std::make_pair(i, (*this)(0,i)));
+
+   std::sort(spm_elems.begin(), spm_elems.end(),
+         [](const std::pair<int,double> & a, const std::pair<int,double> & b) -> bool
+         {
+         return a.second < b.second;
+         });
+
+   for(auto& elem: spm_elems)
+      std::cout << elem.first << "\t|\t" << elem.first << "  " << elem.first << "\t\t" << elem.second << std::endl;
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/
