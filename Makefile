@@ -178,4 +178,8 @@ sdp: $(OBJ) doci_sdp.o
 	@echo 'Building Potential reduction method'
 	$(CXX) $(LDFLAGS) $(SFLAGS) -o $(BRIGHT_ROOT)/doci_sdp doci_sdp.o $(OBJ) $(LIBS)
 
+print: $(OBJ) print.o
+	@echo 'Building print'
+	$(CXX) $(LDFLAGS) $(SFLAGS) -o $(BRIGHT_ROOT)/print print.o $(OBJ) $(LIBS)
+
 # ====================== End of file 'makefile.in' ========================== #

@@ -17,6 +17,7 @@ workspace
 doci_sdp
 doci_bp
 doci
+print
 .gdb_history
 *.h5
 .ycm_extra_conf.pyc
