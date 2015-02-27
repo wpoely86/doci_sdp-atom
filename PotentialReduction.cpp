@@ -68,6 +68,7 @@ PotentialReduction::PotentialReduction(const PotentialReduction &orig)
    reductionfac = orig.reductionfac;
    energy = orig.energy;
    t = orig.t;
+   norm_ham = orig.norm_ham;
 }
 
 PotentialReduction& PotentialReduction::operator=(const PotentialReduction &orig)
@@ -88,6 +89,8 @@ PotentialReduction& PotentialReduction::operator=(const PotentialReduction &orig
    reductionfac = orig.reductionfac;
    energy = orig.energy;
    t = orig.t;
+
+   norm_ham = orig.norm_ham;
 
    return *this;
 }
