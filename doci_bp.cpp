@@ -13,11 +13,9 @@
 
 // if set, the signal has been given to stop the calculation and write current step to file
 sig_atomic_t stopping = 0;
-
 sig_atomic_t stopping_min = 0;
 
 void stopcalcsignal(int sig);
-
 void stopminsignal(int sig);
 
 int main(int argc,char **argv)
@@ -124,9 +122,7 @@ int main(int argc,char **argv)
 
 
    BoundaryPoint method(ham);
-
    method.set_tol_PD(1e-7);
-   auto &rdm = method.getRDM();
 
    // set up everything to handle SIGALRM
    struct sigaction act;
@@ -160,7 +156,6 @@ int main(int argc,char **argv)
       }
 
       minimize.UseBoundaryPoint();
-      minimize.getMethod_BP() = method;
       minimize.getMethod_BP().set_use_prev_result(true);
       minimize.getMethod_BP().set_tol_PD(1e-7);
       minimize.set_conv_steps(10);
@@ -173,15 +168,13 @@ int main(int argc,char **argv)
 
       method = minimize.getMethod_BP();
       ham = minimize.getHam();
-
-      method.set_use_prev_result(false);
-      method.Reset_avg_iters();
-      method.Run();
-
-      cout << "The optimal energy is " << method.evalEnergy() << std::endl;
    }
-   else 
-      method.Run();
+
+   method.set_use_prev_result(false);
+   method.Reset_avg_iters();
+   method.Run();
+
+   cout << "The optimal energy is " << method.evalEnergy() << std::endl;
 
 
 
@@ -239,7 +232,7 @@ int main(int argc,char **argv)
    std::string h5_name = getenv("SAVE_H5_PATH");
    h5_name += "/optimal-rdm.h5";
 
-   rdm.WriteToFile(h5_name);
+   method.getRDM().WriteToFile(h5_name);
 
    h5_name = getenv("SAVE_H5_PATH");
    h5_name += "/optimal-ham.h5";

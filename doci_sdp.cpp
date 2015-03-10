@@ -121,8 +121,6 @@ int main(int argc, char **argv)
 
    PotentialReduction method(ham);
 
-   auto &rdm = method.getRDM();
-
    // set up everything to handle SIGALRM
    struct sigaction act;
    act.sa_flags = 0;
@@ -161,13 +159,15 @@ int main(int argc, char **argv)
    } else
       method.Run();
 
+   cout << "The optimal energy is " << method.evalEnergy() << std::endl;
+
    if(scan)
       Tools::scan_all(method.getRDM(), ham);
 
    std::string h5_name = getenv("SAVE_H5_PATH");
    h5_name += "/optimal-rdm.h5";
 
-   rdm.WriteToFile(h5_name);
+   method.getRDM().WriteToFile(h5_name);
 
    h5_name = getenv("SAVE_H5_PATH");
    h5_name += "/optimal-ham.h5";
