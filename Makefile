@@ -78,6 +78,18 @@ all:
 #  Compile with only P and Q conditions activated
 #------------------------------------------------------------------------------
 
+P:
+	@echo
+	@echo '  +++ Building $(BINNAME) with P condition'
+	@echo	
+	$(MAKE) $(BRIGHT_ROOT)/$(BINNAME) DEFS=""
+	@if test $?; then \
+	   echo; echo '*************** FAILED! ***************' ; echo; \
+	 else \
+	   echo; echo '  +++ $(BINNAME) has been built with P condition successfully!'; \
+	   echo; \
+	 fi
+
 PQ:
 	@echo
 	@echo '  +++ Building $(BINNAME) with P and Q conditions'
