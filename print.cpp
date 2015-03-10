@@ -81,6 +81,8 @@ int main(int argc,char **argv)
 
    cout << "Reading: " << inputfile << endl;
 
+   int N, L;
+
    std::unique_ptr<CheMPS2::Hamiltonian> ham;
 
    if(!integralsfile.empty())
@@ -88,21 +90,25 @@ int main(int argc,char **argv)
       cout << "Reading ham: " << integralsfile << endl;
       ham.reset(new CheMPS2::Hamiltonian(CheMPS2::Hamiltonian::CreateFromH5(integralsfile)));
 
-      const int L = ham->getL(); //dim sp hilbert space
-      const int N = ham->getNe(); //nr of particles
+      L = ham->getL(); //dim sp hilbert space
+      N = ham->getNe(); //nr of particles
 
       cout << "Found L=" << L << " N=" << N << endl;
    }
 
    TPM rdm = TPM::CreateFromFile(inputfile);
+   L = rdm.gL();
+   N = rdm.gN();
 
-   cout << "Read: L=" << rdm.gL() << " N=" << rdm.gN() << endl;
+   cout << "Read: L=" << L << " N=" << N << endl;
 
    if(dm2)
    {
       cout << "2DM:" << endl;
       cout << rdm << endl;
       cout << "Trace: " << rdm.trace() << endl;
+      cout << "Block: " << rdm.getMatrix(0).trace() << endl;
+      cout << "vec: " << rdm.getVector(0).trace() << endl;
    }
 
    SPM spm(rdm);
