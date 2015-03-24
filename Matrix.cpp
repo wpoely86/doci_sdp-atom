@@ -273,7 +273,10 @@ Vector Matrix::diagonalize_2x2()
 
    // double discr = (a+d)*(a+d) - 4*(a*d-c*c);
    double discr = a*a + d*d + 4*c*c - 2*a*d;
-   assert(!(discr < 0) && "Impossible!?!");
+   // sometimes, we get -1e15. Deal with it.
+   if(discr<0)
+      discr = 0;
+//   assert(!(discr < 0) && "Impossible!?!");
 
    Vector eig(2);
    eig[0] = ((a+d) - std::sqrt(discr))/2;
@@ -745,7 +748,10 @@ void Matrix::sep_pm_2x2(Matrix &pos,Matrix &neg)
 
    // double discr = (a+d)*(a+d) - 4*(a*d-c*c);
    double discr = a*a + d*d + 4*c*c - 2*a*d;
-   assert(!(discr < 0) && "Impossible!?!");
+   // sometimes, we get -1e15. Deal with it.
+   if(discr<0)
+      discr = 0;
+//   assert(!(discr < 0) && "Impossible!?!");
 
    double x1 = (a+d) - std::sqrt(discr);
    double x2 = (a+d) + std::sqrt(discr);
