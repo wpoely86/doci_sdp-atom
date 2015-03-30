@@ -194,4 +194,8 @@ print: $(OBJ) print.o
 	@echo 'Building print'
 	$(CXX) $(LDFLAGS) $(SFLAGS) -o $(BRIGHT_ROOT)/print print.o $(OBJ) $(LIBS)
 
+gen-hubbard: gen-hubbard.o
+	@echo 'Building gen-hubbard'
+	$(CXX) $(LDFLAGS) $(SFLAGS) -o $(BRIGHT_ROOT)/gen-hubbard gen-hubbard.o $(LIBS)
+
 # ====================== End of file 'makefile.in' ========================== #
