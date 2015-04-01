@@ -358,6 +358,10 @@ void PHM::L_map(const BlockMatrix &map,const BlockMatrix &object)
       (*this)[i].L_map_2x2(map[i], object[i]);
 }
 
+/**
+ * Write a PHM object to a HDF5 group
+ * @param group_id reference to the HDF5 group to use
+ */
 void PHM::WriteToFile(hid_t &group_id) const
 {
    hid_t       dataset_id, dataspace_id;
@@ -461,6 +465,41 @@ void PHM::WriteFullToFile(hid_t &group_id) const
 
    status = H5Dclose(dataset_id);
    HDF5_STATUS_CHECK(status);
+}
+
+/**
+ * Read a PHM object from a HDF5 group. The PHM object
+ * must already exist and have the correct
+ * dimensions. It will fill the object called on
+ * @param group_id reference to the HDF5 group to use
+ */
+void PHM::ReadFromFile(hid_t &group_id)
+{
+   hid_t       dataset_id;
+   herr_t      status;
+
+   dataset_id = H5Dopen(group_id, "Block", H5P_DEFAULT);
+   HDF5_STATUS_CHECK(dataset_id);
+
+   status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, (*this)[0].gMatrix());
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Dclose(dataset_id);
+   HDF5_STATUS_CHECK(status);
+
+   for(int i=1;i<gnr();i++)
+   {
+      std::string blockname = "2x2_" + std::to_string(i);
+
+      dataset_id = H5Dopen(group_id, blockname.c_str(), H5P_DEFAULT);
+      HDF5_STATUS_CHECK(dataset_id);
+
+      status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, (*this)[i].gMatrix());
+      HDF5_STATUS_CHECK(status);
+
+      status = H5Dclose(dataset_id);
+      HDF5_STATUS_CHECK(status);
+   }
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/

@@ -57,6 +57,8 @@ class TPM: public Container
 
       void ReadFromFile(std::string filename);
 
+      void ReadFromFile(hid_t &group_id);
+
       double S_2() const;
 
       void unit();

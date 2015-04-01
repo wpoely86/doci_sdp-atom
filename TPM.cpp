@@ -274,6 +274,10 @@ void TPM::HF_molecule(std::string filename)
    ham(getT,getV);
 }
 
+/**
+ * Write a TPM object to a HDF5 group.
+ * @param group_id reference to the HDF5 group to use
+ */
 void TPM::WriteToFile(hid_t &group_id) const
 {
    hid_t       dataset_id, attribute_id, dataspace_id;
@@ -384,6 +388,10 @@ void TPM::WriteToFile(hid_t &group_id) const
    HDF5_STATUS_CHECK(status);
 }
 
+/**
+ * Write a TPM object to a HDF5 file
+ * @param filename the filename to use
+ */
 void TPM::WriteToFile(std::string filename) const
 {
    hid_t       file_id, group_id;
@@ -402,9 +410,15 @@ void TPM::WriteToFile(std::string filename) const
    HDF5_STATUS_CHECK(status);
 }
 
+/**
+ * Read a TPM from a HDF5 file. The TPM object
+ * must have the correct dimension. It will fill the
+ * object on which this method is called.
+ * @param filename the file to read
+ */
 void TPM::ReadFromFile(std::string filename)
 {
-   hid_t       file_id, group_id, dataset_id;
+   hid_t       file_id, group_id;
    herr_t      status;
 
    file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
@@ -412,6 +426,26 @@ void TPM::ReadFromFile(std::string filename)
 
    group_id = H5Gopen(file_id, "/RDM", H5P_DEFAULT);
    HDF5_STATUS_CHECK(group_id);
+
+   ReadFromFile(group_id);
+
+   status = H5Gclose(group_id);
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Fclose(file_id);
+   HDF5_STATUS_CHECK(status);
+}
+
+/**
+ * Read a TPM from a HDF5 group. The TPM object
+ * must have the correct dimension. It will fill the
+ * object on which this method is called.
+ * @param group_id reference to the HDF5 group to use
+ */
+void TPM::ReadFromFile(hid_t &group_id)
+{
+   hid_t       dataset_id;
+   herr_t      status;
 
    dataset_id = H5Dopen(group_id, "Block", H5P_DEFAULT);
    HDF5_STATUS_CHECK(dataset_id);
@@ -430,13 +464,6 @@ void TPM::ReadFromFile(std::string filename)
    HDF5_STATUS_CHECK(status);
 
    status = H5Dclose(dataset_id);
-   HDF5_STATUS_CHECK(status);
-
-
-   status = H5Gclose(group_id);
-   HDF5_STATUS_CHECK(status);
-
-   status = H5Fclose(file_id);
    HDF5_STATUS_CHECK(status);
 }
 

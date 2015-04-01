@@ -60,6 +60,8 @@ class PHM: public BlockMatrix
 
       void WriteToFile(hid_t &group_id) const;
 
+      void ReadFromFile(hid_t &group_id);
+
       void WriteFullToFile(hid_t &group_id) const;
 
    private:

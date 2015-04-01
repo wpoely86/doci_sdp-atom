@@ -336,6 +336,10 @@ void SUP::init_S(const Lineq &lineq)
       this->daxpy(lineq.ge_ortho(i),lineq.gu_0(i));
 }
 
+/**
+ * Write a SUP object to a HDF5 file
+ * @param filename the name of the file to write to
+ */
 void SUP::WriteToFile(std::string filename) const
 {
    hid_t       file_id, main_group_id, group_id;
@@ -365,6 +369,57 @@ void SUP::WriteToFile(std::string filename) const
    group_id = H5Gcreate(main_group_id, "G", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
 
    G->WriteToFile(group_id);
+
+   status = H5Gclose(group_id);
+   HDF5_STATUS_CHECK(status);
+#endif
+
+   status = H5Gclose(main_group_id);
+   HDF5_STATUS_CHECK(status);
+
+   status = H5Fclose(file_id);
+   HDF5_STATUS_CHECK(status);
+}
+
+/**
+ * Read a SUP object from a HDF5 file. The SUP needs to be already created
+ * with the correct dimensions. Will fill in the object on which it is called.
+ * @param filename the file to read
+ */
+void SUP::ReadFromFile(std::string filename)
+{
+   hid_t       file_id, main_group_id, group_id;
+   herr_t      status;
+
+   file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+   HDF5_STATUS_CHECK(file_id);
+
+   main_group_id = H5Gopen(file_id, "/SUP", H5P_DEFAULT);
+   HDF5_STATUS_CHECK(group_id);
+
+   group_id = H5Gopen(main_group_id, "I", H5P_DEFAULT);
+   HDF5_STATUS_CHECK(group_id);
+
+   I->ReadFromFile(group_id);
+
+   status = H5Gclose(group_id);
+   HDF5_STATUS_CHECK(status);
+
+#ifdef __Q_CON
+   group_id = H5Gopen(main_group_id, "Q", H5P_DEFAULT);
+   HDF5_STATUS_CHECK(group_id);
+
+   Q->ReadFromFile(group_id);
+
+   status = H5Gclose(group_id);
+   HDF5_STATUS_CHECK(status);
+#endif
+
+#ifdef __G_CON
+   group_id = H5Gopen(main_group_id, "G", H5P_DEFAULT);
+   HDF5_STATUS_CHECK(group_id);
+
+   G->ReadFromFile(group_id);
 
    status = H5Gclose(group_id);
    HDF5_STATUS_CHECK(status);

@@ -76,6 +76,8 @@ class SUP
 
       void WriteToFile(std::string filename) const;
 
+      void ReadFromFile(std::string filename);
+
    private:
       //! number of particles
       int N;
