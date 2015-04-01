@@ -433,4 +433,77 @@ int simanneal::LocalMinimizer::choose_orbitalpair(std::vector<std::tuple<int,int
    return -1;
 }
 
+void simanneal::LocalMinimizer::Minimize_noOpt(double stopcrit)
+{
+   double old_energy;
+
+   // first run
+   energy = calc_new_energy();
+   old_energy = energy;
+
+   auto start = std::chrono::high_resolution_clock::now();
+
+   std::pair<int,int> prev_pair(0,0);
+
+   int iters = 1;
+
+   while(fabs(old_energy-energy)<stopcrit)
+   {
+      old_energy = energy;
+
+      auto list_rots = scan_orbitals();
+
+      std::sort(list_rots.begin(), list_rots.end(),
+            [](const std::tuple<int,int,double,double> & a, const std::tuple<int,int,double,double> & b) -> bool
+            {
+            return std::get<3>(a) < std::get<3>(b);
+            });
+
+      for(auto& elem: list_rots)
+         std::cout << std::get<0>(elem) << "\t" << std::get<1>(elem) << "\t" << std::get<3>(elem)+ham->getEconst() << "\t" << std::get<2>(elem) << std::endl;
+
+      int idx = 0;
+      std::pair<int,int> tmp;
+
+      tmp = std::make_pair(std::get<0>(list_rots[idx]), std::get<1>(list_rots[idx]));
+
+      // don't do the same pair twice in a row
+      if(tmp==prev_pair)
+         idx++;
+
+      const auto& new_rot = list_rots[idx];
+      prev_pair = std::make_pair(std::get<0>(new_rot), std::get<1>(new_rot));
+
+      assert(ham->getOrbitalIrrep(std::get<0>(new_rot)) == ham->getOrbitalIrrep(std::get<1>(new_rot)));
+      // do Jacobi rotation twice: once for the Hamiltonian data and once for the Unitary Matrix
+      orbtrans->DoJacobiRotation(*ham, std::get<0>(new_rot), std::get<1>(new_rot), std::get<2>(new_rot));
+      orbtrans->get_unitary().jacobi_rotation(ham->getOrbitalIrrep(std::get<0>(new_rot)), std::get<0>(new_rot), std::get<1>(new_rot), std::get<2>(new_rot));
+
+      energy = std::get<3>(new_rot);
+
+      std::cout << iters << "\tRotation between " << std::get<0>(new_rot) << "  " << std::get<1>(new_rot) << " over " << std::get<2>(new_rot) << " E_rot = " << energy+ham->getEconst() << "\t" << old_energy-energy << std::endl;
+
+      iters++;
+
+      assert(energy<old_energy && "No minimization ?!?");
+
+      if(iters>10000)
+      {
+         std::cout << "Done 10000 steps, quiting..." << std::endl;
+         break;
+      }
+
+      if(stopping_min)
+         break;
+   }
+
+   auto end = std::chrono::high_resolution_clock::now();
+
+   std::cout << "Minimization with optimization took: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << std::endl;
+
+   std::stringstream h5_name;
+   h5_name << getenv("SAVE_H5_PATH") << "/optimale-uni.h5";
+   get_Optimal_Unitary().saveU(h5_name.str());
+}
+
 /* vim: set ts=3 sw=3 expandtab :*/

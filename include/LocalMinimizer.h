@@ -63,6 +63,8 @@ class LocalMinimizer
 
       int choose_orbitalpair(std::vector<std::tuple<int,int,double,double>> &);
 
+      void Minimize_noOpt(double stopcrit);
+
    private:
 
       //! criteria for convergence of the minimizer
