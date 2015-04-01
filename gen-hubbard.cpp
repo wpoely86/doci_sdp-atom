@@ -88,6 +88,8 @@ int main(int argc,char **argv)
 
    if(momspace)
    {
+      // Don't forget: you cannot rotate states of different momentum!
+
       // one-particle integrals
       for(int i=0;i<L;i++)
          ham.setTmat(i, i, -2*std::cos(2*M_PI/(1.0*L)*i));
