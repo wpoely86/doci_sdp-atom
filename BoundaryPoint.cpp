@@ -1,10 +1,12 @@
 #include <fstream>
+#include <cassert>
 #include <iomanip>
 #include <chrono>
 #include <functional>
 #include <signal.h>
 #include "BoundaryPoint.h"
 #include "Hamiltonian.h"
+#include "OptIndex.h"
 
 #define BP_AVG_ITERS_START 500000
 
@@ -507,6 +509,54 @@ double BoundaryPoint::get_convergence() const
 bool BoundaryPoint::FullyConverged() const
 {
    return !(P_conv > tol_PD || D_conv > tol_PD || fabs(convergence) > tol_en);
+}
+
+/**
+ * The energy split up by irrep according to operators
+ * @return list of energies per irrep (order according to convention in irrep.h)
+ */
+std::vector<double> BoundaryPoint::energyperirrep(const CheMPS2::Hamiltonian &hamin, bool print)
+{
+   CheMPS2::Irreps symgroup(hamin.getNGroup());
+   simanneal::OptIndex index(hamin);
+
+   std::vector<double> results(symgroup.getNumberOfIrreps(), 0);
+
+   BuildHam(hamin);
+
+   const auto& rdm = getRDM();
+   const auto orbtoirrep = index.get_irrep_each_orbital();
+
+   // Ag: the LxL block
+   results[0] = ham->getMatrix(0).ddot(rdm.getMatrix(0));
+
+   // run over orbitals
+   for(int a=0;a<L;a++)
+      for(int b=a+1;b<L;b++)
+      {
+         auto irrep_a = orbtoirrep[a];
+         auto irrep_b = orbtoirrep[b];
+
+         auto firrep = symgroup.directProd(irrep_a, irrep_b);
+
+         results[firrep] += 4 * (*ham)(a,b,a,b) * rdm(a,b,a,b);
+      }
+
+
+   if(print)
+   {
+      std::cout << "Group: " << symgroup.getGroupName() << std::endl;
+      for(int i=0;i<symgroup.getNumberOfIrreps();i++)
+         std::cout << symgroup.getIrrepName(i) << ":\t" << results[i] << std::endl;
+
+      double check = 0;
+      for(auto &elem: results)
+         check += elem;
+
+      std::cout << "Check: " << rdm.ddot(*ham)+hamin.getEconst() << "\t" << check+hamin.getEconst() << std::endl;
+   }
+
+   return results;
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/

@@ -76,6 +76,8 @@ class BoundaryPoint: public Method
 
       bool FullyConverged() const;
 
+      std::vector<double> energyperirrep(const CheMPS2::Hamiltonian &, bool print=false);
+
    private:
 
       std::unique_ptr<TPM> ham;
