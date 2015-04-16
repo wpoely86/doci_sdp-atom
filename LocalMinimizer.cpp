@@ -248,7 +248,7 @@ std::vector< std::tuple<int,int,double,double> > simanneal::LocalMinimizer::scan
  * @param dist_choice if set to true, we use choose_orbitals to choose
  * which pair of orbitals to use (instead of the lowest one)
  */
-void simanneal::LocalMinimizer::Minimize(bool dist_choice)
+int simanneal::LocalMinimizer::Minimize(bool dist_choice, int start_iters)
 {
    int converged = 0;
    double new_energy;
@@ -324,15 +324,15 @@ void simanneal::LocalMinimizer::Minimize(bool dist_choice)
       new_energy = calc_new_energy(*ham);
 
       std::stringstream h5_name;
-      h5_name << getenv("SAVE_H5_PATH") << "/unitary-" << iters << ".h5";
+      h5_name << getenv("SAVE_H5_PATH") << "/unitary-" << start_iters+iters << ".h5";
       orbtrans->get_unitary().saveU(h5_name.str());
 
       h5_name.str("");
-      h5_name << getenv("SAVE_H5_PATH") << "/ham-" << iters << ".h5";
+      h5_name << getenv("SAVE_H5_PATH") << "/ham-" << start_iters+iters << ".h5";
       ham->save2(h5_name.str());
 
       h5_name.str("");
-      h5_name << getenv("SAVE_H5_PATH") << "/rdm-" << iters << ".h5";
+      h5_name << getenv("SAVE_H5_PATH") << "/rdm-" << start_iters+iters << ".h5";
       method->getRDM().WriteToFile(h5_name.str());
 
       if(obj_bp)
@@ -349,11 +349,11 @@ void simanneal::LocalMinimizer::Minimize(bool dist_choice)
          }
 
          h5_name.str("");
-         h5_name << getenv("SAVE_H5_PATH") << "/X-" << iters << ".h5";
+         h5_name << getenv("SAVE_H5_PATH") << "/X-" << start_iters+iters << ".h5";
          obj_bp->getX().WriteToFile(h5_name.str());
 
          h5_name.str("");
-         h5_name << getenv("SAVE_H5_PATH") << "/Z-" << iters << ".h5";
+         h5_name << getenv("SAVE_H5_PATH") << "/Z-" << start_iters+iters << ".h5";
          obj_bp->getZ().WriteToFile(h5_name.str());
       }
 
@@ -387,6 +387,8 @@ void simanneal::LocalMinimizer::Minimize(bool dist_choice)
    std::stringstream h5_name;
    h5_name << getenv("SAVE_H5_PATH") << "/optimale-uni.h5";
    get_Optimal_Unitary().saveU(h5_name.str());
+
+   return iters;
 }
 
 double simanneal::LocalMinimizer::get_conv_crit() const
@@ -433,8 +435,9 @@ int simanneal::LocalMinimizer::choose_orbitalpair(std::vector<std::tuple<int,int
    return -1;
 }
 
-void simanneal::LocalMinimizer::Minimize_noOpt(double stopcrit)
+int simanneal::LocalMinimizer::Minimize_noOpt(double stopcrit)
 {
+   int converged = 0;
    double old_energy;
 
    // first run
@@ -447,7 +450,7 @@ void simanneal::LocalMinimizer::Minimize_noOpt(double stopcrit)
 
    int iters = 1;
 
-   while(fabs(old_energy-energy)<stopcrit)
+   while(fabs(old_energy-energy)<stopcrit && converged<conv_steps)
    {
       old_energy = energy;
 
@@ -481,11 +484,14 @@ void simanneal::LocalMinimizer::Minimize_noOpt(double stopcrit)
 
       energy = std::get<3>(new_rot);
 
-      std::cout << iters << "\tRotation between " << std::get<0>(new_rot) << "  " << std::get<1>(new_rot) << " over " << std::get<2>(new_rot) << " E_rot = " << energy+ham->getEconst() << "\t" << old_energy-energy << std::endl;
+      std::cout << iters << " (" << converged << ")\tRotation between " << std::get<0>(new_rot) << "  " << std::get<1>(new_rot) << " over " << std::get<2>(new_rot) << " E_rot = " << energy+ham->getEconst() << "\t" << old_energy-energy << std::endl;
 
       iters++;
 
       assert(energy<old_energy && "No minimization ?!?");
+
+      if(fabs(old_energy-energy)<conv_crit)
+         converged++;
 
       if(iters>10000)
       {
@@ -502,8 +508,39 @@ void simanneal::LocalMinimizer::Minimize_noOpt(double stopcrit)
    std::cout << "Minimization with optimization took: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << std::endl;
 
    std::stringstream h5_name;
-   h5_name << getenv("SAVE_H5_PATH") << "/optimale-uni.h5";
+   h5_name << getenv("SAVE_H5_PATH") << "/optimale-uni-no-opt.h5";
    get_Optimal_Unitary().saveU(h5_name.str());
+
+   return iters;
+}
+
+/**
+ * Combine LocalMinimizer::Minimize and LocalMinimizer::Minimize_noOpt
+ */
+int simanneal::LocalMinimizer::Minimize_hybrid()
+{
+   const auto old_conv_crit = conv_crit;
+   const auto old_conv_steps = conv_steps;
+   const double switch_crit = 1e-1;
+   int iters_noopt = 0;
+   int iters = 0;
+
+   while(iters_noopt < 20)
+   {
+      conv_crit = switch_crit;
+      conv_steps = 10;
+
+      iters += Minimize(false,iters);
+
+      conv_crit = old_conv_crit;
+      conv_steps = old_conv_steps;
+
+      iters_noopt = Minimize_noOpt(switch_crit);
+   }
+
+   iters += Minimize(false,iters);
+
+   return iters + iters_noopt;
 }
 
 /* vim: set ts=3 sw=3 expandtab :*/

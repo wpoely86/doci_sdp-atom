@@ -27,7 +27,7 @@ class LocalMinimizer
 
       virtual ~LocalMinimizer();
 
-      void Minimize(bool dist_choice=false);
+      int Minimize(bool dist_choice=false, int start_iters=0);
 
       double get_energy() const;
 
@@ -63,7 +63,9 @@ class LocalMinimizer
 
       int choose_orbitalpair(std::vector<std::tuple<int,int,double,double>> &);
 
-      void Minimize_noOpt(double stopcrit);
+      int Minimize_noOpt(double stopcrit);
+
+      int Minimize_hybrid();
 
    private:
 
