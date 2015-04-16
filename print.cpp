@@ -4,10 +4,13 @@
 #include <signal.h>
 
 #include "include.h"
+#include "BoundaryPoint.h"
 
 // from CheMPS2
 #include "Hamiltonian.h"
 #include "OptIndex.h"
+#include "OrbitalTransform.h"
+#include "UnitaryMatrix.h"
 
 // if set, the signal has been given to stop the calculation and write current step to file
 sig_atomic_t stopping = 0;
@@ -101,6 +104,19 @@ int main(int argc,char **argv)
    N = rdm.gN();
 
    cout << "Read: L=" << L << " N=" << N << endl;
+
+   if(!integralsfile.empty() && !unitary.empty())
+   {
+      simanneal::OrbitalTransform orbtrans(*ham);
+
+      orbtrans.get_unitary().loadU(unitary);
+      orbtrans.fillHamCI(*ham);
+
+      doci2DM::BoundaryPoint method(*ham);
+      method.getRDM() = rdm;
+
+      method.energyperirrep(*ham, true);
+   }
 
    if(dm2)
    {
