@@ -3,6 +3,7 @@
 #include "include.h"
 
 #include "PotentialReducation.h"
+#include "BoundaryPoint.h"
 #include "Hamiltonian.h"
 
 using namespace doci2DM;
@@ -115,7 +116,7 @@ void Tools::scan_all(const TPM &rdm, const CheMPS2::Hamiltonian &ham)
 //#pragma omp parallel for
             for(int a=0;a<=Na;a++)
             {
-               double theta = 1.0*M_PI/(1.0*Na) * a;
+               double theta = 1.0*M_PI/(1.0*Na) * a - M_PI/2.0;
 
                mymethod.getHam() = orig_ham;
                mymethod.getRDM() = rdm;
@@ -132,5 +133,64 @@ void Tools::scan_all(const TPM &rdm, const CheMPS2::Hamiltonian &ham)
             fs.close();
          }
 }
+
+void Tools::scan_all_bp(const TPM &rdm, const CheMPS2::Hamiltonian &ham)
+{
+   const int L = rdm.gL();
+
+   std::function<double(int,int)> getT = [&ham] (int a, int b) -> double { return ham.getTmat(a,b); };
+   std::function<double(int,int,int,int)> getV = [&ham]  (int a, int b, int c, int d) -> double { return ham.getVmat(a,b,c,d); };
+
+   BoundaryPoint method(ham);
+
+   const auto orig_ham = method.getHam();
+
+   for(int k_in=0;k_in<L;k_in++)
+      for(int l_in=k_in+1;l_in<L;l_in++)
+         if(ham.getOrbitalIrrep(k_in) == ham.getOrbitalIrrep(l_in))
+         {
+            std::fstream fs;
+            std::string filename = getenv("SAVE_H5_PATH");
+            filename += "/orbs-scan-" + std::to_string(k_in) + "-" + std::to_string(l_in) + ".txt";
+            fs.open(filename, std::fstream::out | std::fstream::trunc);
+
+            fs.precision(10);
+
+            fs << "# theta\trot\trot+v2dm" << std::endl;
+
+            auto found = rdm.find_min_angle(k_in,l_in,0.3,getT,getV);
+
+            std::cout << "Min:\t" << k_in << "\t" << l_in << "\t" << found.first << "\t" << found.second << std::endl;
+
+            std::cout << "######################" << std::endl;
+
+
+            int Na = 100;
+#pragma omp parallel for
+            for(int a=0;a<=Na;a++)
+            {
+               double theta = 1.0*M_PI/(1.0*Na) * a - M_PI/2.0;
+
+               BoundaryPoint mymethod(ham);
+               mymethod.set_tol_PD(1e-7);
+
+//               mymethod.set_output(false);
+
+               mymethod.getHam() = orig_ham;
+               mymethod.getRDM() = rdm;
+               mymethod.getHam().rotate(k_in, l_in, theta, getT, getV);
+
+               double new_en = mymethod.evalEnergy();
+
+               mymethod.Run();
+
+#pragma omp critical
+               fs << theta << "\t" << new_en << "\t" << mymethod.evalEnergy() << std::endl;
+            }
+
+            fs.close();
+         }
+}
+
 
 /*  vim: set ts=3 sw=3 expandtab :*/

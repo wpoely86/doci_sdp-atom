@@ -19,6 +19,8 @@ class Tools
       static double getNuclearRepulEnergy(std::string filename);
 
       static void scan_all(const TPM &rdm, const CheMPS2::Hamiltonian &ham);
+
+      static void scan_all_bp(const TPM &rdm, const CheMPS2::Hamiltonian &ham);
 };
 
 }
