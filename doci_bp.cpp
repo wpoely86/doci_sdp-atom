@@ -1,5 +1,6 @@
 #include <iostream>
 #include <fstream>
+#include <cstring>
 #include <getopt.h>
 #include <signal.h>
 
@@ -32,6 +33,8 @@ int main(int argc,char **argv)
    std::string rdmfile;
    bool random = false;
    bool localmini = false;
+   bool scan = false;
+   bool localmininoopt = false;
 
    struct option long_options[] =
    {
@@ -39,14 +42,16 @@ int main(int argc,char **argv)
       {"unitary",  required_argument, 0, 'u'},
       {"rdm",  required_argument, 0, 'd'},
       {"random",  no_argument, 0, 'r'},
+      {"scan",  no_argument, 0, 's'},
       {"local-minimizer",  no_argument, 0, 'l'},
+      {"local-minimizer-no-opt",  no_argument, 0, 'n'},
       {"help",  no_argument, 0, 'h'},
       {0, 0, 0, 0}
    };
 
    int i,j;
 
-   while( (j = getopt_long (argc, argv, "d:rlhi:u:", long_options, &i)) != -1)
+   while( (j = getopt_long (argc, argv, "d:rlhi:u:sn", long_options, &i)) != -1)
       switch(j)
       {
          case 'h':
@@ -58,6 +63,7 @@ int main(int argc,char **argv)
                "    -u, --unitary=unitary-file      Use the unitary matrix in this file\n"
                "    -r, --random                    Perform a random unitary transformation on the Hamiltonian\n"
                "    -l, --local-minimizer           Use the local minimizer\n"
+               "    -n, --local-minimizer-no-opt    Use the local minimizer without optimalization\n"
                "    -h, --help                      Display this help\n"
                "\n";
             return 0;
@@ -76,6 +82,12 @@ int main(int argc,char **argv)
             break;
          case 'l':
             localmini = true;
+            break;
+         case 's':
+            scan = true;
+            break;
+         case 'n':
+            localmininoopt = true;
             break;
       }
 
@@ -123,6 +135,21 @@ int main(int argc,char **argv)
 
    BoundaryPoint method(ham);
    method.set_tol_PD(1e-7);
+//   method.getLineq() = Lineq(L,N,true);
+
+   char *X_env = getenv("v2DM_DOCI_SUP_X");
+   if(X_env && strlen(X_env) > 0)
+   {
+      cout << "Reading X from " << X_env << endl;
+      method.getX().ReadFromFile(X_env);
+   }
+
+   char *Z_env = getenv("v2DM_DOCI_SUP_Z");
+   if(Z_env && strlen(Z_env) > 0)
+   {
+      cout << "Reading Z from " << Z_env << endl;
+      method.getZ().ReadFromFile(Z_env);
+   }
 
    // set up everything to handle SIGALRM
    struct sigaction act;
@@ -156,13 +183,20 @@ int main(int argc,char **argv)
       }
 
       minimize.UseBoundaryPoint();
+      minimize.getMethod_BP().getX() = method.getX();
+      minimize.getMethod_BP().getZ() = method.getZ();
       minimize.getMethod_BP().set_use_prev_result(true);
       minimize.getMethod_BP().set_tol_PD(1e-7);
+//      minimize.getMethod_BP().getLineq() = Lineq(L,N,true);
       minimize.set_conv_steps(10);
+//      minimize.getMethod_BP().set_max_iter(5);
 
       minimize.set_conv_crit(1e-6);
 
-      minimize.Minimize();
+      if(localmininoopt)
+         minimize.Minimize_noOpt(1e-2);
+      else
+         minimize.Minimize();
 
       cout << "Bottom is " << minimize.get_energy() << endl;
 
@@ -175,6 +209,9 @@ int main(int argc,char **argv)
    method.Run();
 
    cout << "The optimal energy is " << method.evalEnergy() << std::endl;
+
+   if(scan)
+      Tools::scan_all_bp(method.getRDM(), ham);
 
 
 
