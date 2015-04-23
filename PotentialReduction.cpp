@@ -131,7 +131,7 @@ PotentialReduction* PotentialReduction::Move()
 /**
  * Build the new reduced hamiltonian based on the integrals
  * in ham
- * @param ham the integrals to use
+ * @param hamin the integrals to use
  */
 void PotentialReduction::BuildHam(const CheMPS2::Hamiltonian &hamin)
 {
@@ -146,7 +146,7 @@ void PotentialReduction::BuildHam(const CheMPS2::Hamiltonian &hamin)
 
 /**
  * Copy the reduced hamiltonian from a TPM object
- * @param ham the TPM object to use
+ * @param hamin the TPM object to use
  */
 void PotentialReduction::BuildHam(const TPM &hamin)
 {
@@ -322,7 +322,7 @@ doci2DM::TPM& PotentialReduction::getHam() const
 
 /**
  * Give the energy with the current rdm and ham
- * @param the newly evaluated energy
+ * @return the newly evaluated energy
  */
 double PotentialReduction::evalEnergy() const
 {

@@ -270,6 +270,7 @@ std::vector< std::tuple<int,int,double,double> > simanneal::LocalMinimizer::scan
  * Do the local minimization
  * @param dist_choice if set to true, we use choose_orbitals to choose
  * which pair of orbitals to use (instead of the lowest one)
+ * @param start_iters start number the iterations from this number (defaults to 0)
  */
 int simanneal::LocalMinimizer::Minimize(bool dist_choice, int start_iters)
 {

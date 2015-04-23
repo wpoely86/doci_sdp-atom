@@ -61,7 +61,7 @@ Matrix::Matrix(int n)
 
 /**
  * copy constructor 
- * @param mat_copy The matrix you want to be copied into the object you are constructing
+ * @param orig The matrix you want to be copied into the object you are constructing
  */
 Matrix::Matrix(const Matrix &orig){
 
@@ -254,8 +254,7 @@ double Matrix::trace() const
 /**
  * Diagonalizes symmetric matrices. Watch out! The current matrix (*this) is destroyed, in it
  * the eigenvectors will be stored (one in every column).
- * @param eigenvalues the pointer of doubles in which the eigenvalues will be storen, Watch out, its memory
- * has to be allocated on the dimension of the matrix before you call the function.
+ * @return eigenvalues Vector with the eigenvalues
  */
 Vector Matrix::diagonalize()
 {

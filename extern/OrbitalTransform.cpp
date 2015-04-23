@@ -279,6 +279,7 @@ void OrbitalTransform::update_unitary(const UnitaryMatrix &X, bool replace)
 /**
  * Update ham_rot in place with a jacobi rotation between orbital k and l over
  * an angle of theta. k and l should be in the same irrep.
+ * @param ham_rot The Hamiltonian to update
  * @param k the first orbital
  * @param l the second orbital
  * @param theta the angle to rotation over

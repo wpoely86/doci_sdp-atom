@@ -208,7 +208,7 @@ BoundaryPoint* BoundaryPoint::Move()
 /**
  * Build the new reduced hamiltonian based on the integrals
  * in ham
- * @param ham the integrals to use
+ * @param hamin the integrals to use
  */
 void BoundaryPoint::BuildHam(const CheMPS2::Hamiltonian &hamin)
 {
@@ -220,7 +220,7 @@ void BoundaryPoint::BuildHam(const CheMPS2::Hamiltonian &hamin)
 
 /**
  * Copy the new reduced hamiltonian from the TPM object
- * @param ham the TPM object to use
+ * @param hamin the TPM object to use
  */
 void BoundaryPoint::BuildHam(const TPM &hamin)
 {
@@ -483,7 +483,7 @@ doci2DM::TPM& BoundaryPoint::getHam() const
 
 /**
  * Give the energy with the current rdm and ham
- * @param the newly evaluated energy
+ * @return the newly evaluated energy
  */
 double BoundaryPoint::evalEnergy() const
 {

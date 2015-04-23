@@ -45,7 +45,7 @@ class Container
     * For output onto the screen type: \n\n
     * cout << blockmatrix << endl;\n\n
     * @param output The stream to which you are writing (e.g. cout)
-    * @param blockmatrix_p the BlockMatrix you want to print
+    * @param container the Container you want to print
     */
    friend std::ostream &operator<<(std::ostream &output,const doci2DM::Container &container);
 

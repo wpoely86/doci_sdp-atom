@@ -563,6 +563,7 @@ void TPM::Proj_Tr()
  * *this = S.I + Q(S.Q) + G^Down(S.G) + ...
  * stores the result in *this
  * @param S The SUP to collaps
+ * @param lineq the linear inequalities to use
  */
 void TPM::collaps(const SUP &S, const Lineq &lineq)
 {
@@ -589,6 +590,7 @@ void TPM::collaps(const SUP &S, const Lineq &lineq)
  * @param t the barrier height
  * @param S the SUP to use
  * @param ham the hamiltonian
+ * @param lineq the linear inequalities to use
  */
 void TPM::constr_grad(double t,const SUP &S, const TPM &ham, const Lineq &lineq)
 {
@@ -718,6 +720,7 @@ int TPM::solve(double t, const SUP &S, TPM &grad, const Lineq &lineq)
  * @param t barrier height
  * @param delta the current delta in the TPM space
  * @param S the full filled SUP object
+ * @param lineq the linear inequalities to use
  */
 void TPM::H(double t,const TPM &delta,const SUP &S, const Lineq &lineq)
 {

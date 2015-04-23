@@ -32,7 +32,7 @@ using namespace doci2DM;
 /**
  * constructor: Watch out, the matrices themself haven't been allocated yet. 
  * Only the Blockmatrix itself is allocated and the array containing the dimensions, but not initialized.
- * @param blockmatrix.size() nr of blocks in the blockmatrix
+ * @param nr number of blocks in the blockmatrix
  */
    template<class BlockType>
 BlockStructure<BlockType>::BlockStructure(int nr)

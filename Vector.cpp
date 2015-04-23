@@ -93,7 +93,7 @@ Vector::~Vector()
 
 /**
  * overload the equality operator
- * @param vector_copy The vector you want to be copied into this
+ * @param vec_copy The vector you want to be copied into this
  */
 Vector &Vector::operator=(const Vector &vec_copy)
 {
