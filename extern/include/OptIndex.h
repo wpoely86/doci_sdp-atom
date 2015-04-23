@@ -3,6 +3,8 @@
 
 #include <vector>
 
+#include "Irreps.h"
+
 namespace CheMPS2 { class Hamiltonian; }
 
 namespace simanneal
@@ -17,9 +19,11 @@ class OptIndex
         int getNirreps() const;
         int getNORB(const int irrep) const;
         int getNstart(const int irrep) const;
-        int * get_irrep_each_orbital();
+        const int * get_irrep_each_orbital() const;
         void Print() const;
+        int getNgroup() const;
     private:
+        CheMPS2::Irreps SymmInfo;
         int Nirreps;
         int L;
         std::vector<int> NORB;

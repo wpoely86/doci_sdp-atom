@@ -9,7 +9,6 @@ using simanneal::OptIndex;
 OptIndex::OptIndex(const int L, const int _Group, const int * NORBin)
 {
     this->L = L;
-    CheMPS2::Irreps SymmInfo;
     SymmInfo.setGroup(_Group);
     this->Nirreps = SymmInfo.getNumberOfIrreps();
 
@@ -39,6 +38,7 @@ OptIndex::OptIndex(const int L, const int _Group, const int * NORBin)
 
 OptIndex::OptIndex(const CheMPS2::Hamiltonian &ham)
 {
+    SymmInfo.setGroup(ham.getNGroup());
     this->L = ham.L;
     this->Nirreps = ham.SymmInfo.getNumberOfIrreps();
 
@@ -74,7 +74,9 @@ int OptIndex::getNORB(const int irrep) const { return NORB[irrep]; }
 
 int OptIndex::getNstart(const int irrep) const { return NORBcumulative[irrep]; }
 
-int * OptIndex::get_irrep_each_orbital() { return irrep_each_orbital.data(); }
+const int * OptIndex::get_irrep_each_orbital() const { return irrep_each_orbital.data(); }
+
+int OptIndex::getNgroup() const { return SymmInfo.getGroupNumber(); }
 
 void OptIndex::Print() const
 {
