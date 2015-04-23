@@ -116,6 +116,16 @@ int main(int argc,char **argv)
       method.getRDM() = rdm;
 
       method.energyperirrep(*ham, true);
+
+      if(dm1)
+      {
+         SPM spm(rdm);
+         simanneal::OptIndex index(*ham);
+
+         spm.Particlesperirrep(index);
+      }
+
+      return 0;
    }
 
    if(dm2)
