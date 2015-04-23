@@ -1,0 +1,11 @@
+<map id="doci2DM::SPM::bar" name="doci2DM::SPM::bar">
+<area shape="rect" id="node2" href="$classdoci2DM_1_1TPM.html#a86a5ac5dbc64d39f26b6bf16a1dcd424" title="doci2DM::TPM::G" alt="" coords="191,81,319,108"/>
+<area shape="rect" id="node3" href="$classdoci2DM_1_1TPM.html#ab8a970b9796d6044ba9904b05fda3011" title="doci2DM::TPM::collaps" alt="" coords="367,56,525,83"/>
+<area shape="rect" id="node9" href="$classdoci2DM_1_1TPM.html#aa72120ccd364c042e8813188c436787d" title="doci2DM::TPM::H" alt="" coords="382,107,510,133"/>
+<area shape="rect" id="node4" href="$classdoci2DM_1_1BoundaryPoint.html#ac6b6249205f665bc58195097912723ad" title="doci2DM::BoundaryPoint::Run" alt="" coords="573,5,772,32"/>
+<area shape="rect" id="node6" href="$classdoci2DM_1_1TPM.html#a2b862694b4187ff7bf04f84eecf11ef2" title="doci2DM::TPM::constr_grad" alt="" coords="579,56,766,83"/>
+<area shape="rect" id="node5" href="$doci__bp_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627" title="main" alt="" coords="907,5,957,32"/>
+<area shape="rect" id="node7" href="$classdoci2DM_1_1PotentialReduction.html#a3516ed4444e04eead888ee7228ef3d3d" title="doci2DM::PotentialReduction::Run" alt="" coords="820,81,1044,108"/>
+<area shape="rect" id="node8" href="$doci__sdp_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627" title="main" alt="" coords="1092,81,1143,108"/>
+<area shape="rect" id="node10" href="$classdoci2DM_1_1TPM.html#a46f82da55e37e05aba7f3eecad3bfe56" title="doci2DM::TPM::solve" alt="" coords="598,107,747,133"/>
+</map>

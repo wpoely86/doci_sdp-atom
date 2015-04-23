@@ -1,0 +1,20 @@
+<map id="doci2DM::TPM::collaps" name="doci2DM::TPM::collaps">
+<area shape="rect" id="node2" href="$classdoci2DM_1_1SUP.html#a9004c992e7c37ca33a0847fc45f560d4" title="doci2DM::SUP::getI" alt="" coords="221,83,361,110"/>
+<area shape="rect" id="node3" href="$classdoci2DM_1_1TPM.html#a5ee6d73c2d0d2b5fa1b2c66715e948cb" title="doci2DM::TPM::Q" alt="" coords="227,134,355,161"/>
+<area shape="rect" id="node9" href="$classdoci2DM_1_1SUP.html#a21a00cc3945f2a4773d9ecac055fd744" title="doci2DM::SUP::getQ" alt="" coords="217,189,364,215"/>
+<area shape="rect" id="node10" href="$classdoci2DM_1_1TPM.html#a86a5ac5dbc64d39f26b6bf16a1dcd424" title="doci2DM::TPM::G" alt="" coords="227,239,355,266"/>
+<area shape="rect" id="node13" href="$classdoci2DM_1_1SUP.html#a69c9223d9fee06579a62c45f0e9a9ef5" title="doci2DM::SUP::getG" alt="" coords="217,290,364,317"/>
+<area shape="rect" id="node14" href="$classdoci2DM_1_1TPM.html#a1731add007201ec08fc10aa0dbc78cf8" title="doci2DM::TPM::Proj_E" alt="" coords="212,447,369,474"/>
+<area shape="rect" id="node4" href="$classdoci2DM_1_1Container.html#a4f8794a81a4f999b8f49352a5cba521c" title="doci2DM::Container\l::trace" alt="" coords="433,5,572,47"/>
+<area shape="rect" id="node5" href="$classdoci2DM_1_1SPM.html#a908c6590952c67a15e26e3a07c00c433" title="doci2DM::SPM::bar2" alt="" coords="431,71,575,98"/>
+<area shape="rect" id="node7" href="$classdoci2DM_1_1Container.html#a85b2345f3e6651a8b9058197c71d3ddc" title="doci2DM::Container\l::getVector" alt="" coords="433,123,572,164"/>
+<area shape="rect" id="node8" href="$classdoci2DM_1_1Vector.html#a8bc1bcd03698eb186189ce6f5a97b919" title="doci2DM::Vector::gn" alt="" coords="431,189,574,215"/>
+<area shape="rect" id="node6" href="$classdoci2DM_1_1TPM.html#a48449a7b4eead207bc0d4dfd0b20ae1d" title="doci2DM::TPM::getDiag" alt="" coords="636,71,799,98"/>
+<area shape="rect" id="node11" href="$classdoci2DM_1_1PHM.html#a597483aa61f651c4b19b95137abbd135" title="doci2DM::PHM::getBlock" alt="" coords="417,239,588,266"/>
+<area shape="rect" id="node12" href="$classdoci2DM_1_1Container.html#a71bf66486e97f53890deacd95c9919d5" title="doci2DM::Container\l::gdimVector" alt="" coords="433,291,572,332"/>
+<area shape="rect" id="node15" href="$classdoci2DM_1_1Lineq.html#adb107c19d44e592d01596a06ee9530a5" title="doci2DM::Lineq::gnr" alt="" coords="433,357,572,383"/>
+<area shape="rect" id="node16" href="$classdoci2DM_1_1Container.html#a35fefce943211573d9c3e36c12dddfce" title="doci2DM::Container\l::ddot" alt="" coords="433,408,572,449"/>
+<area shape="rect" id="node17" href="$classdoci2DM_1_1Lineq.html#abbe6687a91f80dced10dcec34d61f5bc" title="doci2DM::Lineq::gE\l_ortho" alt="" coords="434,473,571,515"/>
+<area shape="rect" id="node18" href="$classdoci2DM_1_1Lineq.html#a0f621b6b94ff49bed3f886b30d3d19ce" title="doci2DM::Lineq::ge\l_ortho" alt="" coords="435,539,570,580"/>
+<area shape="rect" id="node19" href="$classdoci2DM_1_1Container.html#ad66a0b8b02966a9b5c8b82b1167777f9" title="doci2DM::Container\l::daxpy" alt="" coords="433,604,572,645"/>
+</map>

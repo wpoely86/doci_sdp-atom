@@ -1,0 +1,9 @@
+<map id="doci2DM::SUP::daxpy" name="doci2DM::SUP::daxpy">
+<area shape="rect" id="node2" href="$classdoci2DM_1_1BoundaryPoint.html#ac6b6249205f665bc58195097912723ad" title="doci2DM::BoundaryPoint::Run" alt="" coords="481,36,680,62"/>
+<area shape="rect" id="node6" href="$classdoci2DM_1_1Lineq.html#a3853e378a1dd9cb2fca9700ff4da794f" title="doci2DM::Lineq::orthogonalize_u_0" alt="" coords="207,112,433,138"/>
+<area shape="rect" id="node8" href="$classdoci2DM_1_1SUP.html#a1f12a17e718900ce405f5cc1001e7eda" title="doci2DM::SUP::init_S" alt="" coords="245,61,395,88"/>
+<area shape="rect" id="node3" href="$doci__bp_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627" title="main" alt="" coords="952,40,1003,66"/>
+<area shape="rect" id="node4" href="$classsimanneal_1_1LocalMinimizer.html#a548810015627b7db321a3e7f690972a4" title="simanneal::LocalMinimizer\l::Minimize" alt="" coords="728,28,904,70"/>
+<area shape="rect" id="node5" href="$classdoci2DM_1_1Tools.html#a60a27b7ded647c082f10e9f5552f76c1" title="doci2DM::Tools::scan\l_all_bp" alt="" coords="741,94,891,135"/>
+<area shape="rect" id="node7" href="$classdoci2DM_1_1Lineq.html#a67f9eb3ec90bdf3a32bf5921e7012fd3" title="doci2DM::Lineq::Lineq" alt="" coords="505,112,657,138"/>
+</map>

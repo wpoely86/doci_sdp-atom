@@ -1,0 +1,14 @@
+<map id="doci2DM::SUP::getQ" name="doci2DM::SUP::getQ">
+<area shape="rect" id="node2" href="$classdoci2DM_1_1EIG.html#a1b28b1940b9808b0419f32bf1b36b0c6" title="doci2DM::EIG::EIG" alt="" coords="211,58,347,84"/>
+<area shape="rect" id="node3" href="$classdoci2DM_1_1TPM.html#ab8a970b9796d6044ba9904b05fda3011" title="doci2DM::TPM::collaps" alt="" coords="200,108,359,135"/>
+<area shape="rect" id="node12" href="$classdoci2DM_1_1TPM.html#aa72120ccd364c042e8813188c436787d" title="doci2DM::TPM::H" alt="" coords="215,159,343,186"/>
+<area shape="rect" id="node4" href="$classdoci2DM_1_1BoundaryPoint.html#ac6b6249205f665bc58195097912723ad" title="doci2DM::BoundaryPoint::Run" alt="" coords="407,47,605,74"/>
+<area shape="rect" id="node8" href="$classdoci2DM_1_1TPM.html#a2b862694b4187ff7bf04f84eecf11ef2" title="doci2DM::TPM::constr_grad" alt="" coords="413,108,599,135"/>
+<area shape="rect" id="node5" href="$doci__bp_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627" title="main" alt="" coords="985,28,1036,55"/>
+<area shape="rect" id="node6" href="$classsimanneal_1_1LocalMinimizer.html#a548810015627b7db321a3e7f690972a4" title="simanneal::LocalMinimizer\l::Minimize" alt="" coords="677,28,853,69"/>
+<area shape="rect" id="node7" href="$classdoci2DM_1_1Tools.html#a60a27b7ded647c082f10e9f5552f76c1" title="doci2DM::Tools::scan\l_all_bp" alt="" coords="690,93,841,134"/>
+<area shape="rect" id="node9" href="$classdoci2DM_1_1PotentialReduction.html#a3516ed4444e04eead888ee7228ef3d3d" title="doci2DM::PotentialReduction::Run" alt="" coords="653,159,877,186"/>
+<area shape="rect" id="node10" href="$doci__sdp_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627" title="main" alt="" coords="1144,155,1195,182"/>
+<area shape="rect" id="node11" href="$classdoci2DM_1_1Tools.html#a4b4973251e6a7f346a7e22f2c82b8fa7" title="doci2DM::Tools::scan_all" alt="" coords="925,180,1096,207"/>
+<area shape="rect" id="node13" href="$classdoci2DM_1_1TPM.html#a46f82da55e37e05aba7f3eecad3bfe56" title="doci2DM::TPM::solve" alt="" coords="431,159,581,186"/>
+</map>
