@@ -8,6 +8,7 @@ var searchData=
   ['readfromfile',['ReadFromFile',['../classhelpers_1_1matrix.html#a2a0865f811ae6818fcf84b601722a47b',1,'helpers::matrix::ReadFromFile()'],['../classdoci2DM_1_1PHM.html#a18a76e4e22d7185d0bb1202b5234ce38',1,'doci2DM::PHM::ReadFromFile()'],['../classdoci2DM_1_1SUP.html#a5462e0ecfcd315756785853da10f1355',1,'doci2DM::SUP::ReadFromFile()'],['../classdoci2DM_1_1TPM.html#a140b06da55b732df9c1551d16ca8d917',1,'doci2DM::TPM::ReadFromFile(std::string filename)'],['../classdoci2DM_1_1TPM.html#ac625a9fe2352d1193d2705296fb107f7',1,'doci2DM::TPM::ReadFromFile(hid_t &amp;group_id)']]],
   ['readfromfilefull',['ReadFromFileFull',['../classdoci2DM_1_1TPM.html#abdb9222d7719268cf0909ddc999a5ac4',1,'doci2DM::TPM']]],
   ['readme_2emd',['README.md',['../README_8md.html',1,'']]],
+  ['readme_2emd',['README.md',['../extern_2README_8md.html',1,'']]],
   ['reductionfac',['reductionfac',['../classdoci2DM_1_1PotentialReduction.html#abd1a37c19821366686a09a2c3d6581a7',1,'doci2DM::PotentialReduction']]],
   ['reset',['reset',['../classCheMPS2_1_1FourIndex.html#a9c5b227603a97ad60d5515eb417e58c8',1,'CheMPS2::FourIndex::reset()'],['../classCheMPS2_1_1Hamiltonian.html#a7dafaa93c186b23fe823daa736fe93c4',1,'CheMPS2::Hamiltonian::reset()'],['../classCheMPS2_1_1TwoIndex.html#a3633288479cdf11a2d269f18fac60878',1,'CheMPS2::TwoIndex::reset()']]],
   ['reset_5favg_5fiters',['Reset_avg_iters',['../classdoci2DM_1_1BoundaryPoint.html#afad39dd0ed86455219188127b9507a4b',1,'doci2DM::BoundaryPoint']]],
