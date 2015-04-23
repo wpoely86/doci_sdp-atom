@@ -5,6 +5,8 @@
 
 #include "BlockStructure.h"
 
+namespace simanneal { class OptIndex; }
+
 namespace doci2DM
 {
 
@@ -55,6 +57,8 @@ class SPM: public BlockVector
       void bar(double, const PHM &);
 
       void PrintSorted() const;
+
+      std::vector<double> Particlesperirrep(const simanneal::OptIndex &index, bool print=true) const;
 
    private:
 

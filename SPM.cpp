@@ -2,6 +2,9 @@
 #include "include.h"
 #include "lapack.h"
 
+#include "OptIndex.h"
+#include "Irreps.h"
+
 using namespace doci2DM;
 
 /**
@@ -141,6 +144,9 @@ void SPM::bar(double scal, const PHM &phm)
    }
 }
 
+/**
+ * Print the occupation numbers sorted
+ */
 void SPM::PrintSorted() const
 {
    std::vector<std::pair<int, double>> spm_elems;
@@ -157,6 +163,31 @@ void SPM::PrintSorted() const
 
    for(auto& elem: spm_elems)
       std::cout << elem.first << "\t|\t" << elem.first << "  " << elem.first << "\t\t" << elem.second << std::endl;
+}
+
+/**
+ * Print the occupation numbers sorted and summed per irrep
+ * @param index the OptIndex for the current Hamiltonian
+ * @param print print the output?
+ */
+std::vector<double> SPM::Particlesperirrep(const simanneal::OptIndex &index, bool print) const
+{
+   CheMPS2::Irreps symgroup(index.getNgroup());
+   const auto orbtoirrep = index.get_irrep_each_orbital();
+
+   std::vector<double> results(symgroup.getNumberOfIrreps(), 0);
+
+   for(int a=0;a<L;a++)
+      results[orbtoirrep[a]] += 2*(*this)(0,a);
+
+   if(print)
+   {
+      std::cout << "Group: " << symgroup.getGroupName() << std::endl;
+      for(int i=0;i<symgroup.getNumberOfIrreps();i++)
+         std::cout << symgroup.getIrrepName(i) << ":\t" << results[i] << std::endl;
+   }
+
+   return results;
 }
 
 /*  vim: set ts=3 sw=3 expandtab :*/
