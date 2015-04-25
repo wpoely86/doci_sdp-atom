@@ -1,5 +1,0 @@
-<map id="doci2DM::BoundaryPoint::BuildHam" name="doci2DM::BoundaryPoint::BuildHam">
-<area shape="rect" id="node2" href="$classCheMPS2_1_1Hamiltonian.html#ac0b8314dc6133642997e648d1169d10f" title="Get a Tmat element. " alt="" coords="220,5,379,47"/>
-<area shape="rect" id="node3" href="$classCheMPS2_1_1Hamiltonian.html#af2d3836be75d50640cbed9a9234af126" title="Get a Vmat element. " alt="" coords="220,71,379,112"/>
-<area shape="rect" id="node4" href="$classCheMPS2_1_1Irreps.html#a1d86c7a8b3c3a7b9215c0e298f0ae047" title="Get the direct product of the irreps with numbers Irrep1 and Irrep2: a bitwise XOR for Psi4&#39;s convent..." alt="" coords="427,78,617,105"/>
-</map>

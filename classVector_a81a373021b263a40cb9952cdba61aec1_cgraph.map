@@ -1,7 +1,0 @@
-<map id="Vector::Vector" name="Vector::Vector">
-<area shape="rect" id="node2" href="$classMatrix.html#ab7f25b1a3767ab0682bc509c9e1f0da6" title="Matrix::gn" alt="" coords="184,5,261,32"/>
-<area shape="rect" id="node3" href="$classVector.html#ae4037969b2868ce13be96ea8af0f1d93" title="Vector::diagonalize" alt="" coords="158,56,287,83"/>
-<area shape="rect" id="node4" href="$classMatrix.html#a7a9b072f6302f0181107c181dc6cc9bb" title="Matrix::diagonalize" alt="" coords="337,56,463,83"/>
-<area shape="rect" id="node5" href="$lapack_8h.html#a8868c929c2851d32b2ffa7bc7c3940cf" title="dsyev_" alt="" coords="536,31,597,57"/>
-<area shape="rect" id="node6" href="$classVector.html#af7dbc33c66d3289f936fe6229a5cd6dc" title="Vector::gVector" alt="" coords="512,81,621,108"/>
-</map>

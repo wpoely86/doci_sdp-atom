@@ -20,7 +20,7 @@ You can extract them using a plugin found in the extern/mointegrals.cpp file.
 Documentation
 -------------
 Everything is documented with doxygen. Run `make doc` to build the HTML docs. 
-Or read the docs [online](http://wpoely86.github.io/v2DM-DOCI/). If something
+Or read the docs [online](http://wpoely86.github.io/doci_sdp-atom/). If something
 is unclear, do not hesitate to contact me.
 
 License

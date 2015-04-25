@@ -1,7 +1,0 @@
-<map id="TPM::Q" name="TPM::Q">
-<area shape="rect" id="node2" href="$classContainer.html#a4f8794a81a4f999b8f49352a5cba521c" title="Container::trace" alt="" coords="133,5,245,32"/>
-<area shape="rect" id="node3" href="$classSPM.html#a908c6590952c67a15e26e3a07c00c433" title="SPM::bar2" alt="" coords="148,56,231,83"/>
-<area shape="rect" id="node5" href="$classContainer.html#a85b2345f3e6651a8b9058197c71d3ddc" title="Container::getVector" alt="" coords="120,107,259,133"/>
-<area shape="rect" id="node6" href="$classVector.html#a8bc1bcd03698eb186189ce6f5a97b919" title="Vector::gn" alt="" coords="150,157,229,184"/>
-<area shape="rect" id="node4" href="$classTPM.html#a48449a7b4eead207bc0d4dfd0b20ae1d" title="TPM::getDiag" alt="" coords="307,56,407,83"/>
-</map>

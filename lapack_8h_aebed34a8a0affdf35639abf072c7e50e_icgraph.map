@@ -1,8 +1,0 @@
-<map id="daxpy_" name="daxpy_">
-<area shape="rect" id="node2" href="$classMatrix.html#a1209b0cbe09d86aeccba8e2b316358ae" title="Matrix::operator+=" alt="" coords="118,5,245,32"/>
-<area shape="rect" id="node3" href="$classMatrix.html#a16c6e34c9473b8a857a6e41e3df0251b" title="Matrix::operator&#45;=" alt="" coords="120,56,243,83"/>
-<area shape="rect" id="node4" href="$classMatrix.html#aa4a0f68fae46f3db09487b339f79ef2c" title="Matrix::daxpy" alt="" coords="133,107,229,133"/>
-<area shape="rect" id="node5" href="$classVector.html#acff564ce8d925a42498593318244e705" title="Vector::daxpy" alt="" coords="132,157,231,184"/>
-<area shape="rect" id="node6" href="$classVector.html#a669208fe9ad795111df6a54683563c6d" title="Vector::operator+=" alt="" coords="293,132,421,159"/>
-<area shape="rect" id="node7" href="$classVector.html#abc58d82a7f0ec941d4f4d66012cf5e83" title="Vector::operator&#45;=" alt="" coords="295,183,419,209"/>
-</map>

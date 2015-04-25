@@ -1,8 +1,0 @@
-<map id="BlockStructure::gnr" name="BlockStructure::gnr">
-<area shape="rect" id="node2" href="$classEIG.html#accc0dc9d03885010c765623eb1404b04" title="EIG::EIG" alt="" coords="193,5,265,32"/>
-<area shape="rect" id="node3" href="$classEIG.html#a91c701d9a5939461ce356259608a5c7c" title="EIG::min" alt="" coords="194,56,265,83"/>
-<area shape="rect" id="node6" href="$classEIG.html#ae1b67936b072ff7f4dec4df349a1e4c5" title="EIG::max" alt="" coords="192,107,267,133"/>
-<area shape="rect" id="node7" href="$classEIG.html#acd61ee1c4366dd4f95b3221f30f01819" title="EIG::lsfunc" alt="" coords="187,157,271,184"/>
-<area shape="rect" id="node4" href="$classTPM.html#ad08b52d58277971c1af4d3297c9026cb" title="TPM::line_search" alt="" coords="321,107,442,133"/>
-<area shape="rect" id="node5" href="$doci__sdp_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627" title="main" alt="" coords="491,107,541,133"/>
-</map>

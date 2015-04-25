@@ -1,7 +1,0 @@
-<map id="simanneal::OrbitalTransform::fillConstAndTmat" name="simanneal::OrbitalTransform::fillConstAndTmat">
-<area shape="rect" id="node2" href="$classCheMPS2_1_1Hamiltonian.html#af6664242601063dd762c6a430054e4c5" title="Set the constant energy. " alt="" coords="254,5,413,47"/>
-<area shape="rect" id="node3" href="$classsimanneal_1_1OptIndex.html#a6440e438af5ee7c462fd6f15f16e7d46" title="simanneal::OptIndex\l::getNORB" alt="" coords="475,93,617,135"/>
-<area shape="rect" id="node4" href="$classsimanneal_1_1OptIndex.html#aeeaf42d99733edbce4c50c4a62cee902" title="simanneal::OptIndex\l::getNstart" alt="" coords="475,188,617,229"/>
-<area shape="rect" id="node5" href="$classCheMPS2_1_1Hamiltonian.html#a7a56bcf4365125ec144c21d5a4684c32" title="Set a Tmat element. " alt="" coords="254,188,413,229"/>
-<area shape="rect" id="node6" href="$classsimanneal_1_1OrbitalTransform.html#a2683f7e4e5a04f14e63f739e968135bc" title="simanneal::OrbitalTransform\l::TmatRotated" alt="" coords="240,123,427,164"/>
-</map>

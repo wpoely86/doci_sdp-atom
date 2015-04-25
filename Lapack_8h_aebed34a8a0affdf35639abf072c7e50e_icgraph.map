@@ -1,8 +1,0 @@
-<map id="daxpy_" name="daxpy_">
-<area shape="rect" id="node2" href="$classdoci2DM_1_1Matrix.html#a1209b0cbe09d86aeccba8e2b316358ae" title="doci2DM::Matrix::operator+=" alt="" coords="117,5,307,32"/>
-<area shape="rect" id="node3" href="$classdoci2DM_1_1Matrix.html#a16c6e34c9473b8a857a6e41e3df0251b" title="doci2DM::Matrix::operator&#45;=" alt="" coords="119,56,305,83"/>
-<area shape="rect" id="node4" href="$classdoci2DM_1_1Matrix.html#aa4a0f68fae46f3db09487b339f79ef2c" title="doci2DM::Matrix::daxpy" alt="" coords="131,107,293,133"/>
-<area shape="rect" id="node5" href="$classdoci2DM_1_1Vector.html#acff564ce8d925a42498593318244e705" title="doci2DM::Vector::daxpy" alt="" coords="131,157,293,184"/>
-<area shape="rect" id="node6" href="$classdoci2DM_1_1Vector.html#a669208fe9ad795111df6a54683563c6d" title="doci2DM::Vector::operator+=" alt="" coords="355,132,545,159"/>
-<area shape="rect" id="node7" href="$classdoci2DM_1_1Vector.html#abc58d82a7f0ec941d4f4d66012cf5e83" title="doci2DM::Vector::operator&#45;=" alt="" coords="357,183,543,209"/>
-</map>

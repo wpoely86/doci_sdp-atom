@@ -1,9 +1,0 @@
-<map id="TPM::Proj_Tr" name="TPM::Proj_Tr">
-<area shape="rect" id="node2" href="$classContainer.html#a4f8794a81a4f999b8f49352a5cba521c" title="Container::trace" alt="" coords="171,5,283,32"/>
-<area shape="rect" id="node3" href="$classContainer.html#abcb30baa27f31c31c81dd428ca8a3abf" title="Container::getMatrix" alt="" coords="159,56,295,83"/>
-<area shape="rect" id="node4" href="$classMatrix.html#a4bf7d2958adfebf23f5c1c8d782c4e02" title="Matrix::trace" alt="" coords="181,107,273,133"/>
-<area shape="rect" id="node5" href="$classContainer.html#a85b2345f3e6651a8b9058197c71d3ddc" title="Container::getVector" alt="" coords="157,157,296,184"/>
-<area shape="rect" id="node6" href="$classVector.html#a317fbd255f8e4d104c86fcb1c8bf87cd" title="Vector::trace" alt="" coords="179,208,274,235"/>
-<area shape="rect" id="node8" href="$classContainer.html#a71bf66486e97f53890deacd95c9919d5" title="Container::gdimVector" alt="" coords="153,259,301,285"/>
-<area shape="rect" id="node7" href="$classVector.html#abafc7b87a0a59d23d7bceca07dbb061d" title="Vector::sum" alt="" coords="350,208,439,235"/>
-</map>

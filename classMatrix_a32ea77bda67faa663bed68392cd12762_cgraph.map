@@ -1,6 +1,0 @@
-<map id="Matrix::sep_pm" name="Matrix::sep_pm">
-<area shape="rect" id="node2" href="$lapack_8h.html#ad0cfc41b12c93c0f2aad995d39d5fe42" title="dsyevd_" alt="" coords="165,5,233,32"/>
-<area shape="rect" id="node3" href="$lapack_8h.html#a8868c929c2851d32b2ffa7bc7c3940cf" title="dsyev_" alt="" coords="168,56,229,83"/>
-<area shape="rect" id="node4" href="$lapack_8h.html#a65ecd2da5f966a74f8514246661d8594" title="dscal_" alt="" coords="169,107,228,133"/>
-<area shape="rect" id="node5" href="$lapack_8h.html#af54db18f2da5bece5aefe9896c2b8cb7" title="dgemm_" alt="" coords="163,157,235,184"/>
-</map>

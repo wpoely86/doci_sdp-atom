@@ -1,6 +1,0 @@
-<map id="doci2DM::Matrix::sep_pm" name="doci2DM::Matrix::sep_pm">
-<area shape="rect" id="node2" href="$lapack_8h.html#ad0cfc41b12c93c0f2aad995d39d5fe42" title="dsyevd_" alt="" coords="226,5,297,32"/>
-<area shape="rect" id="node3" href="$Lapack_8h.html#a8868c929c2851d32b2ffa7bc7c3940cf" title="dsyev_" alt="" coords="229,56,293,83"/>
-<area shape="rect" id="node4" href="$Lapack_8h.html#a9d4e5f6c81fb4bb87223f92b5347daf1" title="dscal_" alt="" coords="231,107,291,133"/>
-<area shape="rect" id="node5" href="$Lapack_8h.html#ab191a5588a637acb4412b1169080d839" title="dgemm_" alt="" coords="225,157,297,184"/>
-</map>

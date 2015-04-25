@@ -1,7 +1,8 @@
 var NAVTREE =
 [
   [ "v2DM-DOCI", "index.html", [
-    [ "Todo List", "todo.html", null ],
+    [ "README", "dd/df3/md_extern_README.html", null ],
+    [ "Todo List", "dd/da0/todo.html", null ],
     [ "Namespaces", null, [
       [ "Namespace List", "namespaces.html", "namespaces" ],
       [ "Namespace Members", "namespacemembers.html", [
@@ -35,12 +36,12 @@ var NAVTREE =
 
 var NAVTREEINDEX =
 [
-"BlockStructure_8cpp.html",
-"classCheMPS2_1_1Irreps.html#a53b109dd3c06a7194f95610eac525662",
-"classdoci2DM_1_1Lineq.html#a3853e378a1dd9cb2fca9700ff4da794f",
-"classdoci2DM_1_1SUP.html#a6615e33cc4ba9d076fc235a6f38b7059",
-"classhelpers_1_1matrix.html#ac91b7353f9510a4cf01e6bded8d5dd0e",
-"functions_w.html"
+"annotated.html",
+"d4/daf/doci__bp_8cpp_source.html",
+"d7/d02/classdoci2DM_1_1Container.html#a71bf66486e97f53890deacd95c9919d5",
+"d9/dd5/lapack_8h.html#aa1afcf18b9c266c77f6867d609562174",
+"dc/d57/classdoci2DM_1_1UnitaryMatrix.html#a811c3296241e27d2d96bec3935ce3103",
+"df/da6/classdoci2DM_1_1PotentialReduction.html#aea9a0d507fa4f400bc053a25013025c8"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

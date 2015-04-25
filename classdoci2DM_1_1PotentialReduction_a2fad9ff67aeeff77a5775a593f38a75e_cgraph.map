@@ -1,9 +1,0 @@
-<map id="doci2DM::PotentialReduction::PotentialReduction" name="doci2DM::PotentialReduction::PotentialReduction">
-<area shape="rect" id="node2" href="$classCheMPS2_1_1Hamiltonian.html#a07fda63e4f11d295f79eba8b08070776" title="CheMPS2::Hamiltonian\l::getNe" alt="" coords="262,5,421,47"/>
-<area shape="rect" id="node3" href="$classCheMPS2_1_1Hamiltonian.html#a101963cfa8f06abe798a7ae79faab618" title="Get the number of orbitals. " alt="" coords="262,71,421,112"/>
-<area shape="rect" id="node4" href="$classCheMPS2_1_1Hamiltonian.html#a031fa6987b304e3a7f6114b9f2e1f2ab" title="Get the constant energy. " alt="" coords="262,136,421,177"/>
-<area shape="rect" id="node5" href="$classdoci2DM_1_1PotentialReduction.html#a25df1d729bf4d78a33b3803b5c69f1b1" title="doci2DM::PotentialReduction\l::BuildHam" alt="" coords="245,201,437,243"/>
-<area shape="rect" id="node6" href="$classCheMPS2_1_1Hamiltonian.html#ac0b8314dc6133642997e648d1169d10f" title="Get a Tmat element. " alt="" coords="485,168,644,209"/>
-<area shape="rect" id="node7" href="$classCheMPS2_1_1Hamiltonian.html#af2d3836be75d50640cbed9a9234af126" title="Get a Vmat element. " alt="" coords="485,233,644,275"/>
-<area shape="rect" id="node8" href="$classCheMPS2_1_1Irreps.html#a1d86c7a8b3c3a7b9215c0e298f0ae047" title="Get the direct product of the irreps with numbers Irrep1 and Irrep2: a bitwise XOR for Psi4&#39;s convent..." alt="" coords="692,241,883,267"/>
-</map>

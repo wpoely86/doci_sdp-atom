@@ -1,9 +1,0 @@
-<map id="SUP::getQ" name="SUP::getQ">
-<area shape="rect" id="node2" href="$classEIG.html#a1b28b1940b9808b0419f32bf1b36b0c6" title="EIG::EIG" alt="" coords="148,5,220,32"/>
-<area shape="rect" id="node3" href="$classTPM.html#ab8a970b9796d6044ba9904b05fda3011" title="TPM::collaps" alt="" coords="136,56,232,83"/>
-<area shape="rect" id="node7" href="$classTPM.html#aa72120ccd364c042e8813188c436787d" title="TPM::H" alt="" coords="151,107,217,133"/>
-<area shape="rect" id="node4" href="$doci__bp_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627" title="main" alt="" coords="316,5,367,32"/>
-<area shape="rect" id="node5" href="$classTPM.html#a2b862694b4187ff7bf04f84eecf11ef2" title="TPM::constr_grad" alt="" coords="280,56,403,83"/>
-<area shape="rect" id="node6" href="$doci__sdp_8cpp.html#a3c04138a5bfe5d72780bb7e82a18e627" title="main" alt="" coords="451,81,501,108"/>
-<area shape="rect" id="node8" href="$classTPM.html#a46f82da55e37e05aba7f3eecad3bfe56" title="TPM::solve" alt="" coords="299,107,384,133"/>
-</map>

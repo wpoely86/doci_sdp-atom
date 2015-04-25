@@ -1,0 +1,27 @@
+var classhelpers_1_1matrix =
+[
+    [ "matrix", "df/d63/classhelpers_1_1matrix.html#a4daf70b1506ea976352f20e4322a9c17", null ],
+    [ "matrix", "df/d63/classhelpers_1_1matrix.html#aa099516025e491e44136abfe42a6039b", null ],
+    [ "matrix", "df/d63/classhelpers_1_1matrix.html#a8035d514c870cbd74bfb6da4aa949641", null ],
+    [ "matrix", "df/d63/classhelpers_1_1matrix.html#aa06a7675e1b50fb382eec0c1e393ca09", null ],
+    [ "~matrix", "df/d63/classhelpers_1_1matrix.html#a476ebabfcaa7d4c8e8400dc5e6766dc3", null ],
+    [ "getm", "df/d63/classhelpers_1_1matrix.html#a522e396f412031aa3f3296402d250234", null ],
+    [ "getn", "df/d63/classhelpers_1_1matrix.html#a0077fbef6580f9347e71df3b67ddcd24", null ],
+    [ "getpointer", "df/d63/classhelpers_1_1matrix.html#ab674e62e984f74cc1cfb3d76cd22bcd0", null ],
+    [ "operator()", "df/d63/classhelpers_1_1matrix.html#a4662c20da4bc476a0ef52e5e4415888a", null ],
+    [ "operator()", "df/d63/classhelpers_1_1matrix.html#a2131d2dd9fb6e4bf1521a193817c8b66", null ],
+    [ "operator=", "df/d63/classhelpers_1_1matrix.html#a4394d936a4eeb9c316818b9b4906f04b", null ],
+    [ "operator=", "df/d63/classhelpers_1_1matrix.html#a2f5ae38d90dba4a6c1fe4dbe822f386f", null ],
+    [ "operator[]", "df/d63/classhelpers_1_1matrix.html#ac4b9f491d11731296aac5f1d113c8699", null ],
+    [ "operator[]", "df/d63/classhelpers_1_1matrix.html#adec12549bd73bdd65103b6edd7d4c46a", null ],
+    [ "Print", "df/d63/classhelpers_1_1matrix.html#a22ad158a465ea61b641c0a4d10ef654d", null ],
+    [ "prod", "df/d63/classhelpers_1_1matrix.html#acf713577239a65ef4fabb1fc3827d207", null ],
+    [ "ReadFromFile", "df/d63/classhelpers_1_1matrix.html#a2a0865f811ae6818fcf84b601722a47b", null ],
+    [ "SaveToFile", "df/d63/classhelpers_1_1matrix.html#ad248a9c11329a024b7f05facdc9cc24d", null ],
+    [ "svd", "df/d63/classhelpers_1_1matrix.html#a072e7ab17ae731cb7f195c7845183e4e", null ],
+    [ "sym_eig", "df/d63/classhelpers_1_1matrix.html#a3ab75edf4043ad1fa8b53713c89c96e8", null ],
+    [ "trace", "df/d63/classhelpers_1_1matrix.html#ac91b7353f9510a4cf01e6bded8d5dd0e", null ],
+    [ "m", "df/d63/classhelpers_1_1matrix.html#aa6a595adc131bf8c82229826e1ab40f1", null ],
+    [ "mat", "df/d63/classhelpers_1_1matrix.html#aae9d1a8d5e7a50df88d927b36cb1ebcf", null ],
+    [ "n", "df/d63/classhelpers_1_1matrix.html#a293e898b2d3bb79cf01547a1ee5dd9bf", null ]
+];

@@ -1,9 +1,0 @@
-<map id="doci2DM::BoundaryPoint::energyperirrep" name="doci2DM::BoundaryPoint::energyperirrep">
-<area shape="rect" id="node2" href="$classCheMPS2_1_1Hamiltonian.html#a8c18f51ded63810e316f1834853dce21" title="Get the group number. " alt="" coords="224,5,383,47"/>
-<area shape="rect" id="node3" href="$classdoci2DM_1_1BoundaryPoint.html#a9abbef48c0c4852cd4d100b11d2eb469" title="doci2DM::BoundaryPoint\l::BuildHam" alt="" coords="220,71,387,112"/>
-<area shape="rect" id="node7" href="$classdoci2DM_1_1BoundaryPoint.html#a14a99e6812e657095651f0930013f335" title="doci2DM::BoundaryPoint\l::getRDM" alt="" coords="220,136,387,177"/>
-<area shape="rect" id="node8" href="$classCheMPS2_1_1Hamiltonian.html#a031fa6987b304e3a7f6114b9f2e1f2ab" title="Get the constant energy. " alt="" coords="224,201,383,243"/>
-<area shape="rect" id="node4" href="$classCheMPS2_1_1Hamiltonian.html#ac0b8314dc6133642997e648d1169d10f" title="Get a Tmat element. " alt="" coords="435,39,593,80"/>
-<area shape="rect" id="node5" href="$classCheMPS2_1_1Hamiltonian.html#af2d3836be75d50640cbed9a9234af126" title="Get a Vmat element. " alt="" coords="435,104,593,145"/>
-<area shape="rect" id="node6" href="$classCheMPS2_1_1Irreps.html#a1d86c7a8b3c3a7b9215c0e298f0ae047" title="Get the direct product of the irreps with numbers Irrep1 and Irrep2: a bitwise XOR for Psi4&#39;s convent..." alt="" coords="641,111,832,138"/>
-</map>

@@ -1,8 +1,0 @@
-<map id="doci2DM::PotentialReduction::PotentialReduction" name="doci2DM::PotentialReduction::PotentialReduction">
-<area shape="rect" id="node2" href="$classdoci2DM_1_1TPM.html#aea9bcfba4091c9e3ae4b7ea35b376d83" title="doci2DM::TPM::gN" alt="" coords="274,5,409,32"/>
-<area shape="rect" id="node3" href="$classdoci2DM_1_1TPM.html#acaff5ca0118c3fd6dd44242b32899943" title="doci2DM::TPM::gL" alt="" coords="275,56,407,83"/>
-<area shape="rect" id="node4" href="$classdoci2DM_1_1PotentialReduction.html#a25df1d729bf4d78a33b3803b5c69f1b1" title="doci2DM::PotentialReduction\l::BuildHam" alt="" coords="245,107,437,149"/>
-<area shape="rect" id="node5" href="$classCheMPS2_1_1Hamiltonian.html#ac0b8314dc6133642997e648d1169d10f" title="Get a Tmat element. " alt="" coords="485,74,644,115"/>
-<area shape="rect" id="node6" href="$classCheMPS2_1_1Hamiltonian.html#af2d3836be75d50640cbed9a9234af126" title="Get a Vmat element. " alt="" coords="485,139,644,181"/>
-<area shape="rect" id="node7" href="$classCheMPS2_1_1Irreps.html#a1d86c7a8b3c3a7b9215c0e298f0ae047" title="Get the direct product of the irreps with numbers Irrep1 and Irrep2: a bitwise XOR for Psi4&#39;s convent..." alt="" coords="692,147,883,173"/>
-</map>

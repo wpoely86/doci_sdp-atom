@@ -1,8 +1,0 @@
-<map id="SPM::SPM" name="SPM::SPM">
-<area shape="rect" id="node2" href="$classTPM.html#acaff5ca0118c3fd6dd44242b32899943" title="TPM::gL" alt="" coords="183,5,254,32"/>
-<area shape="rect" id="node3" href="$classTPM.html#aea9bcfba4091c9e3ae4b7ea35b376d83" title="TPM::gN" alt="" coords="183,56,255,83"/>
-<area shape="rect" id="node4" href="$classBlockStructure.html#a42c18b258b9e6b6cfb00262c0d994db9" title="BlockStructure::setDim" alt="" coords="141,107,296,133"/>
-<area shape="rect" id="node5" href="$classSPM.html#a64c6999eb8c9f474937f6f03c3148ae7" title="SPM::bar3" alt="" coords="177,157,260,184"/>
-<area shape="rect" id="node6" href="$classContainer.html#abcb30baa27f31c31c81dd428ca8a3abf" title="Container::getMatrix" alt="" coords="344,132,480,159"/>
-<area shape="rect" id="node7" href="$classTPM.html#a48449a7b4eead207bc0d4dfd0b20ae1d" title="TPM::getDiag" alt="" coords="362,183,462,209"/>
-</map>

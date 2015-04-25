@@ -109,7 +109,18 @@ $(document).ready(function(){initNavTree('index.html','');});
 <div class="title">v2DM-DOCI Documentation</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>The files in this directory are 'external' because they were not originally written by me. They were used with permission from Sebastian Wouters and Mario Van Raemdonck. I have added my own changes to the files. </p>
+<div class="textblock"><p>This program implements a v2DM solver for the DOCI N-representability constraints. Both the boundary point method and the potential reduction method have been implemented. Two orbital optimizer are available:</p><ul>
+<li>A simulated annealing code (in the extern directory)</li>
+<li>Jacobi rotations based local minimalisation</li>
+</ul>
+<h2>Build </h2>
+<p>To build this, you need a C++11 compiler (gcc 4.8 or newer, clang 3.3 or newer), the HDF5 libraries and the blas and lapack libraries. The Makefile is quite simple, adjust the compilers and header/libraries as needed for your system.</p>
+<h2>Input </h2>
+<p>The program needs symmetry adapted electron integrals from <a href="https://github.com/psi4/psi4public">PSI4</a>. You can extract them using a plugin found in the extern/mointegrals.cpp file.</p>
+<h2>Documentation </h2>
+<p>Everything is documented with doxygen. Run <code>make doc</code> to build the HTML docs. Or read the docs <a href="http://wpoely86.github.io/doci_sdp-atom/">online</a>. If something is unclear, do not hesitate to contact me.</p>
+<h2>License </h2>
+<p>The code is available under the <a href="https://www.gnu.org/licenses/gpl-3.0.txt">GPLv3</a> license. </p>
 </div></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
