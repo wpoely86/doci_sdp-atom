@@ -1,0 +1,53 @@
+molecule He2
+{
+    He
+    He 1 R
+    units au
+    # The symmetry needs to be broken to find the correct dissociation energy
+    symmetry c1
+}
+
+set {
+# exact ERI
+    SCF_TYPE PK
+
+# strict convergence
+    E_CONVERGENCE 1e-12
+    D_CONVERGENCE 1e-12
+    ints_tolerance 1e-16
+
+    guess read
+
+    basis cc-pvdz
+}
+
+
+# Put them 10 Bohr apart
+He2.R = 10
+
+energy('scf')
+
+so_ints = "so-ints-he2-cc-pvdz-%06.2f.h5" % He2.R
+mo_ints = "mo-ints-he2-cc-pvdz-%06.2f.h5" % He2.R
+mo_tf = "unitary-mo-he2-cc-pvdz-%06.2f.h5" % He2.R
+
+plugin_load("./mointegrals.so")
+
+set mointegrals {
+    do_tei True
+    savehdf5 true
+    save_mo true
+    HDF5_FILENAME $mo_ints
+    U_MO_FILENAME $mo_tf
+}
+
+plugin("mointegrals.so")
+
+plugin_load("./sointegrals.so")
+
+set sointegrals {
+    SAVEHDF5 true
+    HDF5_FILENAME $so_ints
+}
+
+plugin("sointegrals.so")
