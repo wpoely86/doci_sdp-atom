@@ -111,14 +111,28 @@ $(document).ready(function(){initNavTree('index.html','');});
 <div class="contents">
 <div class="textblock"><p>This program implements a v2DM solver for the DOCI N-representability constraints. Both the boundary point method and the potential reduction method have been implemented. Two orbital optimizer are available:</p><ul>
 <li>A simulated annealing code (in the extern directory)</li>
-<li>Jacobi rotations based local minimalisation</li>
+<li>Jacobi rotations based local minimalisatie</li>
 </ul>
 <h2>Build </h2>
-<p>To build this, you need a C++11 compiler (gcc 4.8 or newer, clang 3.3 or newer), the HDF5 libraries and the blas and lapack libraries. The Makefile is quite simple, adjust the compilers and header/libraries as needed for your system.</p>
+<p>To build this, you need a C++11 compiler (GCC 4.8 or newer, Clang 3.3 or newer), the HDF5 libraries and the blas and lapack libraries. The Makefile is quite simple, adjust the compilers and header/libraries as needed for your system.</p>
 <h2>Input </h2>
-<p>The program needs symmetry adapted electron integrals from <a href="https://github.com/psi4/psi4public">PSI4</a>. You can extract them using a plugin found in the extern/mointegrals.cpp file.</p>
+<p>The program needs symmetry-adapted electron integrals from <a href="https://github.com/psi4/psi4public">PSI4</a>. You can extract them using a plugin found in the extern/mointegrals.cpp file.</p>
 <h2>Documentation </h2>
 <p>Everything is documented with doxygen. Run <code>make doc</code> to build the HTML docs. Or read the docs <a href="http://wpoely86.github.io/doci_sdp-atom/">online</a>. If something is unclear, do not hesitate to contact me.</p>
+<h2>Example </h2>
+<p>In the directory <code>example</code>, all the input files for the He dimer (interatomic distance is 10 Bohr) can be found:</p><ul>
+<li><code>He2-integrals.dat</code>: This is the input file for PSI4 to generate the one- and two-electron integrals</li>
+<li><code>mo-ints-he2-cc-pvdz-010.00.h5</code>: the Hartree-Fock molecular orbitals</li>
+<li><code>so-ints-he2-cc-pvdz-010.00.h5</code>: the integrals in the orthogonalized, symmetry-adapted basis</li>
+<li><code>unitary-mo-he2-cc-pvdz-010.00.h5</code>: the orthogonal transformation from the orthogonalized, symmetry-adapted basis to the Hartree-Fock molecular orbital.</li>
+</ul>
+<p>You can run the v2DM-DOCI optimisation with: <code>../doci_bp -i so-ints-he2-cc-pvdz-010.00.h5 -u unitary-mo-he2-cc-pvdz-010.00.h -l</code></p>
+<p>The will generate:</p><ul>
+<li><code>optimale-uni.h5</code>: the optimal basis transformation</li>
+<li><code>optimal-ham.h5</code>: the one- and two-electron integrals in the optimal basis</li>
+<li><code>optimal-rdm.h5</code>: the optimal 2DM</li>
+</ul>
+<p>In the file <code>output.txt</code>, the output of the optimisation is stored.</p>
 <h2>License </h2>
 <p>The code is available under the <a href="https://www.gnu.org/licenses/gpl-3.0.txt">GPLv3</a> license. </p>
 </div></div><!-- contents -->
