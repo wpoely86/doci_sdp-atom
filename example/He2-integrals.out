@@ -15,7 +15,7 @@
     A. E. DePrince, M. Saitow, U. Bozkaya, A. Yu. Sokolov
     -----------------------------------------------------------------------
 
-    Process ID:  14438
+    Process ID:   8961
     PSI4DATADIR: /home/ward/tmp/psi4release/build/external/share/psi
     Memory level set to 256.000 MB
 
@@ -124,7 +124,7 @@ plugin("sointegrals.so")
 Setting geometry variable R to 10.000000
 
 *** tstart() called on molmod57.ugent.be
-*** at Thu Apr 23 16:32:27 2015
+*** at Mon Apr 27 10:31:40 2015
 
     There are an even number of electrons - assuming singlet.
     Specify the multiplicity with the MULTP option in the
@@ -337,7 +337,7 @@ Properties computed using the SCF density matrix
 
   Saving occupied orbitals to File 180.
 
-*** tstop() called on molmod57.ugent.be at Thu Apr 23 16:32:27 2015
+*** tstop() called on molmod57.ugent.be at Mon Apr 27 10:31:40 2015
 Module time:
 	user time   =       0.26 seconds =       0.00 minutes
 	system time =       0.01 seconds =       0.00 minutes
