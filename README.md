@@ -1,3 +1,5 @@
+[![DOI](https://zenodo.org/badge/doi/10.5281/zenodo.17326.svg)](http://dx.doi.org/10.5281/zenodo.17326)
+
 v2DM-DOCI
 =========
 This program implements a v2DM solver for the DOCI N-representability constraints.
