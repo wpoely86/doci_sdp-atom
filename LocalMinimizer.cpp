@@ -529,7 +529,7 @@ int simanneal::LocalMinimizer::Minimize_noOpt(double stopcrit)
 
    auto end = std::chrono::high_resolution_clock::now();
 
-   std::cout << "Minimization with optimization took: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << std::endl;
+   std::cout << "Minimization without optimization took: " << std::fixed << std::chrono::duration_cast<std::chrono::duration<double,std::ratio<1>>>(end-start).count() << " s" << std::endl;
 
    std::stringstream h5_name;
    h5_name << getenv("SAVE_H5_PATH") << "/optimale-uni-no-opt.h5";
