@@ -22,7 +22,7 @@ INIT_PLUGIN
 // macro to help check return status of HDF5 functions
 #define HDF5_STATUS_CHECK(status) { \
     if(status < 0) \
-    fprintf(outfile, "%s:%d: Error with HDF5. status code=%d\n", __FILE__, __LINE__, status); \
+    outfile->Printf("%s:%d: Error with HDF5. status code=%d\n", __FILE__, __LINE__, status); \
 } 
 
 using namespace boost;
@@ -35,7 +35,7 @@ read_options(std::string name, Options &options)
     if (name == "SOINTEGRALS"|| options.read_globals()) {
         /*- The amount of information printed
             to the output file -*/
-        options.add_bool("PRINT_INTEGRALS", true);
+        options.add_int("PRINT", 0);
         /*- Whether to compute two-electron integrals -*/
         options.add_bool("DO_TEI", true);
         // save to a HDF5 file
@@ -50,11 +50,13 @@ class ERIPrinter
 {
 public:
 
-    ERIPrinter() { count = 0; }
+    ERIPrinter() { count = 0; print = false; }
 
     shared_ptr<CheMPS2::Hamiltonian> Ham;
 
     unsigned int count;
+
+    bool print;
 
     // Our functor...the nice thing about using a C++ functor is that the
     // code here is inlined by the compiler.
@@ -65,26 +67,66 @@ public:
                      int sirrep, int sso,
                      double value)
     {
-        fprintf(outfile, "%1d %1d %1d %1d %16.48f \n", 
-			pabs, qabs, rabs, sabs, value);
+        if(print)
+            outfile->Printf("%1d %1d %1d %1d %16.48f \n", 
+                    pabs, qabs, rabs, sabs, value);
+
         Ham->setVmat(pabs, rabs, qabs, sabs, value);
 
         count++;
     }
 };
 
+SharedMatrix ReadUnitary(std::string filename, const Dimension& dims)
+{
+    SharedMatrix result = Matrix::create(filename, dims, dims);
+    result->zero();
+
+    hid_t file_id = H5Fopen(filename.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    HDF5_STATUS_CHECK(file_id);
+    hid_t group_id = H5Gopen(file_id, "/Data", H5P_DEFAULT);
+    HDF5_STATUS_CHECK(group_id);
+    herr_t      status;
+
+    for (int irrep=0;irrep<dims.n();irrep++)
+        if(dims[irrep] > 0)
+        {
+            std::stringstream irrepname;
+            irrepname << "irrep_" << irrep;
+
+            hid_t dataset_id = H5Dopen(group_id, irrepname.str().c_str(), H5P_DEFAULT);
+            HDF5_STATUS_CHECK(dataset_id);
+            status = H5Dread(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, result->pointer(irrep)[0]);
+            HDF5_STATUS_CHECK(status);
+
+            status = H5Dclose(dataset_id);
+            HDF5_STATUS_CHECK(status);
+        }
+
+    status = H5Gclose(group_id);
+    HDF5_STATUS_CHECK(status);
+    status = H5Fclose(file_id);
+    HDF5_STATUS_CHECK(status);
+
+    // columns/rows are reversed from our point of view
+    result->transpose_this();
+
+    return result;
+}
+
 extern "C" PsiReturnType
 sointegrals(Options &options)
 {
-    bool print = options.get_bool("PRINT_INTEGRALS");
-    bool doTei = options.get_bool("DO_TEI");
-    bool savehdf5 = options.get_bool("SAVEHDF5");
+    const int print = options.get_int("PRINT");
+    const bool doTei = options.get_bool("DO_TEI");
+    const bool savehdf5 = options.get_bool("SAVEHDF5");
     std::string filename = options.get_str("HDF5_FILENAME");
+    outfile->Printf("Got filename: %s\n", filename.c_str());
     boost::algorithm::to_lower(filename);
 
     if(options.get_str("S_ORTHOGONALIZATION") != "SYMMETRIC")
     {
-        fprintf(outfile, "This will only work with symmetric orthogonalisation: AO == OSO\n");
+        outfile->Printf("This will only work with symmetric orthogonalisation: AO == OSO\n");
         return Failure;
     }
 
@@ -93,13 +135,15 @@ sointegrals(Options &options)
     // Form basis object:
     // Create a basis set parser object.
     shared_ptr<BasisSetParser> parser(new Gaussian94BasisSetParser());
+
     // Construct a new basis set.
-    shared_ptr<BasisSet> aoBasis = BasisSet::construct(parser, molecule, "BASIS");
+    shared_ptr<BasisSet> aoBasis= BasisSet::pyconstruct_orbital(molecule, "BASIS", options.get_str("BASIS"));
+//    shared_ptr<BasisSet> aoBasis = BasisSet::construct(parser, molecule, "BASIS");
 
     // The integral factory oversees the creation of integral objects
     shared_ptr<IntegralFactory> integral(new IntegralFactory
             (aoBasis, aoBasis, aoBasis, aoBasis));
-    
+
     // N.B. This should be called after the basis has been built, because
     // the geometry has not been
     // fully initialized until this time.
@@ -137,24 +181,24 @@ sointegrals(Options &options)
 
     nelectrons -= molecule->molecular_charge();
 
-    fprintf(outfile, "****  Molecular Integrals Start Here \n");
+    outfile->Printf("****  Molecular Integrals Start Here \n");
 
     std::string SymmLabel =  molecule->sym_label();
-    fprintf(outfile, "Symmetry Label = %s\n", SymmLabel.c_str());
-    fprintf(outfile, "Nuclear Repulsion Energy = %16.48f \n", NuclRepulsion);
-    fprintf(outfile, "Nelectrons = %1d \n", nelectrons);
-    fprintf(outfile, "Nirreps = %1d \n", nirreps);
-    fprintf(outfile, "Dimension of Irreps = ");
+    outfile->Printf("Symmetry Label = %s\n", SymmLabel.c_str());
+    outfile->Printf("Nuclear Repulsion Energy = %16.48f \n", NuclRepulsion);
+    outfile->Printf("Nelectrons = %1d \n", nelectrons);
+    outfile->Printf("Nirreps = %1d \n", nirreps);
+    outfile->Printf("Dimension of Irreps = ");
     for (int h=0; h<nirreps; ++h)
-        fprintf(outfile, "%2d ", dimension[h]);
-    fprintf(outfile, "\n");
+        outfile->Printf("%2d ", dimension[h]);
+    outfile->Printf("\n");
 
-    fprintf(outfile, "Number Of SO Orbitals = %2d \n", nmo);
-    fprintf(outfile, "Irreps Of SO Orbitals = ");
+    outfile->Printf("Number Of SO Orbitals = %2d \n", nmo);
+    outfile->Printf("Irreps Of SO Orbitals = ");
     for (int h=0; h<nirreps; ++h)
         for (int i=0; i<dimension[h]; ++i)
-            fprintf(outfile, "%2d ", h);
-    fprintf(outfile, "\n");
+            outfile->Printf("%2d ", h);
+    outfile->Printf("\n");
 
     std::vector<int> OrbIrreps;
     OrbIrreps.reserve(nmo);
@@ -178,6 +222,9 @@ sointegrals(Options &options)
     hMat->copy(tMat);
     hMat->add(vMat);
 
+    if(print)
+        sMat->print();
+
     // Construct Shalf
     SharedMatrix eigvec= factory->create_shared_matrix("L");
     SharedMatrix temp= factory->create_shared_matrix("Temp");
@@ -198,22 +245,33 @@ sointegrals(Options &options)
             eigval->set(h, i, scale);
         }
 
-    fprintf(outfile, "Lowest eigenvalue of overlap S = %14.10E\n", min_S);
+    outfile->Printf("Lowest eigenvalue of overlap S = %14.10E\n", min_S);
 
     if(min_S < options.get_double("S_TOLERANCE") )
-        fprintf(outfile, "WARNING: Min value of overlap below treshold!!!!\n");
+        outfile->Printf("WARNING: Min value of overlap below treshold!!!!\n");
 
 
     // Create a vector matrix from the converted eigenvalues
     temp2->set_diagonal(eigval);
 
+//    SharedMatrix ca = Process::environment.wavefunction()->Ca();
+
+//    temp->gemm(true, false, 1.0, ca, hMat, 0.0);
+//    hMat->gemm(false, false, 1.0, temp, ca, 0.0);
+
     temp->gemm(false, true, 1.0, temp2, eigvec, 0.0);
     sMat->gemm(false, false, 1.0, eigvec, temp, 0.0);
 
-    temp->gemm(false, true, 1.0, hMat, sMat, 0.0);
-    hMat->gemm(false, false, 1.0, sMat, temp, 0.0);
+    outfile->Printf("S -1/2:\n");
+    if(print)
+        sMat->print();
 
-    hMat->print();
+//    temp->gemm(false, true, 1.0, hMat, sMat, 0.0);
+//    hMat->gemm(false, false, 1.0, sMat, temp, 0.0);
+    hMat->transform(sMat);
+
+    if(print)
+        hMat->print();
 
     int SyGroup = 0;
     bool stopFindGN = false;
@@ -225,14 +283,20 @@ sointegrals(Options &options)
     } 
     while ((!stopFindGN) && (SyGroup<42));
 
-    fprintf(outfile, "If anything went wrong: Is %s equal to %s?\n", SymmLabel.c_str(), (CheMPS2::Irreps::getGroupName(SyGroup)).c_str());
+    outfile->Printf("If anything went wrong: Is %s equal to %s?\n", SymmLabel.c_str(), (CheMPS2::Irreps::getGroupName(SyGroup)).c_str());
+
+    if(print)
+    {
+        outfile->Printf("sotoao\n");
+        soBasis->petite_list()->sotoao()->print();
+    }
 
     shared_ptr<CheMPS2::Hamiltonian> Ham(new CheMPS2::Hamiltonian(nmo, SyGroup, OrbIrreps.data()));
     Ham->setEconst(NuclRepulsion);
     Ham->setNe(nelectrons);
     Ham->reset();
 
-    fprintf(outfile, "*** OEI\n");
+    outfile->Printf("*** OEI\n");
 
     int count = 0;
     for (int h=0; h<nirreps; ++h)
@@ -240,7 +304,9 @@ sointegrals(Options &options)
         for (int i=0; i<dimension[h]; ++i)
             for (int j=i; j<dimension[h]; ++j)
             {
-                fprintf(outfile, "%1d %1d %16.48f \n", count+i, count+j, hMat->get(h,i,j));
+                if(print)
+                    outfile->Printf("%1d %1d %16.48f \n", count+i, count+j, hMat->get(h,i,j));
+
                 Ham->setTmat(count+i, count+j, hMat->get(h,i,j));
             }
 
@@ -263,8 +329,9 @@ sointegrals(Options &options)
         // 4. We to create an instance of our ERIPrinter
         ERIPrinter printer;
         printer.Ham = Ham;
+        printer.print = print;
 
-        fprintf(outfile, "*** TEI\n");
+        outfile->Printf("*** TEI\n");
         
         // 5. Create an SOShellCombintationsIterator to step through the
         // necessary combinations
@@ -276,11 +343,11 @@ sointegrals(Options &options)
             eri->compute_shell(shellIter, printer);
         }
 
-        fprintf(outfile, "number of TEI: %d\n", printer.count);
+        outfile->Printf("number of TEI: %d\n", printer.count);
     }
 
 
-    shared_ptr<CheMPS2::Hamiltonian> Ham2(new CheMPS2::Hamiltonian(*Ham));
+    std::unique_ptr<CheMPS2::Hamiltonian> Ham2(new CheMPS2::Hamiltonian(*Ham));
 
     simanneal::OptIndex index(*Ham2);
     CheMPS2::Irreps SymmInfo;

@@ -30,7 +30,7 @@ using namespace std;
 // macro to help check return status of HDF5 functions
 #define HDF5_STATUS_CHECK(status) { \
     if(status < 0) \
-    fprintf(outfile, "%s:%d: Error with HDF5. status code=%d\n", __FILE__, __LINE__, status); \
+    outfile->Printf("%s:%d: Error with HDF5. status code=%d\n", __FILE__, __LINE__, status); \
 } 
 
 INIT_PLUGIN
@@ -44,7 +44,7 @@ read_options(std::string name, Options &options)
 
         /*- The amount of information printed
             to the output file -*/
-        options.add_bool("PRINT_INTEGRALS", true);
+        options.add_bool("PRINT_INTEGRALS", false);
         /*- Whether to compute two-electron integrals -*/
         options.add_bool("DO_TEI", true);
         // save the unitary transformation from SO to MO integrals
@@ -62,14 +62,10 @@ read_options(std::string name, Options &options)
 extern "C" PsiReturnType
 mointegrals(Options &options)
 {
-    /*
-     * This plugin shows a simple way of obtaining MO basis integrals, directly from a DPD buffer.  It is also
-     * possible to generate integrals with labels (IWL) formatted files, but that's not shown here.
-     */
-    bool print = options.get_bool("PRINT_INTEGRALS");
-    bool doTei = options.get_bool("DO_TEI");
-    bool save_mo = options.get_bool("SAVE_MO");
-    bool savehdf5 = options.get_bool("SAVEHDF5");
+    const bool print = options.get_bool("PRINT_INTEGRALS");
+    const bool doTei = options.get_bool("DO_TEI");
+    const bool save_mo = options.get_bool("SAVE_MO");
+    const bool savehdf5 = options.get_bool("SAVEHDF5");
     std::string filename = options.get_str("HDF5_FILENAME");
     std::string mofilename = options.get_str("U_MO_FILENAME");
     boost::algorithm::to_lower(filename);
@@ -82,11 +78,7 @@ mointegrals(Options &options)
     boost::shared_ptr<Wavefunction> wfn = Process::environment.wavefunction();
     if(!wfn) throw PSIEXCEPTION("SCF has not been run yet!");
     
-    /*MoldenWriter mollie(wfn);
-    mollie.write("infoForMolden.txt");*/ //Please call the MoldenWriter from the psi4 input file from now on.
-    
-    // Quickly check that there are no open shell orbitals here...
-    int nirrep  = wfn->nirrep();
+    const int nirrep  = wfn->nirrep();
     
     // For now, we'll just transform for closed shells and generate all integrals.  For more elaborate use of the
     // LibTrans object, check out the plugin_mp2 example.
@@ -115,36 +107,36 @@ mointegrals(Options &options)
     int nTriMo = nmo * (nmo + 1) / 2;
     double *temp = new double[nTriMo];
     Matrix moOei("MO OEI", nIrreps, orbspi, orbspi);
-    IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_OEI, temp, nTriMo, 0, 0, outfile);
+    IWL::read_one(psio.get(), PSIF_OEI, PSIF_MO_OEI, temp, nTriMo, 0, 0, "outfile");
     moOei.set(temp);
 
-    fprintf(outfile, "****  Molecular Integrals For CheMPS Start Here \n");
+    outfile->Printf("****  Molecular Integrals For CheMPS Start Here \n");
     
     std::string SymmLabel =  Process::environment.molecule()->sym_label();
-    fprintf(outfile, "Symmetry Label = ");
-    fprintf(outfile, SymmLabel.c_str());
-    fprintf(outfile, " \n");
-    fprintf(outfile, "Nirreps = %1d \n", nirrep);
+    outfile->Printf("Symmetry Label = ");
+    outfile->Printf(SymmLabel.c_str());
+    outfile->Printf(" \n");
+    outfile->Printf("Nirreps = %1d \n", nirrep);
     double NuclRepulsion =  Process::environment.molecule()->nuclear_repulsion_energy();
-    fprintf(outfile, "Nuclear Repulsion Energy = %16.48f \n", NuclRepulsion);
-    fprintf(outfile, "Number Of Molecular Orbitals = %2d \n", nmo);
-    fprintf(outfile, "Irreps Of Molecular Orbitals = \n");
+    outfile->Printf("Nuclear Repulsion Energy = %16.48f \n", NuclRepulsion);
+    outfile->Printf("Number Of Molecular Orbitals = %2d \n", nmo);
+    outfile->Printf("Irreps Of Molecular Orbitals = \n");
     for (int h=0; h<nirrep; ++h){
        for (int cnt=0; cnt<moOei.rowspi(h); ++cnt){
-          fprintf(outfile, "%1d ",h);
+          outfile->Printf("%1d ",h);
        }
     }
-    fprintf(outfile, "\n");
-    fprintf(outfile, "DOCC = ");
+    outfile->Printf("\n");
+    outfile->Printf("DOCC = ");
     for (int h=0; h<nirrep; h++){
-       fprintf(outfile, "%2d ",docc[h]);
+       outfile->Printf("%2d ",docc[h]);
     }
-    fprintf(outfile, "\n");
-    fprintf(outfile, "SOCC = ");
+    outfile->Printf("\n");
+    outfile->Printf("SOCC = ");
     for (int h=0; h<nirrep; h++){
-       fprintf(outfile, "%2d ",socc[h]);
+       outfile->Printf("%2d ",socc[h]);
     }
-    fprintf(outfile, "\n");
+    outfile->Printf("\n");
 
 
     if(save_mo)
@@ -157,6 +149,39 @@ mointegrals(Options &options)
         S->print();
 
         boost::shared_ptr<MatrixFactory> factory = Process::environment.wavefunction()->matrix_factory();
+
+        SharedMatrix aotoso = Process::environment.wavefunction()->sobasisset()->petite_list()->aotoso();
+        SharedMatrix sotoao = Process::environment.wavefunction()->sobasisset()->petite_list()->sotoao();
+
+        boost::shared_ptr<IntegralFactory> so_integral = Process::environment.wavefunction()->integral();
+
+        shared_ptr<OneBodySOInt> sOBI(so_integral->so_overlap());
+        shared_ptr<OneBodySOInt> tOBI(so_integral->so_kinetic());
+        shared_ptr<OneBodySOInt> vOBI(so_integral->so_potential());
+        // Form the one-electron integral matrices from the matrix factory
+        SharedMatrix sMat(factory->create_matrix("Overlap"));
+        SharedMatrix tMat(factory->create_matrix("Kinetic"));
+        SharedMatrix vMat(factory->create_matrix("Potential"));
+        SharedMatrix hMat(factory->create_matrix("One Electron Ints"));
+        SharedMatrix hMat2(factory->create_matrix("One Electron Ints 2"));
+
+        sOBI->compute(sMat);
+        tOBI->compute(tMat);
+        vOBI->compute(vMat);
+
+        // Form h = T + V by first cloning T and then adding V
+        hMat->copy(tMat);
+        hMat->add(vMat);
+
+        if(print)
+        {
+            sMat->print();
+            hMat->print();
+
+
+            outfile->Printf("so2ao:\n");
+            sotoao->print();
+        }
 
 
         // Construct Shalf
@@ -180,10 +205,10 @@ mointegrals(Options &options)
                 eigval->set(h, i, scale);
             }
 
-        fprintf(outfile, "Lowest eigenvalue of overlap S = %14.10E\n", min_S);
+        outfile->Printf("Lowest eigenvalue of overlap S = %14.10E\n", min_S);
 
         if(min_S < options.get_double("S_TOLERANCE") )
-            fprintf(outfile, "WARNING: Min value of overlap below treshold!!!!\n");
+            outfile->Printf("WARNING: Min value of overlap below treshold!!!!\n");
 
 
         // Create a vector matrix from the converted eigenvalues
@@ -191,12 +216,43 @@ mointegrals(Options &options)
 
         temp->gemm(false, true, 1.0, temp2, eigvec, 0.0);
         S->gemm(false, false, 1.0, eigvec, temp, 0.0);
+        if(print)
+        {
+            outfile->Printf("S^1/2:\n");
+            S->print();
+        }
 
         // order of multi. is changed to have the output compatible to UnitaryMatrix class.
         // (columns/rows interchanged)
         temp->gemm(false, false, 1.0, S, ca, 0.0);
+//        temp->gemm(false, false, 1.0, ca, S, 0.0);
+//        temp->transpose_this();
 
-        fprintf(outfile, "temp:\n");
+//        S->invert();
+        hMat2->transform(hMat, ca);
+
+        if(print)
+        {
+            outfile->Printf("Mo test:\n");
+            hMat2->print();
+
+            outfile->Printf("Matrix to store:\n");
+            temp->print();
+        }
+
+        boost::shared_ptr<PetiteList> pl = Process::environment.wavefunction()->sobasisset()->petite_list();
+
+        // need dimensions
+        const Dimension aos = pl->AO_basisdim();
+        const Dimension sos = pl->SO_basisdim();
+        const Dimension nmo = ca->colspi();
+
+        SharedMatrix Ca_ao_mo(new Matrix("temp_ca AO x MO", aos, nmo));
+
+        // do the half transform
+        Ca_ao_mo->gemm(false, false, 1.0, aotoso, ca, 0.0);
+
+        Ca_ao_mo->print();
 
         hid_t file_id = H5Fcreate(mofilename.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
         hid_t group_id = H5Gcreate(file_id, "/Data", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
@@ -226,6 +282,43 @@ mointegrals(Options &options)
 
         H5Gclose(group_id);
         H5Fclose(file_id);
+
+        SharedMatrix Ca_ao_ao(new Matrix("ca AO x AO", aos, aos));
+
+        Ca_ao_ao->remove_symmetry(ca, sotoao);
+        Ca_ao_ao->print();
+
+        /*
+        std::string mofilename2 = "S-";
+        mofilename2 += mofilename;
+
+        file_id = H5Fcreate(mofilename2.c_str(), H5F_ACC_TRUNC, H5P_DEFAULT, H5P_DEFAULT);
+        group_id = H5Gcreate(file_id, "/Data", H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+
+        for (int irrep=0; irrep< nirrep; irrep++)
+        {
+            int norb = ca_dims[irrep];
+
+            if(norb > 0)
+            {
+                std::stringstream irrepname;
+                irrepname << "irrep_" << irrep;
+
+                double *p_data = Ssqrt->pointer(irrep)[0];
+
+                hsize_t dimarray      = norb * norb;
+                hid_t dataspace_id    = H5Screate_simple(1, &dimarray, NULL);
+                hid_t dataset_id      = H5Dcreate(group_id, irrepname.str().c_str(), H5T_IEEE_F64LE, dataspace_id, H5P_DEFAULT, H5P_DEFAULT, H5P_DEFAULT);
+                H5Dwrite(dataset_id, H5T_NATIVE_DOUBLE, H5S_ALL, H5S_ALL, H5P_DEFAULT, p_data);
+
+                H5Dclose(dataset_id);
+                H5Sclose(dataspace_id);
+            }
+        }
+
+        H5Gclose(group_id);
+        H5Fclose(file_id);
+        */
     }
 
     
@@ -238,11 +331,11 @@ mointegrals(Options &options)
         if (SymmLabel.compare(CheMPS2::Irreps::getGroupName(SyGroup))==0) stopFindGN = true;
         else SyGroup += 1;
     } while ((!stopFindGN) && (SyGroup<42));
-    fprintf(outfile, "If anything went wrong: Is ");
-    fprintf(outfile, SymmLabel.c_str());
-    fprintf(outfile, " equal to ");
-    fprintf(outfile, (CheMPS2::Irreps::getGroupName(SyGroup)).c_str());
-    fprintf(outfile, " ?\n");
+    outfile->Printf("If anything went wrong: Is ");
+    outfile->Printf(SymmLabel.c_str());
+    outfile->Printf(" equal to ");
+    outfile->Printf((CheMPS2::Irreps::getGroupName(SyGroup)).c_str());
+    outfile->Printf(" ?\n");
 
     int counterFillOrbitalIrreps = 0;
     for (int h=0; h<nirrep; ++h){
@@ -263,15 +356,17 @@ mointegrals(Options &options)
 
     double EnergyHF = NuclRepulsion;
     
-    fprintf(outfile, "****  MO OEI \n");
+    outfile->Printf("****  MO OEI \n");
 
     int nTot = 0;
     for(int h = 0; h < nirrep; ++h){
        for (int cnt = 0; cnt < moOei.rowspi(h); cnt++){
           for (int cnt2 = cnt; cnt2 < moOei.colspi(h); cnt2++){
-             fprintf(outfile, "%1d %1d %16.48f \n",
-                               nTot+cnt, nTot+cnt2, moOei[h][cnt][cnt2]);
-             Ham->setTmat(nTot+cnt, nTot+cnt2, moOei[h][cnt][cnt2]);
+              if(print)
+                  outfile->Printf("%1d %1d %16.48f \n",
+                          nTot+cnt, nTot+cnt2, moOei[h][cnt][cnt2]);
+
+              Ham->setTmat(nTot+cnt, nTot+cnt2, moOei[h][cnt][cnt2]);
 
           }
           if (cnt <docc[h])                            EnergyHF += 2*moOei[h][cnt][cnt];
@@ -280,7 +375,7 @@ mointegrals(Options &options)
        nTot += moOei.rowspi(h);
     }
 
-    fprintf(outfile, "****  MO TEI \n");
+    outfile->Printf("****  MO TEI \n");
  
     /*
      * Now, loop over the DPD buffer, printing the integrals
@@ -309,8 +404,10 @@ mointegrals(Options &options)
                 int srel = s - K.params->soff[ssym];
                 // Print out the absolute orbital numbers, the relative (within irrep)
                 // numbers, the symmetries, and the integral itself
-                fprintf(outfile, "%1d %1d %1d %1d %16.48f \n",
-                                 p, q, r, s, K.matrix[h][pq][rs]);
+                if(print)
+                    outfile->Printf("%1d %1d %1d %1d %16.48f \n",
+                            p, q, r, s, K.matrix[h][pq][rs]);
+
                 Ham->setVmat(p,r,q,s,K.matrix[h][pq][rs]);
                 if ((p==q) && (r==s)){
                    if ((prel <docc[psym]) && (rrel < docc[rsym])) EnergyHF += 2*K.matrix[h][pq][rs];
@@ -330,10 +427,10 @@ mointegrals(Options &options)
     }
     global_dpd_->buf4_close(&K);
     psio->close(PSIF_LIBTRANS_DPD, PSIO_OPEN_OLD);
-    fprintf(outfile, "****  HF Energy = %16.48f \n", EnergyHF);
+    outfile->Printf("****  HF Energy = %16.48f \n", EnergyHF);
 
-    fprintf(outfile, "****  The debug check of Hamiltonian ****\n");
-    fprintf(outfile, "Econst = %16.24f \n", Ham->getEconst());
+    outfile->Printf("****  The debug check of Hamiltonian ****\n");
+    outfile->Printf("Econst = %16.24f \n", Ham->getEconst());
    
     double test = 0.0;
     double test2 = 0.0;
@@ -343,8 +440,8 @@ mointegrals(Options &options)
           if (i<=j) test2 += Ham->getTmat(i,j);
        }
     }
-    fprintf(outfile, "1-electron integrals: Sum over all elements  : %16.24f \n", test);
-    fprintf(outfile, "1-electron integrals: Sum over Tij with i<=j : %16.24f \n", test2);
+    outfile->Printf("1-electron integrals: Sum over all elements  : %16.24f \n", test);
+    outfile->Printf("1-electron integrals: Sum over Tij with i<=j : %16.24f \n", test2);
       
     test = 0.0;
     test2 = 0.0;
@@ -358,8 +455,8 @@ mointegrals(Options &options)
           }
        }
     }
-    fprintf(outfile, "2-electron integrals: Sum over all elements          : %16.24f \n", test);
-    fprintf(outfile, "2-electron integrals: Sum over Vijkl with i<=j<=k<=l : %16.24f \n", test2);
+    outfile->Printf("2-electron integrals: Sum over all elements          : %16.24f \n", test);
+    outfile->Printf("2-electron integrals: Sum over Vijkl with i<=j<=k<=l : %16.24f \n", test2);
  
     cout.precision(15);
     if(savehdf5)
