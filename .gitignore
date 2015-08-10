@@ -21,3 +21,5 @@ print
 .gdb_history
 *.h5
 .ycm_extra_conf.pyc
+gen-pairing
+gen-hubbard

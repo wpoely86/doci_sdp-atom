@@ -198,4 +198,8 @@ gen-hubbard: gen-hubbard.o
 	@echo 'Building gen-hubbard'
 	$(CXX) $(LDFLAGS) $(SFLAGS) -o $(BRIGHT_ROOT)/gen-hubbard gen-hubbard.o $(LIBS)
 
+gen-pairing: gen-pairing.o
+	@echo 'Building gen-pairing'
+	$(CXX) $(LDFLAGS) $(SFLAGS) -o $(BRIGHT_ROOT)/gen-pairing gen-pairing.o $(LIBS)
+
 # ====================== End of file 'makefile.in' ========================== #
